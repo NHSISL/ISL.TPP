@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
-using LHDS.Core.Extensions.Exceptions;
+using ISL.TPP.Core.Extensions.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace ISL.TPP.Core.Brokers.Loggings
