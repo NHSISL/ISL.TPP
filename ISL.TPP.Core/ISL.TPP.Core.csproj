@@ -6,4 +6,14 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Xeption" Version="2.6.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="ISL.TPP.Core.Tests.Unit" />
+		<InternalsVisibleTo Include="ISL.TPP.Core.Tests.Acceptance" />
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+	</ItemGroup>
+
 </Project>

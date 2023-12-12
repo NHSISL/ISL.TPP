@@ -1,0 +1,34 @@
+﻿// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
+using System.Threading.Tasks;
+using Moq;
+using Xunit;
+
+namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
+{
+    public partial class FileServiceTests
+    {
+        [Fact]
+        public async Task ShouldDeleteDirectoryAsync()
+        {
+            // given
+            string randomFilePath = GetRandomString();
+            string inputFilePath = randomFilePath;
+            bool recursive = true;
+
+            // when
+            await this.fileService.DeleteDirectoryAsync(inputFilePath, recursive);
+
+            // then
+            this.fileBrokerMock.Verify(broker =>
+                broker.DeleteDirectoryAsync(inputFilePath, recursive),
+                    Times.Once);
+
+            this.fileBrokerMock.VerifyNoOtherCalls();
+        }
+    }
+}
