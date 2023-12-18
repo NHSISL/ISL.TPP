@@ -15,6 +15,7 @@ using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using KellermanSoftware.CompareNetObjects;
 using Moq;
 using Tynamix.ObjectFiller;
+using Xeptions;
 
 namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 {
@@ -41,6 +42,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 tppConfiguration: this.tppConfiguration,
                 loggingBroker: this.loggingBrokerMock.Object);
         }
+
+        private static Expression<Func<Xeption, bool>> SameExceptionAs(Xeption expectedException) =>
+            actualException => actualException.SameExceptionAs(expectedException);
 
         private Expression<Func<Document, bool>> SameDocumentAs(
             Document expectedDocument)
