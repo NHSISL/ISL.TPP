@@ -2,14 +2,17 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Orchestrations.TPP;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
+using KellermanSoftware.CompareNetObjects;
 using Moq;
 using Tynamix.ObjectFiller;
 
@@ -22,6 +25,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private readonly TppConfiguration tppConfiguration;
         private readonly Mock<ILoggingBroker> loggingBrokerMock;
         private ITppOrchestrationService tppOrchestrationService;
+        private readonly ICompareLogic compareLogic;
 
         public TppOrchestrationTests()
         {
@@ -29,12 +33,21 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.documentServiceMock = new Mock<IDocumentService>();
             this.tppConfiguration = CreateRandomTppConfiguration();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
+            compareLogic = new CompareLogic();
 
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
                 tppConfiguration: this.tppConfiguration,
                 loggingBroker: this.loggingBrokerMock.Object);
+        }
+
+        private Expression<Func<Document, bool>> SameDocumentAs(
+            Document expectedDocument)
+        {
+            return actualDocument =>
+                this.compareLogic.Compare(expectedDocument, actualDocument)
+                    .AreEqual;
         }
 
         private static int GetRandomNumber() =>

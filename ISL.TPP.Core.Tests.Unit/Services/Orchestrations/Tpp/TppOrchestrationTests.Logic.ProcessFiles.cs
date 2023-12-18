@@ -3,8 +3,11 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
 
@@ -31,6 +34,75 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             expectedFiles.Should().BeEquivalentTo(actualFiles);
+
+            this.fileServiceMock.Verify(service =>
+                service.RetrieveListOfFilesAsync(pickupFolder, "*"),
+                    Times.Once);
+
+            this.fileServiceMock.VerifyNoOtherCalls();
+            this.documentServiceMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldProcessFilesIfManifestFileNotPresentAsync()
+        {
+            // given
+            string pickupFolder = this.tppConfiguration.TppPickupFolder;
+            string manifestFile = this.tppConfiguration.TppManifestFile;
+            int numberOfFiles = GetRandomNumber();
+            List<string> files = GetRandomFileList(numberOfFiles);
+            files.Add(manifestFile);
+
+            List<byte[]> fileBytes = files.Select(file => Encoding.UTF8.GetBytes(file)).ToList();
+
+
+            List<string> expectedFiles = new List<string>();
+
+            this.fileServiceMock.Setup(service =>
+                service.RetrieveListOfFilesAsync(pickupFolder, "*"))
+                    .ReturnsAsync(files);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                this.fileServiceMock.Setup(service =>
+                    service.ReadFromFileAsync(files[0]))
+                        .ReturnsAsync(fileBytes[0]);
+
+                this.fileServiceMock.Setup(service =>
+                    service.DeleteFileAsync(files[0]))
+                        .ReturnsAsync(true);
+            }
+
+
+            // when
+            List<string> actualFiles = await this.tppOrchestrationService.ProcessFilesAsync();
+
+            // then
+            expectedFiles.Should().BeEquivalentTo(actualFiles);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                this.fileServiceMock.Verify(service =>
+                    service.ReadFromFileAsync(files[0]),
+                        Times.Once);
+
+                var document = new Document
+                {
+                    FileName = files[0],
+                    DocumentData = fileBytes[0]
+                };
+
+                this.documentServiceMock.Verify(service =>
+                    service.AddDocumentAsync(
+                        It.Is(SameDocumentAs(document)),
+                        this.tppConfiguration.BlobStorageSettings.AzureBlobContainer),
+                            Times.Once);
+
+                this.fileServiceMock.Verify(service =>
+                    service.DeleteFileAsync(files[0]),
+                        Times.Once);
+            }
 
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(pickupFolder, "*"),

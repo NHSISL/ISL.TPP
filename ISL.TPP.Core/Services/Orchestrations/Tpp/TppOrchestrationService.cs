@@ -39,9 +39,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             List<string> filePaths = await this.fileService
                 .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
 
-            string manifestFilePath = this.tppConfiguration.TppManifestFile;
+            string manifestFile = this.tppConfiguration.TppManifestFile;
 
-            if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFilePath))
+            if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
             {
                 throw new NotImplementedException();
             }
