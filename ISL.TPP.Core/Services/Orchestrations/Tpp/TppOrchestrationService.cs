@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models.Orchestrations.TPP;
@@ -31,7 +32,21 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             this.loggingBroker = loggingBroker;
         }
 
-        public async ValueTask<List<string>> ProcessFilesAsync() =>
-            throw new NotImplementedException();
+        public async ValueTask<List<string>> ProcessFilesAsync()
+        {
+            List<string> files = new List<string>();
+
+            List<string> filePaths = await this.fileService
+                .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
+
+            string manifestFilePath = this.tppConfiguration.TppManifestFile;
+
+            if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFilePath))
+            {
+                throw new NotImplementedException();
+            }
+
+            return files;
+        }
     }
 }
