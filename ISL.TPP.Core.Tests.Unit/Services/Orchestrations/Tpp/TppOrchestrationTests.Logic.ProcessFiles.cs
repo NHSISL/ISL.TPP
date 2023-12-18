@@ -71,7 +71,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         .ReturnsAsync(true);
             }
 
-
             // when
             List<string> actualFiles = await this.tppOrchestrationService.ProcessFilesAsync();
 

@@ -105,7 +105,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
             this.loggingBroker.LogError(tppOrchestrationDependencyException);
 
-            throw tppOrchestrationDependencyException;
+            return tppOrchestrationDependencyException;
         }
 
         private TppOrchestrationServiceException CreateAndLogServiceException(Xeption exception)
