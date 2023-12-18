@@ -4,7 +4,7 @@
 
 using Xeptions;
 
-namespace LHDS.Core.Models.Orchestrations.Decryptions.Exceptions
+namespace ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions
 {
     public class TppOrchestrationValidationException : Xeption
     {

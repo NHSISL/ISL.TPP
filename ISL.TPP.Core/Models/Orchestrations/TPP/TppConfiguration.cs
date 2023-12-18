@@ -2,7 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using LHDS.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 
 namespace ISL.TPP.Core.Models.Orchestrations.TPP
 {

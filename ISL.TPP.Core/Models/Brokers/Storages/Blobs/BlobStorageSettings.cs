@@ -2,7 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-namespace LHDS.Core.Models.Brokers.Storages.Blobs
+namespace ISL.TPP.Core.Models.Brokers.Storages.Blobs
 {
     public class BlobStorageSettings
     {

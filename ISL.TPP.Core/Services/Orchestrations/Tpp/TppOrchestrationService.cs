@@ -13,7 +13,7 @@ using ISL.TPP.Core.Services.Foundations.Files;
 
 namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 {
-    internal class TppOrchestrationService : ITppOrchestrationService
+    internal partial class TppOrchestrationService : ITppOrchestrationService
     {
         private readonly IFileService fileService;
         private readonly IDocumentService documentService;
@@ -32,36 +32,39 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             this.loggingBroker = loggingBroker;
         }
 
-        public async ValueTask<List<string>> ProcessFilesAsync()
-        {
-            List<string> files = new List<string>();
-
-            List<string> filePaths = await this.fileService
-                .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
-
-            string manifestFile = this.tppConfiguration.TppManifestFile;
-
-            if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
+        public ValueTask<List<string>> ProcessFilesAsync() =>
+            TryCatch(async () =>
             {
-                foreach (string filePath in filePaths)
+                ValidateConfigurationSettings();
+
+                List<string> files = new List<string>();
+
+                List<string> filePaths = await this.fileService
+                    .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
+
+                string manifestFile = this.tppConfiguration.TppManifestFile;
+
+                if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
                 {
-                    var file = await this.fileService.ReadFromFileAsync(filePath);
-
-                    var document = new Document
+                    foreach (string filePath in filePaths)
                     {
-                        FileName = filePath.Replace(this.tppConfiguration.TppPickupFolder, ""),
-                        DocumentData = file
-                    };
+                        var file = await this.fileService.ReadFromFileAsync(filePath);
 
-                    await this.documentService
-                        .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+                        var document = new Document
+                        {
+                            FileName = filePath.Replace(this.tppConfiguration.TppPickupFolder, ""),
+                            DocumentData = file
+                        };
 
-                    await this.fileService.DeleteFileAsync(filePath);
-                    files.Add(filePath);
+                        await this.documentService
+                            .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+
+                        await this.fileService.DeleteFileAsync(filePath);
+                        files.Add(filePath);
+                    }
                 }
-            }
 
-            return files;
-        }
+                return files;
+            });
     }
 }
