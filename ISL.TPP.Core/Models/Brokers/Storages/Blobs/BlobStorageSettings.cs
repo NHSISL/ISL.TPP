@@ -8,6 +8,8 @@ namespace ISL.TPP.Core.Models.Brokers.Storages.Blobs
     {
         public string AzureBlobServiceUri { get; set; }
         public string AzureTenantId { get; set; }
+        public string AzureClientId { get; set; }
+        public string AzureClientSecret { get; set; }
         public string AzureBlobContainer { get; set; }
     }
 }

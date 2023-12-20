@@ -6,7 +6,7 @@ using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 
 namespace ISL.TPP.Core.Models.Orchestrations.TPP
 {
-    internal class TppConfiguration
+    public class TppConfiguration
     {
         public BlobStorageSettings BlobStorageSettings { get; set; }
         public string TppPickupFolder { get; set; }
