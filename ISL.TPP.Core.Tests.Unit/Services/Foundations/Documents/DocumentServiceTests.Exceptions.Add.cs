@@ -46,7 +46,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             var stream = new MemoryStream(document.DocumentData);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.InsertFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
                     .Throws(requestFailedException);
 
             // when
@@ -59,7 +59,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.InsertFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
+                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
@@ -100,7 +100,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             var stream = new MemoryStream(document.DocumentData);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.InsertFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
                      .Throws(failedDocumentServiceException);
 
             // when
@@ -113,7 +113,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.InsertFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
+                broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>

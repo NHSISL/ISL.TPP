@@ -79,7 +79,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.SelectByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -103,7 +103,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: notFoundDocumentException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.SelectByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()))
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ReturnsAsync(nullByte);
 
             //when
@@ -120,7 +120,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.SelectByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Once());
 
             this.loggingBrokerMock.Verify(broker =>

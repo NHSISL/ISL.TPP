@@ -10,8 +10,8 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
 {
     public interface IBlobStorageBroker
     {
-        ValueTask InsertFileAsync(string fileName, Stream stream, string container);
-        ValueTask<byte[]> SelectByFileNameAsync(string fileName, string container);
+        ValueTask UploadFileAsync(string fileName, Stream stream, string container);
+        ValueTask<byte[]> DownloadByFileNameAsync(string fileName, string container);
         ValueTask DeleteFileAsync(string fileName, string container);
         ValueTask<string> GetDownloadLinkAsync(string fileName, string container, DateTimeOffset expiresOn);
     }
