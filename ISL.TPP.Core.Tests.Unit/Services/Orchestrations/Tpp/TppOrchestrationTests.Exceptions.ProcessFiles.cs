@@ -47,7 +47,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                roker.LogError(It.Is(SameExceptionAs(
+                broker.LogError(It.Is(SameExceptionAs(
                     expectedDependencyException))),
                         Times.Once);
 
