@@ -34,7 +34,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // Then
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.InsertFileAsync(randomDocument.FileName, It.IsAny<Stream>(), randomContainer),
+                broker.UploadFileAsync(randomDocument.FileName, It.IsAny<Stream>(), randomContainer),
                 Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();

@@ -43,7 +43,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                      innerException: failedDocumentRequestException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer))
+                 broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
                     .Throws(requestFailedException);
 
             // when
@@ -57,7 +57,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer),
+                 broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
@@ -96,7 +96,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: failedDocumentServiceException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer))
+                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
                    .Throws(failedDocumentServiceException);
 
             // when
@@ -110,7 +110,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer),
+                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>

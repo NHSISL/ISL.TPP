@@ -30,6 +30,17 @@ namespace ISL.TPP.Core.Clients
             InitialiseClients(serviceProvider);
         }
 
+        internal TppClient(
+         TppConfiguration tppConfiguration,
+         IServiceCollection serviceCollection,
+         ILoggerFactory? loggerFactory = null)
+        {
+            IServiceProvider serviceProvider =
+                RegisterServices(tppConfiguration, loggerFactory, serviceCollection, acceptanceTests: true);
+
+            InitialiseClients(serviceProvider);
+        }
+
         public IImportClient Imports { get; private set; }
 
         private void InitialiseClients(IServiceProvider serviceProvider)
@@ -39,7 +50,9 @@ namespace ISL.TPP.Core.Clients
 
         private static IServiceProvider RegisterServices(
             TppConfiguration tppConfiguration,
-            ILoggerFactory? loggerFactory)
+            ILoggerFactory? loggerFactory,
+            IServiceCollection? serviceCollection = null,
+            bool acceptanceTests = false)
         {
 
             if (loggerFactory is null)
@@ -51,18 +64,28 @@ namespace ISL.TPP.Core.Clients
 
             ValidateTppConfiguration(tppConfiguration);
 
-            BlobServiceClient blobServiceClient =
-                SetupBlobServiceClient(tppConfiguration);
+            if (serviceCollection is null)
+            {
+                serviceCollection = new ServiceCollection();
+            }
 
-            var serviceCollection = new ServiceCollection()
-                .AddSingleton(blobServiceClient)
+            if (!acceptanceTests)
+            {
+                BlobServiceClient blobServiceClient =
+                    SetupBlobServiceClient(tppConfiguration);
+
+                serviceCollection
+                    .AddSingleton(blobServiceClient)
+                    .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
+                    .AddTransient<IFileService, FileService>();
+            }
+
+            serviceCollection
                 .AddSingleton(tppConfiguration)
                 .AddTransient<IDateTimeBroker, DateTimeBroker>()
                 .AddTransient(_ => loggingBroker)
                 .AddTransient<ILoggingBroker, LoggingBroker>()
-                .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                 .AddTransient<IDocumentService, DocumentService>()
-                .AddTransient<IFileService, FileService>()
                 .AddTransient<ITppOrchestrationService, TppOrchestrationService>();
 
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();

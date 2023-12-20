@@ -93,7 +93,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.InsertFileAsync(validFileName, It.IsAny<Stream>(), randomContainer),
+                broker.UploadFileAsync(validFileName, It.IsAny<Stream>(), randomContainer),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -155,7 +155,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-               broker.InsertFileAsync(invalidFileName, validStream, invalidContainer),
+               broker.UploadFileAsync(invalidFileName, validStream, invalidContainer),
                    Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

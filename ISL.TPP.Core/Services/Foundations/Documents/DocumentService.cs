@@ -34,7 +34,7 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             {
                 ValidateDocumentOnAdd(document, container);
 
-                await this.blobStorageBroker.InsertFileAsync(
+                await this.blobStorageBroker.UploadFileAsync(
                    fileName: document.FileName,
                    stream: new MemoryStream(document.DocumentData),
                    container);
@@ -46,7 +46,7 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
                  ValidateDocumentOnRetrieve(fileName, container);
 
                  byte[] retrievedDocument = await this.blobStorageBroker
-                     .SelectByFileNameAsync(fileName, container);
+                     .DownloadByFileNameAsync(fileName, container);
 
                  ValidateStorageDocument(retrievedDocument, fileName);
 

@@ -32,7 +32,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             expectedDocument.SHA256Hash = ComputeSHA256Hash(randomDocument.DocumentData);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer))
+                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
                     .ReturnsAsync(randomDocument.DocumentData);
 
             // When
@@ -44,7 +44,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocument.Should().BeEquivalentTo(expectedDocument);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.SelectByFileNameAsync(randomDocument.FileName, randomContainer),
+                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
                     Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();
