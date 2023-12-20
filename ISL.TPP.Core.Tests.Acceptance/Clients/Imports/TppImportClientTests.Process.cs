@@ -83,5 +83,70 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             fileBrokerMock.VerifyNoOtherCalls();
             blobStorageBrokerMock.VerifyNoOtherCalls();
         }
+
+        [Fact]
+        public async Task ShouldNotProcessNewFilesIfManifestFileNotPresentAsync()
+        {
+            // given
+            List<string> files = new List<string>
+            {
+                $@"{tppConfiguration.TppPickupFolder}\file1.csv",
+                $@"{tppConfiguration.TppPickupFolder}\file2.csv"
+            };
+
+            List<string> expectedFiles = new List<string>();
+
+            Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
+            Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
+
+            fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(tppConfiguration.TppPickupFolder, "*"))
+                .ReturnsAsync(files);
+
+            foreach (string file in files)
+            {
+                fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
+                    .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
+            }
+
+            fileBrokerMock.Setup(broker => broker.DeleteFileAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+
+
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(_ => fileBrokerMock.Object);
+            serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
+
+            TppClient client = new TppClient(tppConfiguration, serviceCollection);
+
+            // when
+            List<string> actualFiles = await client.Imports.ProcessFilesAsync();
+
+            // then
+            actualFiles.Should().BeEquivalentTo(expectedFiles);
+
+            fileBrokerMock.Verify(broker =>
+                broker.GetListOfFilesAsync(tppConfiguration.TppPickupFolder, "*"),
+                    Times.Once);
+
+            foreach (string file in files)
+            {
+                fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
+                    Times.Never);
+
+                blobStorageBrokerMock.Verify(broker =>
+                    broker.UploadFileAsync(
+                        file.Replace(tppConfiguration.TppPickupFolder, string.Empty),
+                        ASCIIEncoding.UTF8.GetBytes(file),
+                        tppConfiguration.BlobStorageSettings.AzureBlobContainer),
+                            Times.Never);
+
+                fileBrokerMock.Verify(broker =>
+                    broker.DeleteFileAsync(file),
+                        Times.Never);
+            }
+
+            fileBrokerMock.VerifyNoOtherCalls();
+            blobStorageBrokerMock.VerifyNoOtherCalls();
+        }
     }
 }
