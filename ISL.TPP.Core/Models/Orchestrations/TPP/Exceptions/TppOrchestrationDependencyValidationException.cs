@@ -9,7 +9,7 @@ namespace ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions
     public class TppOrchestrationDependencyValidationException : Xeption
     {
         public TppOrchestrationDependencyValidationException(string message, Xeption innerException)
-         : base(message, innerException)
+            : base(message, innerException)
         { }
     }
 }

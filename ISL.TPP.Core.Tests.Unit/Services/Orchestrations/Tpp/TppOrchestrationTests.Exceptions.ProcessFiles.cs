@@ -29,8 +29,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: dependancyValidationException.InnerException as Xeption);
 
             this.fileServiceMock.Setup(service =>
-               service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
-                   .ThrowsAsync(dependancyValidationException);
+                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+                    .ThrowsAsync(dependancyValidationException);
 
             // when
             ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
@@ -40,16 +40,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             actualException.Should()
-                 .BeEquivalentTo(expectedDependencyException);
+                .BeEquivalentTo(expectedDependencyException);
 
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-               broker.LogError(It.Is(SameExceptionAs(
-                   expectedDependencyException))),
-                       Times.Once);
+                roker.LogError(It.Is(SameExceptionAs(
+                    expectedDependencyException))),
+                        Times.Once);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -70,8 +70,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: dependancyException.InnerException as Xeption);
 
             this.fileServiceMock.Setup(service =>
-               service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
-                   .ThrowsAsync(dependancyException);
+                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+                    .ThrowsAsync(dependancyException);
 
             // when
             ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
@@ -87,9 +87,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-               broker.LogError(It.Is(SameExceptionAs(
-                   expectedDependencyException))),
-                       Times.Once);
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedDependencyException))),
+                        Times.Once);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -114,8 +114,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: failedTppOrchestrationServiceException);
 
             this.fileServiceMock.Setup(service =>
-               service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
-                   .ThrowsAsync(serviceException);
+                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+                    .ThrowsAsync(serviceException);
 
             // when
             ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
