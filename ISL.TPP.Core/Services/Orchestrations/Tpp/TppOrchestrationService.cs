@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.Loggings;
+using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
-using ISL.TPP.Core.Models.Orchestrations.TPP;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 

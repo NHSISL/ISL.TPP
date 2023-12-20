@@ -2,7 +2,6 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -93,7 +92,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(validFileName, It.IsAny<Stream>(), randomContainer),
+                broker.UploadFileAsync(validFileName, It.IsAny<byte[]>(), randomContainer),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -121,8 +120,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 FileName = invalidFileName,
                 DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
             };
-
-            Stream validStream = new MemoryStream(document.DocumentData);
 
             var invalidDocumentException = new InvalidDocumentException(
                 message: "Invalid document. Please correct the errors and try again.");
@@ -155,7 +152,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-               broker.UploadFileAsync(invalidFileName, validStream, invalidContainer),
+               broker.UploadFileAsync(invalidFileName, document.DocumentData, invalidContainer),
                    Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

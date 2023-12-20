@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Clients.Exceptions;
-using ISL.TPP.Core.Models.Orchestrations.TPP;
+using ISL.TPP.Core.Models.Configurations;
+using ISL.TPP.Core.Models.Configurations.Retries;
 
 namespace ISL.TPP.Core.Clients
 {
@@ -32,7 +33,10 @@ namespace ISL.TPP.Core.Clients
                     Parameter: "TppManifestFile"),
 
                 (Rule: IsInvalid(tppConfiguration.BlobStorageSettings),
-                    Parameter: "BlobStorageSettings"));
+                    Parameter: "BlobStorageSettings"),
+
+                (Rule: IsInvalid(tppConfiguration.RetryConfig),
+                    Parameter: "RetryConfig"));
 
             Validate(
                 (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureBlobServiceUri),
@@ -58,6 +62,12 @@ namespace ISL.TPP.Core.Clients
         };
 
         private static dynamic IsInvalid(BlobStorageSettings? value) => new
+        {
+            Condition = value is null,
+            Message = "Configuration not defined."
+        };
+
+        private static dynamic IsInvalid(RetryConfig? value) => new
         {
             Condition = value is null,
             Message = "Configuration not defined."

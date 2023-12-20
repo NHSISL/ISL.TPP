@@ -24,20 +24,24 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
             this.blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
         }
 
-        public async ValueTask UploadFileAsync(string fileName, Stream stream, string container)
+        public async ValueTask UploadFileAsync(string fileName, byte[] data, string container)
         {
             var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(fileName);
-            var streamLength = stream.Length;
 
-            var options = new BlobUploadOptions
+            using (MemoryStream stream = new MemoryStream(data))
             {
-                TransferOptions = new Azure.Storage.StorageTransferOptions()
-                {
-                    InitialTransferSize = stream.Length
-                }
-            };
 
-            await blobClient.UploadAsync(stream, options);
+                var options = new BlobUploadOptions
+                {
+                    TransferOptions = new Azure.Storage.StorageTransferOptions()
+                    {
+                        InitialTransferSize = stream.Length
+                    }
+                };
+
+                stream.Position = 0;
+                await blobClient.UploadAsync(stream, options);
+            }
         }
 
         public async ValueTask<byte[]> DownloadByFileNameAsync(string fileName, string container)

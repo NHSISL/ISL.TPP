@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -43,10 +42,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                      message: "Document dependency error occurred, contact support.",
                      innerException: failedDocumentRequestException);
 
-            var stream = new MemoryStream(document.DocumentData);
-
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer))
                     .Throws(requestFailedException);
 
             // when
@@ -59,7 +56,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
@@ -97,10 +94,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     message: "Document service error occurred, contact support.",
                     innerException: failedDocumentServiceException);
 
-            var stream = new MemoryStream(document.DocumentData);
-
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer))
                      .Throws(failedDocumentServiceException);
 
             // when
@@ -113,7 +108,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(document.FileName, It.IsAny<Stream>(), encryptedFileContainer),
+                broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>

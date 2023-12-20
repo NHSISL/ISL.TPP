@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ISL.TPP.Core.Models.Orchestrations.TPP;
+using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;

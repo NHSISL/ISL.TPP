@@ -8,10 +8,12 @@ using Azure.Core.Pipeline;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using ISL.TPP.Core.Brokers.DateTimes;
+using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients.Imports;
-using ISL.TPP.Core.Models.Orchestrations.TPP;
+using ISL.TPP.Core.Models.Configurations;
+using ISL.TPP.Core.Models.Configurations.Retries;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
@@ -77,15 +79,28 @@ namespace ISL.TPP.Core.Clients
                 serviceCollection
                     .AddSingleton(blobServiceClient)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
-                    .AddTransient<IFileService, FileService>();
+                    .AddTransient<IFileBroker, FileBroker>();
             }
 
             serviceCollection
                 .AddSingleton(tppConfiguration)
+
+                .AddSingleton<IRetryConfig>(_ =>
+                {
+                    var retryConfig = tppConfiguration.RetryConfig;
+
+                    return new RetryConfig(
+                        maxRetryAttempts: retryConfig.MaxRetryAttempts,
+                        pauseBetweenFailures: retryConfig.PauseBetweenFailures
+                    );
+                })
+
                 .AddTransient<IDateTimeBroker, DateTimeBroker>()
                 .AddTransient(_ => loggingBroker)
                 .AddTransient<ILoggingBroker, LoggingBroker>()
+                .AddTransient<IFileService, FileService>()
                 .AddTransient<IDocumentService, DocumentService>()
+                .AddTransient<IImportClient, ImportClient>()
                 .AddTransient<ITppOrchestrationService, TppOrchestrationService>();
 
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
