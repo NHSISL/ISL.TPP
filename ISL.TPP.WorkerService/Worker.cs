@@ -3,12 +3,15 @@
 // ---------------------------------------------------------------
 
 using System.Diagnostics;
+using ISL.TPP.Core.Clients;
+using ISL.TPP.Core.Models.Configurations;
 
 namespace ISL.TPP.WorkerService
 {
     public class Worker : BackgroundService
     {
         private readonly IConfiguration configuration;
+        private readonly TppClient tppClient;
         private readonly ILogger<Worker> logger;
         private Timer timer;
         private readonly int timerIntervalInMinutes;
@@ -21,6 +24,8 @@ namespace ISL.TPP.WorkerService
             string eventSourceName = this.configuration.GetValue<string>("Logging:EventLog:SourceName");
             string logName = this.configuration.GetValue<string>("Logging:EventLog:LogName");
             CreateEventLogSource(eventSourceName, logName);
+            var tppConfiguration = configuration.GetSection("landingSettings").Get<TppConfiguration>();
+            tppClient = new TppClient(tppConfiguration);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
@@ -31,13 +36,9 @@ namespace ISL.TPP.WorkerService
             return base.StartAsync(cancellationToken);
         }
 
-        private void DoWork(object state)
+        private async void DoWork(object state)
         {
-            logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            logger.LogDebug("Debug: {time}", DateTimeOffset.Now);
-            logger.LogWarning("Warning: {time}", DateTimeOffset.Now);
-            logger.LogError("Error: {time}", DateTimeOffset.Now);
-            // Add your background task logic here
+            await this.tppClient.Imports.ProcessFilesAsync();
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
