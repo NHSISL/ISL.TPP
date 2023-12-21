@@ -11,7 +11,7 @@ using Xeptions;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
-    public partial class DocumentService
+    internal partial class DocumentService
     {
         private delegate ValueTask ReturningNothingFunction();
         private delegate ValueTask<Document> ReturningDocumentFunction();

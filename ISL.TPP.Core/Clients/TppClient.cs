@@ -12,6 +12,7 @@ using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients.Imports;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
 using ISL.TPP.Core.Services.Foundations.Documents;
@@ -73,11 +74,14 @@ namespace ISL.TPP.Core.Clients
 
             if (!acceptanceTests)
             {
+                BlobStorageSettings blobStorageSettings = tppConfiguration.BlobStorageSettings;
+
                 BlobServiceClient blobServiceClient =
                     SetupBlobServiceClient(tppConfiguration);
 
                 serviceCollection
                     .AddSingleton(blobServiceClient)
+                    .AddSingleton(_ => blobStorageSettings)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                     .AddTransient<IFileBroker, FileBroker>();
             }

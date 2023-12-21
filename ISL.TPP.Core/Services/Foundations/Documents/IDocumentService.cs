@@ -7,7 +7,7 @@ using ISL.TPP.Core.Models.Foundations.Documents;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
-    public interface IDocumentService
+    internal interface IDocumentService
     {
         ValueTask AddDocumentAsync(Document document, string container);
         ValueTask<Document> RetrieveDocumentByFileNameAsync(string fileName, string container);

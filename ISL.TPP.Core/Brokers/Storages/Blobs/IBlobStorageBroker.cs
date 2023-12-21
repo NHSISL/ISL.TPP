@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ISL.TPP.Core.Brokers.Storages.Blobs
 {
-    public interface IBlobStorageBroker
+    internal interface IBlobStorageBroker
     {
         ValueTask UploadFileAsync(string fileName, byte[] data, string container);
         ValueTask<byte[]> DownloadByFileNameAsync(string fileName, string container);

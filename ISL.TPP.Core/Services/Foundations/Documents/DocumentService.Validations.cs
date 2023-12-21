@@ -8,7 +8,7 @@ using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
-    public partial class DocumentService
+    internal partial class DocumentService
     {
         private static void ValidateDocumentOnAdd(Document document, string container)
         {

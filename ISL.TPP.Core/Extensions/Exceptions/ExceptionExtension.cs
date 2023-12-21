@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ISL.TPP.Core.Extensions.Exceptions
 {
-    public static class ExceptionExtension
+    internal static class ExceptionExtension
     {
         public static string GetValidationSummary(this Exception exception)
         {

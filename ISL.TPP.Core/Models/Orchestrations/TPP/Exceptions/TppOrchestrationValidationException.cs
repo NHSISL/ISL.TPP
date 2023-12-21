@@ -6,7 +6,7 @@ using Xeptions;
 
 namespace ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions
 {
-    public class TppOrchestrationValidationException : Xeption
+    internal class TppOrchestrationValidationException : Xeption
     {
         public TppOrchestrationValidationException(string message, Xeption innerException)
             : base(message, innerException)

@@ -6,7 +6,7 @@ using System;
 
 namespace ISL.TPP.Core.Brokers.DateTimes
 {
-    public class DateTimeBroker : IDateTimeBroker
+    internal class DateTimeBroker : IDateTimeBroker
     {
         public DateTimeOffset GetCurrentDateTimeOffset() =>
             DateTimeOffset.UtcNow;
