@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,10 +48,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
+                Console.WriteLine($"manifest file: {manifestFile}");
 
                 if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
                 {
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
+                    Console.WriteLine(currentDateTime);
 
                     foreach (string filePath in filePaths)
                     {
@@ -72,8 +75,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         await this.fileService.DeleteFileAsync(filePath);
                         files.Add(document.FileName);
+                        Console.WriteLine($"filename: {document.FileName}");
                     }
                 }
+
+                Console.WriteLine($"file count: {files.Count}");
 
                 return files;
             });
