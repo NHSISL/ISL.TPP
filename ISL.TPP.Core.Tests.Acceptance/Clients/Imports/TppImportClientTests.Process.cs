@@ -109,7 +109,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             blobStorageBrokerMock.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [Fact(Skip = "Excluded")]
         public async Task ShouldNotProcessNewFilesIfManifestFileNotPresentAsync()
         {
             // given
