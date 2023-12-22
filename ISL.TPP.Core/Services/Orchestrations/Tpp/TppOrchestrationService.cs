@@ -47,13 +47,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 List<string> filePaths = await this.fileService
                     .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
 
+                Console.WriteLine($"file count from broker: {filePaths.Count}");
+                Console.WriteLine($"files from broker: {string.Join(", ", files)}");
+
                 string manifestFile = this.tppConfiguration.TppManifestFile;
                 Console.WriteLine($"manifest file: {manifestFile}");
 
                 if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
                 {
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
-                    Console.WriteLine(currentDateTime);
+                    Console.WriteLine($"datestamp fomratted: {currentDateTime}");
 
                     foreach (string filePath in filePaths)
                     {
@@ -75,11 +78,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         await this.fileService.DeleteFileAsync(filePath);
                         files.Add(document.FileName);
-                        Console.WriteLine($"filename: {document.FileName}");
+                        Console.WriteLine($"document filename: {document.FileName}");
                     }
                 }
 
-                Console.WriteLine($"file count: {files.Count}");
+                Console.WriteLine($"documents count: {files.Count}");
+                Console.WriteLine($"document paths: {string.Join(", ", files)}");
 
                 return files;
             });
