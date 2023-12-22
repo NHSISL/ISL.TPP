@@ -53,7 +53,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 string manifestFile = this.tppConfiguration.TppManifestFile;
                 Console.WriteLine($"manifest file: {manifestFile}");
 
-                if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
+                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
                     Console.WriteLine($"manifest file found: {manifestFile}");
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
