@@ -7,11 +7,16 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Clients;
 using ISL.TPP.Core.Tests.Integrations;
+using Xunit;
 
 namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
 {
     public partial class TppImportClientTests
     {
+        [Fact]
+        public void EmptyTestStub()
+        { }
+
         [ReleaseCandidateFact]
         public async Task ShouldProcessNewFilesIfManifestFilePresentAsync()
         {
