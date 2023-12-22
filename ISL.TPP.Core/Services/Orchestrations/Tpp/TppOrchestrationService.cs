@@ -44,7 +44,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
 
-                if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
+                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
                     foreach (string filePath in filePaths)
                     {
