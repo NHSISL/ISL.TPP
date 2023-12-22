@@ -48,7 +48,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
 
                 Console.WriteLine($"file count from broker: {filePaths.Count}");
-                Console.WriteLine($"files from broker: {string.Join(", ", files)}");
+                Console.WriteLine($"files from broker: {string.Join(", ", filePaths)}");
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
                 Console.WriteLine($"manifest file: {manifestFile}");
