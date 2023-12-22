@@ -21,4 +21,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test ISL.TPP.Core.Tests.Integrations/ISL.TPP.Core.Tests.Integrations.csproj --no-build --verbosity normal
+      run: dotnet test ISL.TPP.Core.Tests.Integration/ISL.TPP.Core.Tests.Integrations.csproj --no-build --verbosity normal
