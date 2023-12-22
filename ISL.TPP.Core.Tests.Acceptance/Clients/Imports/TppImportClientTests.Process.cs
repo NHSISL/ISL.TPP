@@ -67,6 +67,11 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             // when
             List<string> actualFiles = await client.Imports.ProcessFilesAsync();
+            Console.WriteLine($"actual files count: {actualFiles.Count}");
+            Console.WriteLine($"expected files count: {expectedFiles.Count}");
+
+            Console.WriteLine($"actual files: {string.Join(", ", actualFiles)}");
+            Console.WriteLine($"expected files: {string.Join(", ", expectedFiles)}");
 
             // then
             actualFiles.Should().BeEquivalentTo(expectedFiles);
