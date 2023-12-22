@@ -31,7 +31,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 //$@"{tppConfiguration.TppPickupFolder}\file2.csv"
             };
 
-            Console.WriteLine($"files count: {files.Count}");
+            Console.WriteLine($"expected count: {files.Count}");
             Console.WriteLine($"expected files: {string.Join(", ", files)}");
 
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
@@ -50,6 +50,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(tppConfiguration.TppPickupFolder, "*"))
                 .ReturnsAsync(files);
+
+            Console.WriteLine($"files count passed into broker setup: {files.Count}");
 
             foreach (string file in files)
             {
