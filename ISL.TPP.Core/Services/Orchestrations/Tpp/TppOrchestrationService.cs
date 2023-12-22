@@ -55,6 +55,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
                 {
+                    Console.WriteLine($"manifest file found: {manifestFile}");
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
                     Console.WriteLine($"datestamp fomratted: {currentDateTime}");
 
@@ -80,6 +81,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         files.Add(document.FileName);
                         Console.WriteLine($"document filename: {document.FileName}");
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"manifest file not found: {manifestFile}");
                 }
 
                 Console.WriteLine($"documents count: {files.Count}");
