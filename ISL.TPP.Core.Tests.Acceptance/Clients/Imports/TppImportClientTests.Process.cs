@@ -2,11 +2,13 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Force.DeepCloner;
+using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients;
@@ -29,10 +31,19 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 $@"{tppConfiguration.TppPickupFolder}\file2.csv"
             };
 
-            List<string> expectedFiles = files.DeepClone();
+            DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
+
+            List<string> expectedFiles = files.Select(file =>
+                $"{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}" +
+                $"{file.Replace(this.tppConfiguration.TppPickupFolder, "")}").ToList();
 
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
+            Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+
+            dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Returns(randomDateTimeOffset);
 
             fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(tppConfiguration.TppPickupFolder, "*"))
                 .ReturnsAsync(files);
@@ -50,6 +61,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
+            serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
 
             TppClient client = new TppClient(tppConfiguration, serviceCollection);
 
@@ -68,9 +80,13 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
                     Times.Once);
 
+                string filename =
+                    $"{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}" +
+                    $"{file.Replace(this.tppConfiguration.TppPickupFolder, "")}";
+
                 blobStorageBrokerMock.Verify(broker =>
                     broker.UploadFileAsync(
-                        file.Replace(tppConfiguration.TppPickupFolder, string.Empty),
+                        filename,
                         ASCIIEncoding.UTF8.GetBytes(file),
                         tppConfiguration.BlobStorageSettings.AzureBlobContainer),
                             Times.Once);
@@ -94,10 +110,16 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 $@"{tppConfiguration.TppPickupFolder}\file2.csv"
             };
 
+            DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
             List<string> expectedFiles = new List<string>();
 
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
+            Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+
+            dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Returns(randomDateTimeOffset);
 
             fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(tppConfiguration.TppPickupFolder, "*"))
                 .ReturnsAsync(files);
@@ -115,6 +137,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
+            serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
 
             TppClient client = new TppClient(tppConfiguration, serviceCollection);
 

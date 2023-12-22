@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
@@ -18,17 +19,20 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         private readonly IFileService fileService;
         private readonly IDocumentService documentService;
         private readonly TppConfiguration tppConfiguration;
+        private readonly IDateTimeBroker dateTimeBroker;
         private readonly ILoggingBroker loggingBroker;
 
         public TppOrchestrationService(
             IFileService fileService,
             IDocumentService documentService,
             TppConfiguration tppConfiguration,
+            IDateTimeBroker dateTimeBroker,
             ILoggingBroker loggingBroker)
         {
             this.fileService = fileService;
             this.documentService = documentService;
             this.tppConfiguration = tppConfiguration;
+            this.dateTimeBroker = dateTimeBroker;
             this.loggingBroker = loggingBroker;
         }
 
@@ -46,13 +50,20 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
                 {
+                    var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
+
                     foreach (string filePath in filePaths)
                     {
                         var file = await this.fileService.ReadFromFileAsync(filePath);
 
+                        var newFileName =
+                            $"{currentDateTime}\\{filePath.Replace(this.tppConfiguration.TppPickupFolder, "")}";
+
+                        newFileName = newFileName.Replace("\\\\", "\\");
+
                         var document = new Document
                         {
-                            FileName = filePath.Replace(this.tppConfiguration.TppPickupFolder, ""),
+                            FileName = newFileName,
                             DocumentData = file
                         };
 
@@ -60,7 +71,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
 
                         await this.fileService.DeleteFileAsync(filePath);
-                        files.Add(filePath);
+                        files.Add(document.FileName);
                     }
                 }
 

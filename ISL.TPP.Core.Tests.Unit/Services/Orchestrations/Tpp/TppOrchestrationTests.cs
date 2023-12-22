@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
@@ -28,6 +29,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private readonly Mock<IDocumentService> documentServiceMock;
         private readonly TppConfiguration tppConfiguration;
         private readonly Mock<ILoggingBroker> loggingBrokerMock;
+        private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
         private ITppOrchestrationService tppOrchestrationService;
         private readonly ICompareLogic compareLogic;
 
@@ -36,6 +38,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.fileServiceMock = new Mock<IFileService>();
             this.documentServiceMock = new Mock<IDocumentService>();
             this.tppConfiguration = CreateRandomTppConfiguration();
+            this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
             compareLogic = new CompareLogic();
 
@@ -43,6 +46,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
                 tppConfiguration: this.tppConfiguration,
+                dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
         }
 
@@ -114,6 +118,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
         private static string GetRandomString() =>
             new MnemonicString().GetValue();
+
+        private static DateTimeOffset GetRandomDateTimeOffset() =>
+            new DateTimeRange(earliestDate: new DateTime()).GetValue();
 
         private static TppConfiguration CreateRandomTppConfiguration() =>
             CreateRandomTppConfigurationFiller().Create();

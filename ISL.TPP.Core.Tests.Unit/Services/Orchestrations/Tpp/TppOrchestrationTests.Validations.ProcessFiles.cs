@@ -23,6 +23,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
                 tppConfiguration: null,
+                dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
 
             var invalidArgumentTppOrchestrationException =
@@ -73,6 +74,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     BlobStorageSettings = null
                 },
 
+                dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
 
             var invalidArgumentTppOrchestrationException =
@@ -137,6 +139,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     }
                 },
 
+                dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
 
             var invalidArgumentTppOrchestrationException =

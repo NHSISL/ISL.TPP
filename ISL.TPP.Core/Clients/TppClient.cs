@@ -83,7 +83,8 @@ namespace ISL.TPP.Core.Clients
                     .AddSingleton(blobServiceClient)
                     .AddSingleton(_ => blobStorageSettings)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
-                    .AddTransient<IFileBroker, FileBroker>();
+                    .AddTransient<IFileBroker, FileBroker>()
+                    .AddTransient<IDateTimeBroker, DateTimeBroker>();
             }
 
             serviceCollection
@@ -99,7 +100,6 @@ namespace ISL.TPP.Core.Clients
                     );
                 })
 
-                .AddTransient<IDateTimeBroker, DateTimeBroker>()
                 .AddTransient(_ => loggingBroker)
                 .AddTransient<ILoggingBroker, LoggingBroker>()
                 .AddTransient<IFileService, FileService>()
