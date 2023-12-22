@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
 
-                if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
+                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
 
