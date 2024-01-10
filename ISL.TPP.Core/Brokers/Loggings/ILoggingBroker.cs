@@ -6,7 +6,7 @@ using System;
 
 namespace ISL.TPP.Core.Brokers.Loggings
 {
-    public interface ILoggingBroker
+    internal interface ILoggingBroker
     {
         void LogInformation(string message);
         void LogTrace(string message);

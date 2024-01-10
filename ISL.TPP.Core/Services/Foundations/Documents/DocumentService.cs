@@ -12,7 +12,7 @@ using ISL.TPP.Core.Models.Foundations.Documents;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
-    public partial class DocumentService : IDocumentService
+    internal partial class DocumentService : IDocumentService
     {
         private readonly IBlobStorageBroker blobStorageBroker;
         private readonly IDateTimeBroker dateTimeBroker;

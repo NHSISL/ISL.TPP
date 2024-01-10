@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,6 +51,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // given
             string pickupFolder = this.tppConfiguration.TppPickupFolder;
             string manifestFile = this.tppConfiguration.TppManifestFile;
+            DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
             int numberOfFiles = GetRandomNumber();
             List<string> files = GetRandomFileList(numberOfFiles);
             files.Add(manifestFile);
@@ -59,6 +61,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfFilesAsync(pickupFolder, "*"))
                     .ReturnsAsync(files);
+
+            this.dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Returns(randomDateTimeOffset);
 
             for (int i = 0; i < files.Count; i++)
             {
@@ -81,9 +87,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.ReadFromFileAsync(files[i]),
                         Times.Once);
 
+                var fileName =
+                    $"{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\\" +
+                    $"{files[i].Replace(this.tppConfiguration.TppPickupFolder, "")}";
+
                 var doc = new Document
                 {
-                    FileName = files[i].Replace(this.tppConfiguration.TppPickupFolder, ""),
+                    FileName = fileName,
                     DocumentData = fileBytes[i]
                 };
 

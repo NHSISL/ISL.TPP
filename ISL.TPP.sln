@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISL.TPP.Core", "ISL.TPP.Core\ISL.TPP.Core.csproj", "{9A2923F7-9347-47E2-83B5-41828A56EAAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISL.TPP.Core.Tests.Unit", "ISL.TPP.Core.Tests.Unit\ISL.TPP.Core.Tests.Unit.csproj", "{B99B58A1-130E-4640-98C1-F1C40745782A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISL.TPP.Core.Tests.Unit", "ISL.TPP.Core.Tests.Unit\ISL.TPP.Core.Tests.Unit.csproj", "{B99B58A1-130E-4640-98C1-F1C40745782A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISL.TPP.Core.Tests.Acceptance", "ISL.TPP.Core.Tests.Acceptance\ISL.TPP.Core.Tests.Acceptance.csproj", "{3B2665B9-58FA-4766-AD80-13DC1CBDDCA4}"
 EndProject
@@ -13,7 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{308FCAF7-7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows Services", "Windows Services", "{69D760BC-C84A-478A-95E3-1921B1D267C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISL.TPP.WorkerService", "ISL.TPP.WorkerService\ISL.TPP.WorkerService.csproj", "{654CFE23-769A-490C-ACA5-2CF0B0E29929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISL.TPP.WorkerService", "ISL.TPP.WorkerService\ISL.TPP.WorkerService.csproj", "{654CFE23-769A-490C-ACA5-2CF0B0E29929}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISL.TPP.Core.Tests.Integrations", "ISL.TPP.Core.Tests.Integration\ISL.TPP.Core.Tests.Integrations.csproj", "{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,14 @@ Global
 		{654CFE23-769A-490C-ACA5-2CF0B0E29929}.Release|Any CPU.Build.0 = Release|Any CPU
 		{654CFE23-769A-490C-ACA5-2CF0B0E29929}.Test|Any CPU.ActiveCfg = Debug|Any CPU
 		{654CFE23-769A-490C-ACA5-2CF0B0E29929}.Test|Any CPU.Build.0 = Debug|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Acceptance|Any CPU.ActiveCfg = Acceptance|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Acceptance|Any CPU.Build.0 = Acceptance|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +74,7 @@ Global
 		{B99B58A1-130E-4640-98C1-F1C40745782A} = {308FCAF7-7B1B-4FAC-A695-C0A34846EA68}
 		{3B2665B9-58FA-4766-AD80-13DC1CBDDCA4} = {308FCAF7-7B1B-4FAC-A695-C0A34846EA68}
 		{654CFE23-769A-490C-ACA5-2CF0B0E29929} = {69D760BC-C84A-478A-95E3-1921B1D267C6}
+		{9A9AE8E2-271B-4D37-BD1F-A0300F2D1F3E} = {308FCAF7-7B1B-4FAC-A695-C0A34846EA68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE18C77B-7AE9-420D-B0BA-48BCCB6A447F}

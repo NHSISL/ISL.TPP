@@ -15,7 +15,7 @@ namespace ISL.TPP.WorkerService
                 config
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .AddJsonFile("localsettings.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables();
+                    .AddEnvironmentVariables("ISL_TPP_");
             });
 
             builder.ConfigureServices((hostContext, services) =>

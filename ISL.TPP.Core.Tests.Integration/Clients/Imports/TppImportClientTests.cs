@@ -2,13 +2,11 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using System;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
-using Tynamix.ObjectFiller;
 
-namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
+namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
 {
     public partial class TppImportClientTests
     {
@@ -30,10 +28,6 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
-
         }
-
-        private static DateTimeOffset GetRandomDateTimeOffset() =>
-            new DateTimeRange(earliestDate: new DateTime()).GetValue();
     }
 }

@@ -6,7 +6,7 @@ using System;
 
 namespace ISL.TPP.Core.Brokers.DateTimes
 {
-    public interface IDateTimeBroker
+    internal interface IDateTimeBroker
     {
         DateTimeOffset GetCurrentDateTimeOffset();
     }

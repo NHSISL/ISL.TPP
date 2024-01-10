@@ -6,7 +6,7 @@ using Xeptions;
 
 namespace ISL.TPP.Core.Models.Foundations.Documents.Exceptions
 {
-    public class DocumentDependencyValidationException : Xeption
+    internal class DocumentDependencyValidationException : Xeption
     {
         public DocumentDependencyValidationException(string message, Xeption innerException)
             : base(message, innerException)

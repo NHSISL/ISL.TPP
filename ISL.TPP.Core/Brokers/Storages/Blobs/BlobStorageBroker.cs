@@ -15,7 +15,7 @@ using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 
 namespace ISL.TPP.Core.Brokers.Storages.Blobs
 {
-    public class BlobStorageBroker : IBlobStorageBroker
+    internal class BlobStorageBroker : IBlobStorageBroker
     {
         private readonly BlobServiceClient blobServiceClient;
 
