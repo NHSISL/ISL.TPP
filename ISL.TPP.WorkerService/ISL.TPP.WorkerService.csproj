@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="local.appsettings.json" Condition="Exists('local.appsettings.json)">
+    <None Include="local.appsettings.json" Condition="Exists('local.appsettings.json')">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
