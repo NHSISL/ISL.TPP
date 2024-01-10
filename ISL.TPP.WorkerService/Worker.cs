@@ -4,7 +4,9 @@
 
 using System.Diagnostics;
 using ISL.TPP.Core.Clients;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
+using ISL.TPP.Core.Models.Configurations.Retries;
 
 namespace ISL.TPP.WorkerService
 {
@@ -20,11 +22,23 @@ namespace ISL.TPP.WorkerService
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            timerIntervalInMinutes = this.configuration.GetValue<int>("TimerIntervalInMinutes");
+            timerIntervalInMinutes = this.configuration.GetValue<int>("timerIntervalInMinutes");
             string eventSourceName = this.configuration.GetValue<string>("Logging:EventLog:SourceName");
             string logName = this.configuration.GetValue<string>("Logging:EventLog:LogName");
             CreateEventLogSource(eventSourceName, logName);
-            var tppConfiguration = configuration.GetSection("landingSettings").Get<TppConfiguration>();
+            var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
+            var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
+            var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
+
+            var tppConfiguration = new TppConfiguration
+            {
+                TppManifestFile = tppManifestFile,
+                TppPickupFolder = tppPickupFolder,
+                TimerIntervalInMinutes = timerIntervalInMinutes,
+                BlobStorageSettings = blobStorageSettings,
+                RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
+            };
+
             tppClient = new TppClient(tppConfiguration);
         }
 

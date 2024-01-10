@@ -11,6 +11,7 @@ namespace ISL.TPP.Core.Models.Configurations
     {
         public string TppPickupFolder { get; set; } = string.Empty;
         public string TppManifestFile { get; set; } = string.Empty;
+        public int TimerIntervalInMinutes { get; set; } = 1;
         public BlobStorageSettings BlobStorageSettings { get; set; } = new BlobStorageSettings();
         public RetryConfig RetryConfig { get; set; } = new RetryConfig();
     }
