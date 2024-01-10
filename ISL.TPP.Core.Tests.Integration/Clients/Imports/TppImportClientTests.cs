@@ -9,7 +9,7 @@ using ISL.TPP.Core.Models.Configurations.Retries;
 using Microsoft.Extensions.Configuration;
 using Xunit.Abstractions;
 
-namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
+namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
 {
     public partial class TppImportClientTests
     {

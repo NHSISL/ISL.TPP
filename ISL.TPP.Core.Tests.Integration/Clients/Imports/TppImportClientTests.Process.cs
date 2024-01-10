@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
-namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
+namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
 {
     public partial class TppImportClientTests
     {
