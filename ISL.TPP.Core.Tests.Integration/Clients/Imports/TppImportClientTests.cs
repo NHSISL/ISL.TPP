@@ -28,6 +28,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
 
             IConfiguration configuration = configurationBuilder.Build();
 
+            var timerIntervalInMinutes = configuration.GetValue<int>("TimerIntervalInMinutes");
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
             var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
@@ -36,6 +37,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             {
                 TppManifestFile = tppManifestFile,
                 TppPickupFolder = tppPickupFolder,
+                TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStorageSettings = blobStorageSettings,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };

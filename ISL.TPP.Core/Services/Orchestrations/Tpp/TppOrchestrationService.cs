@@ -51,6 +51,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Manifest file found in {this.tppConfiguration.TppPickupFolder}");
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Processing {filePaths.Count} file(s)...");
+
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
 
                     foreach (string filePath in filePaths)
@@ -79,6 +82,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                                 await this.fileService.DeleteFileAsync(filePath);
 
+                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - File '{document.FileName}' successfully uploaded.");
+
                                 return document.FileName;
                             });
 
@@ -86,16 +91,21 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         }
                         catch (Exception ex)
                         {
+                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Error processing file '{filePath}'");
                             this.loggingBroker.LogError(ex);
                             exceptions.Add(ex);
                         }
                     }
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Finished processing {files.Count} file(s).");
                 }
 
                 if (exceptions.Any())
                 {
                     throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
                 }
+
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Waiting for {this.tppConfiguration.TimerIntervalInMinutes} minute(s)...");
 
                 return files;
             });
