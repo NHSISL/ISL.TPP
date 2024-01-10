@@ -50,10 +50,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     foreach (string filePath in filePaths)
                     {
                         var file = await this.fileService.ReadFromFileAsync(filePath);
+                        string relativePath = filePath.Replace($"{this.tppConfiguration.TppPickupFolder}", "");
+                        relativePath = relativePath.TrimStart('\\').Trim();
 
                         var document = new Document
                         {
-                            FileName = filePath.Replace(this.tppConfiguration.TppPickupFolder, ""),
+                            FileName = relativePath,
                             DocumentData = file
                         };
 

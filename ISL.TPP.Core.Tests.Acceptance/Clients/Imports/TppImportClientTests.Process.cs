@@ -68,9 +68,12 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
                     Times.Once);
 
+                var relativePath = file.Replace($"{tppConfiguration.TppPickupFolder}", "");
+                relativePath = relativePath.TrimStart('\\');
+
                 blobStorageBrokerMock.Verify(broker =>
                     broker.UploadFileAsync(
-                        file.Replace(tppConfiguration.TppPickupFolder, string.Empty),
+                        relativePath,
                         ASCIIEncoding.UTF8.GetBytes(file),
                         tppConfiguration.BlobStorageSettings.AzureBlobContainer),
                             Times.Once);

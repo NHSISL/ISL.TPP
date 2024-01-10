@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ISL.TPP.Core.Brokers.Loggings
 {
-    public class LoggingBroker : ILoggingBroker
+    internal class LoggingBroker : ILoggingBroker
     {
         private readonly ILogger<LoggingBroker> logger;
 

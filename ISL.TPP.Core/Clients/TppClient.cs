@@ -95,6 +95,7 @@ namespace ISL.TPP.Core.Clients
                     );
                 })
 
+                .AddTransient(_ => tppConfiguration.BlobStorageSettings)
                 .AddTransient<IDateTimeBroker, DateTimeBroker>()
                 .AddTransient(_ => loggingBroker)
                 .AddTransient<ILoggingBroker, LoggingBroker>()
@@ -126,6 +127,7 @@ namespace ISL.TPP.Core.Clients
                         VisualStudioTenantId = tppConfiguration.BlobStorageSettings.AzureTenantId,
                     }),
                 options: blobServiceClientOptions);
+
             return blobServiceClient;
         }
     }

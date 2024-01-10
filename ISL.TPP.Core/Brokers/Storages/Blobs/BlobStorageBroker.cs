@@ -4,8 +4,10 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Azure.Storage.Blobs;
@@ -15,7 +17,7 @@ using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 
 namespace ISL.TPP.Core.Brokers.Storages.Blobs
 {
-    public class BlobStorageBroker : IBlobStorageBroker
+    internal class BlobStorageBroker : IBlobStorageBroker
     {
         private readonly BlobServiceClient blobServiceClient;
 
@@ -26,21 +28,35 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
 
         public async ValueTask UploadFileAsync(string fileName, byte[] data, string container)
         {
-            var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(fileName);
-
-            using (MemoryStream stream = new MemoryStream(data))
+            try
             {
+                string trimmedFileName = new string(fileName.Where(c => Char.IsLetterOrDigit(c) || c == '.' || c == '-').ToArray());
+                string encodedFileName = Uri.EscapeDataString(trimmedFileName);
+                var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(encodedFileName);
 
-                var options = new BlobUploadOptions
+                using (MemoryStream stream = new MemoryStream(data))
                 {
-                    TransferOptions = new Azure.Storage.StorageTransferOptions()
-                    {
-                        InitialTransferSize = stream.Length
-                    }
-                };
 
-                stream.Position = 0;
-                await blobClient.UploadAsync(stream, options);
+                    var options = new BlobUploadOptions
+                    {
+                        TransferOptions = new Azure.Storage.StorageTransferOptions()
+                        {
+                            InitialTransferSize = stream.Length
+                        }
+                    };
+
+                    stream.Position = 0;
+                    await blobClient.UploadAsync(stream, options);
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                Console.WriteLine($"Error uploading file: {fileName}");
+                Console.WriteLine($"Container: {container}");
+                Console.WriteLine($"Message: {ex.Message}");
+                Console.WriteLine($"Error details: {ex.ErrorCode}");
+                Console.WriteLine($"Error status: {ex.Status}");
+                throw; // Re-throw the exception to propagate it further
             }
         }
 
