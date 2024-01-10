@@ -32,4 +32,10 @@
 	  <ProjectReference Include="..\ISL.TPP.Core\ISL.TPP.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="local.appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
