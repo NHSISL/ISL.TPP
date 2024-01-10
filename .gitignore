@@ -397,3 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /ISL.TPP.Core.Tests.Integration/local.appsettings.json
+/ISL.TPP.WorkerService/local.appsettings.json
