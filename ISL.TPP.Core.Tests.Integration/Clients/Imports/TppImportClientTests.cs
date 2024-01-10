@@ -6,6 +6,7 @@ using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
 using Microsoft.Extensions.Configuration;
+using Tynamix.ObjectFiller;
 using Xunit.Abstractions;
 
 namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
@@ -39,5 +40,18 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
         }
+
+        private static string GetRandomString(int wordCount = 0)
+        {
+            if (wordCount < 1)
+            {
+                wordCount = GetRandomNumber();
+            }
+
+            return new MnemonicString(wordCount).GetValue();
+        }
+
+        private static int GetRandomNumber() =>
+            new IntRange(min: 2, max: 10).GetValue();
     }
 }

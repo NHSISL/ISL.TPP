@@ -41,7 +41,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             TryCatch(async () =>
             {
                 ValidateConfigurationSettings();
-
+                var exceptions = new List<Exception>();
                 List<string> files = new List<string>();
 
                 List<string> filePaths = await this.fileService
@@ -55,25 +55,46 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                     foreach (string filePath in filePaths)
                     {
-                        var file = await this.fileService.ReadFromFileAsync(filePath);
-
-                        var newFileName =
-                            $"{currentDateTime}\\{filePath.Replace(this.tppConfiguration.TppPickupFolder, "")}";
-
-                        newFileName = newFileName.Replace("\\\\", "\\");
-
-                        var document = new Document
+                        try
                         {
-                            FileName = newFileName,
-                            DocumentData = file
-                        };
+                            string file = await TryCatch(async () =>
+                            {
+                                var file = await this.fileService.ReadFromFileAsync(filePath);
 
-                        await this.documentService
-                            .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+                                ValidateFile(file);
 
-                        await this.fileService.DeleteFileAsync(filePath);
-                        files.Add(document.FileName);
+                                var newFileName =
+                                    $"{currentDateTime}\\{filePath.Replace(this.tppConfiguration.TppPickupFolder, "")}";
+
+                                newFileName = newFileName.Replace("\\\\", "\\");
+
+                                var document = new Document
+                                {
+                                    FileName = newFileName,
+                                    DocumentData = file
+                                };
+
+                                await this.documentService
+                                    .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+
+                                await this.fileService.DeleteFileAsync(filePath);
+
+                                return document.FileName;
+                            });
+
+                            files.Add(file);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.loggingBroker.LogError(ex);
+                            exceptions.Add(ex);
+                        }
                     }
+                }
+
+                if (exceptions.Any())
+                {
+                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
                 }
 
                 return files;

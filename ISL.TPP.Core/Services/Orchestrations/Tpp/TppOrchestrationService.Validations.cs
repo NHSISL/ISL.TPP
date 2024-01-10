@@ -9,6 +9,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 {
     internal partial class TppOrchestrationService : ITppOrchestrationService
     {
+        private void ValidateFile(byte[] file)
+        {
+            Validate(
+                (Rule: IsInvalid(file), Parameter: "File"));
+        }
+
         private void ValidateConfigurationSettings()
         {
             ValidateTppConfigurationIsNotNull();
@@ -38,6 +44,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         {
             Condition = string.IsNullOrWhiteSpace(text),
             Message = "Text is required"
+        };
+
+        private static dynamic IsInvalid(byte[] data) => new
+        {
+            Condition = data.Length < 1,
+            Message = "File has no data"
         };
 
         private static dynamic IsInvalid(BlobStorageSettings? config) => new

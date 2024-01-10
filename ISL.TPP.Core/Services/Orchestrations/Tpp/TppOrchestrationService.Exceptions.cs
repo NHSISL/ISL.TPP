@@ -15,12 +15,75 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
     internal partial class TppOrchestrationService : ITppOrchestrationService
     {
         private delegate ValueTask<List<string>> ReturningStringListFunction();
+        private delegate ValueTask<string> ReturningStringFunction();
 
         private async ValueTask<List<string>> TryCatch(ReturningStringListFunction returningStringListFunction)
         {
             try
             {
                 return await returningStringListFunction();
+            }
+            catch (InvalidArgumentTppOrchestrationException invalidArgumentTppOrchestrationException)
+            {
+                throw CreateAndLogValidationException(invalidArgumentTppOrchestrationException);
+            }
+            catch (DocumentValidationException documentValidationException)
+            {
+                throw CreateAndLogDependencyValidationException(documentValidationException);
+            }
+            catch (DocumentDependencyValidationException documentDependencyValidationException)
+            {
+                throw CreateAndLogDependencyValidationException(documentDependencyValidationException);
+            }
+            catch (FileValidationException fileValidationException)
+            {
+                throw CreateAndLogDependencyValidationException(fileValidationException);
+            }
+            catch (FileDependencyValidationException fileDependencyValidationException)
+            {
+                throw CreateAndLogDependencyValidationException(fileDependencyValidationException);
+            }
+            catch (DocumentDependencyException documentDependencyException)
+            {
+                throw CreateAndLogDependencyException(documentDependencyException);
+            }
+            catch (DocumentServiceException documentServiceException)
+            {
+                throw CreateAndLogDependencyException(documentServiceException);
+            }
+            catch (FileDependencyException fileDependencyException)
+            {
+                throw CreateAndLogDependencyException(fileDependencyException);
+            }
+            catch (FileServiceException fileServiceException)
+            {
+                throw CreateAndLogDependencyException(fileServiceException);
+            }
+            catch (AggregateException aggregateException)
+            {
+                var failedTppServiceException =
+                    new FailedTppOrchestrationServiceException(
+                        message: "Failed TPP orchestration service occurred, please contact support",
+                        innerException: aggregateException);
+
+                throw CreateAndLogServiceException(failedTppServiceException);
+            }
+            catch (Exception exception)
+            {
+                var failedTppServiceException =
+                    new FailedTppOrchestrationServiceException(
+                        message: "Failed TPP orchestration service occurred, please contact support",
+                        innerException: exception);
+
+                throw CreateAndLogServiceException(failedTppServiceException);
+            }
+        }
+
+        private async ValueTask<string> TryCatch(ReturningStringFunction returningStringFunction)
+        {
+            try
+            {
+                return await returningStringFunction();
             }
             catch (InvalidArgumentTppOrchestrationException invalidArgumentTppOrchestrationException)
             {
