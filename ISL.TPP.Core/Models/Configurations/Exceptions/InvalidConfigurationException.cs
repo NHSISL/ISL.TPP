@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using Xeptions;
 
-namespace ISL.TPP.Core.Models.Configurations
+namespace ISL.TPP.Core.Models.Configurations.Exceptions
 {
     public class InvalidConfigurationException : Xeption
     {

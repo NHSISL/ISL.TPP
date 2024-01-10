@@ -2,12 +2,13 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.Loggings;
+using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
-using ISL.TPP.Core.Models.Orchestrations.TPP;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 
@@ -44,7 +45,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
 
-                if (filePaths.Any(filePath => System.IO.Path.GetFileName(filePath) == manifestFile))
+                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
                     foreach (string filePath in filePaths)
                     {

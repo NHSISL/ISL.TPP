@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
@@ -36,7 +35,7 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
 
                 await this.blobStorageBroker.UploadFileAsync(
                    fileName: document.FileName,
-                   stream: new MemoryStream(document.DocumentData),
+                   data: document.DocumentData,
                    container);
             });
 

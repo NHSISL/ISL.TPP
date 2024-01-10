@@ -6,12 +6,15 @@ using System;
 
 namespace ISL.TPP.Core.Models.Configurations.Retries
 {
-    internal class RetryConfig : IRetryConfig
+    public class RetryConfig : IRetryConfig
     {
-        internal RetryConfig()
+        public RetryConfig()
+        { }
+
+        public RetryConfig(int maxRetryAttempts, int pauseBetweenFailuresInMilliseconds)
         {
-            MaxRetryAttempts = 5;
-            PauseBetweenFailures = TimeSpan.FromSeconds(1);
+            MaxRetryAttempts = maxRetryAttempts;
+            PauseBetweenFailures = TimeSpan.FromMicroseconds(pauseBetweenFailuresInMilliseconds);
         }
 
         public RetryConfig(int maxRetryAttempts, TimeSpan pauseBetweenFailures)
@@ -20,7 +23,7 @@ namespace ISL.TPP.Core.Models.Configurations.Retries
             PauseBetweenFailures = pauseBetweenFailures;
         }
 
-        public int MaxRetryAttempts { get; private set; }
-        public TimeSpan PauseBetweenFailures { get; private set; }
+        public int MaxRetryAttempts { get; set; } = 3;
+        public TimeSpan PauseBetweenFailures { get; set; } = TimeSpan.FromSeconds(1);
     }
 }
