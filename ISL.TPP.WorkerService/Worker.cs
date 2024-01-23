@@ -52,7 +52,14 @@ namespace ISL.TPP.WorkerService
 
         private async void DoWork(object state)
         {
-            await this.tppClient.Imports.ProcessFilesAsync();
+            try
+            {
+                await this.tppClient.Imports.ProcessFilesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred during DoWork.");
+            }
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
@@ -75,8 +82,10 @@ namespace ISL.TPP.WorkerService
                     logger.LogInformation($"Event Log source '{eventSourceName}' already exists.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "An error occurred setting up the event logger.");
+                throw;
             }
         }
     }
