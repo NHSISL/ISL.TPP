@@ -29,6 +29,7 @@ namespace ISL.TPP.WorkerService
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
             var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
+            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>();
 
             var tppConfiguration = new TppConfiguration
             {
@@ -36,6 +37,7 @@ namespace ISL.TPP.WorkerService
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStorageSettings = blobStorageSettings,
+                ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 

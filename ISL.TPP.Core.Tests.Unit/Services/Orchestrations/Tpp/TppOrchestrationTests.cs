@@ -127,13 +127,30 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
         private static Filler<TppConfiguration> CreateRandomTppConfigurationFiller()
         {
+            int number = 1; // GetRandomNumber();
+
             var filler = new Filler<TppConfiguration>();
-            filler.Setup();
+            filler.Setup()
+                .OnProperty(config => config.TppPickupFolder).Use(() => $"c:\\{GetRandomString()}")
+                .OnProperty(config => config.TppManifestFile).Use(() => $"{GetRandomString()}Manifest.csv")
+                .OnProperty(config => config.ReportingGroups).Use(() => GetRandomStringList(number));
 
             return filler;
         }
 
         private static List<string> GetRandomFileList(int count)
+        {
+            List<string> files = new List<string>();
+
+            for (int i = 0; i < count; i++)
+            {
+                files.Add($"{GetRandomString()}.csv");
+            }
+
+            return files;
+        }
+
+        private static List<string> GetRandomStringList(int count)
         {
             return CreateRandomFileListFiller()
                 .Create(count)
