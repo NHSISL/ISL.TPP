@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
@@ -41,18 +42,52 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             TryCatch(async () =>
             {
                 ValidateConfigurationSettings();
-                var exceptions = new List<Exception>();
                 List<string> files = new List<string>();
+                var exceptions = new List<Exception>();
+
+                foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+                {
+                    try
+                    {
+                        List<string> reportingGroupFiles = await ProcessReportingGroupFiles(reportingGroup);
+                        files.AddRange(reportingGroupFiles);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                }
+
+                if (exceptions.Any())
+                {
+                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+                }
+
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Waiting for {this.tppConfiguration.TimerIntervalInMinutes} minute(s)...");
+
+                return files;
+            });
+
+        private ValueTask<List<string>> ProcessReportingGroupFiles(string reportingGroup) =>
+            TryCatch(async () =>
+            {
+                List<string> files = new List<string>();
+                var exceptions = new List<Exception>();
+                var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
 
                 List<string> filePaths = await this.fileService
-                    .RetrieveListOfFilesAsync(this.tppConfiguration.TppPickupFolder);
+                    .RetrieveListOfFilesAsync(reportingGroupFolder);
 
                 string manifestFile = this.tppConfiguration.TppManifestFile;
 
                 if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Manifest file found in {this.tppConfiguration.TppPickupFolder}");
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Processing {filePaths.Count} file(s)...");
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Manifest file found in {reportingGroupFolder}");
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Processing {filePaths.Count} file(s)...");
 
                     var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
 
@@ -67,7 +102,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 ValidateFile(file);
 
                                 var newFileName =
-                                    $"{currentDateTime}\\{filePath.Replace(this.tppConfiguration.TppPickupFolder, "")}";
+                                    $"{reportingGroup}\\{currentDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
 
                                 newFileName = newFileName.Replace("\\\\", "\\");
 
@@ -77,12 +112,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                     DocumentData = file
                                 };
 
-                                await this.documentService
-                                    .AddDocumentAsync(document, this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+                                await this.documentService.AddDocumentAsync(
+                                    document,
+                                    container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
 
                                 await this.fileService.DeleteFileAsync(filePath);
 
-                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - File '{document.FileName}' successfully uploaded.");
+                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                                    $"File '{document.FileName}' successfully uploaded.");
 
                                 return document.FileName;
                             });
@@ -91,21 +128,22 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Error processing file '{filePath}'");
+                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                                $"Error processing file '{filePath}'");
+
                             this.loggingBroker.LogError(ex);
                             exceptions.Add(ex);
                         }
                     }
 
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Finished processing {files.Count} file(s).");
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Finished processing {files.Count} file(s).");
                 }
 
                 if (exceptions.Any())
                 {
                     throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
                 }
-
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - Waiting for {this.tppConfiguration.TimerIntervalInMinutes} minute(s)...");
 
                 return files;
             });

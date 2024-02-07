@@ -8,7 +8,8 @@ namespace ISL.TPP.WorkerService
     {
         public static async Task Main(string[] args)
         {
-            var builder = Host.CreateDefaultBuilder(args);
+            var builder = Host.CreateDefaultBuilder(args)
+                .UseWindowsService();
 
             builder.ConfigureAppConfiguration((hostingContext, config) =>
             {
@@ -39,6 +40,7 @@ namespace ISL.TPP.WorkerService
             });
 
             var host = builder.Build();
+
             await host.RunAsync();
         }
     }

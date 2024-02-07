@@ -29,6 +29,7 @@ namespace ISL.TPP.WorkerService
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
             var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
+            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>();
 
             var tppConfiguration = new TppConfiguration
             {
@@ -36,6 +37,7 @@ namespace ISL.TPP.WorkerService
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStorageSettings = blobStorageSettings,
+                ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 
@@ -52,7 +54,14 @@ namespace ISL.TPP.WorkerService
 
         private async void DoWork(object state)
         {
-            await this.tppClient.Imports.ProcessFilesAsync();
+            try
+            {
+                await this.tppClient.Imports.ProcessFilesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred during DoWork.");
+            }
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
@@ -75,8 +84,10 @@ namespace ISL.TPP.WorkerService
                     logger.LogInformation($"Event Log source '{eventSourceName}' already exists.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "An error occurred setting up the event logger.");
+                throw;
             }
         }
     }
