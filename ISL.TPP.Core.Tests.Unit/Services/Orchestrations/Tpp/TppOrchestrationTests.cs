@@ -130,7 +130,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
         private static Filler<TppConfiguration> CreateRandomTppConfigurationFiller()
         {
-            int number = 1; // GetRandomNumber();
+            int number = GetRandomNumber();
 
             var filler = new Filler<TppConfiguration>();
             filler.Setup()

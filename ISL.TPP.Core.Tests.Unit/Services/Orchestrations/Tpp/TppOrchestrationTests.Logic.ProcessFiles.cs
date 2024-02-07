@@ -96,7 +96,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             this.dateTimeBrokerMock.Verify(broker =>
                 broker.GetCurrentDateTimeOffset(),
-                    Times.Once);
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {

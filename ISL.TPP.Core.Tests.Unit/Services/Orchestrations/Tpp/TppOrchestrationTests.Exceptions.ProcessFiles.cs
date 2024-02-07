@@ -22,13 +22,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         {
             // given
             string randomFileName = GetRandomString();
+            List<Exception> exceptions = new List<Exception>();
 
             var dependencyValidationException =
                 new TppOrchestrationDependencyValidationException(
                     message: "TPP orchestration dependency validation error occurred, fix the errors and try again.",
                     innerException: dependancyValidationException.InnerException as Xeption);
 
-            List<Exception> exceptions = new List<Exception> { dependencyValidationException };
+            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            {
+                exceptions.Add(dependencyValidationException);
+            }
 
             var aggregateException =
                 new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
@@ -59,13 +63,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
-                    Times.Once);
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogError(It.Is<Exception>(ex =>
                     IsSameExceptionAs(ex as Xeption).Invoke(dependencyValidationException) ||
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(2));
+                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -79,13 +83,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         {
             // given
             string randomFileName = GetRandomString();
+            List<Exception> exceptions = new List<Exception>();
 
             var dependencyException =
                 new TppOrchestrationDependencyException(
                     message: "TPP orchestration dependency error occurred, fix the errors and try again.",
                     innerException: dependancyException.InnerException as Xeption);
 
-            List<Exception> exceptions = new List<Exception> { dependencyException };
+            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            {
+                exceptions.Add(dependencyException);
+            }
 
             var aggregateException =
                 new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
@@ -115,13 +123,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
-                    Times.Once);
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogError(It.Is<Exception>(ex =>
                     IsSameExceptionAs(ex as Xeption).Invoke(dependencyException) ||
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(2));
+                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -134,6 +142,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             //Given
             string randomFileName = GetRandomString();
             var serviceException = new Exception();
+            List<Exception> exceptions = new List<Exception>();
 
             var innerfailedTppOrchestrationServiceException =
                 new FailedTppOrchestrationServiceException(
@@ -145,7 +154,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "TPP orchestration service error occurred, contact support.",
                     innerException: innerfailedTppOrchestrationServiceException);
 
-            List<Exception> exceptions = new List<Exception> { tppOrchestrationServiceException };
+            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            {
+                exceptions.Add(tppOrchestrationServiceException);
+            }
 
             var aggregateException =
                 new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
@@ -176,13 +188,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
-                    Times.Once);
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogError(It.Is<Exception>(ex =>
                     IsSameExceptionAs(ex as Xeption).Invoke(tppOrchestrationServiceException) ||
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(2));
+                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
