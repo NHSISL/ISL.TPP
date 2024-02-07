@@ -39,11 +39,11 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             {
                 var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
                 files.Add($@"{pickupFolder}\manifest.csv");
-                //files.Add($@"{pickupFolder}\file1.csv");
-                //files.Add($@"{pickupFolder}\file2.csv");
+                files.Add($@"{pickupFolder}\file1.csv");
+                files.Add($@"{pickupFolder}\file2.csv");
                 expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\manifest.csv");
-                //expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file1.csv");
-                //expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file2.csv");
+                expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file1.csv");
+                expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file2.csv");
 
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     pickupFolder, "*"))
