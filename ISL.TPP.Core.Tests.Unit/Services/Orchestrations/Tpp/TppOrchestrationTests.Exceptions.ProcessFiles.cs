@@ -135,15 +135,31 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             string randomFileName = GetRandomString();
             var serviceException = new Exception();
 
-            var failedTppOrchestrationServiceException =
+            var innerfailedTppOrchestrationServiceException =
                 new FailedTppOrchestrationServiceException(
                     message: "Failed TPP orchestration service occurred, please contact support",
                     innerException: serviceException);
 
+            var tppOrchestrationServiceException =
+                new TppOrchestrationServiceException(
+                    message: "TPP orchestration service error occurred, contact support.",
+                    innerException: innerfailedTppOrchestrationServiceException);
+
+            List<Exception> exceptions = new List<Exception> { tppOrchestrationServiceException };
+
+            var aggregateException =
+                new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+
+            var outerFailedTppOrchestrationServiceException =
+                new FailedTppOrchestrationServiceException(
+                    message: "Failed TPP orchestration service occurred, please contact support",
+                    innerException: aggregateException);
+
             var expectedTppOrchestrationServiceException =
                 new TppOrchestrationServiceException(
                     message: "TPP orchestration service error occurred, contact support.",
-                    innerException: failedTppOrchestrationServiceException);
+                    innerException: outerFailedTppOrchestrationServiceException);
+
 
             this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
@@ -163,9 +179,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
-                    expectedTppOrchestrationServiceException))),
-                        Times.Once);
+                broker.LogError(It.Is<Exception>(ex =>
+                    IsSameExceptionAs(ex as Xeption).Invoke(tppOrchestrationServiceException) ||
+                    IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
+                        Times.Exactly(2));
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
