@@ -53,6 +53,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static Expression<Func<Xeption, bool>> SameExceptionAs(Xeption expectedException) =>
             actualException => actualException.SameExceptionAs(expectedException);
 
+        private static Func<Xeption, bool> IsSameExceptionAs(Xeption expectedException) =>
+            actualException => actualException.SameExceptionAs(expectedException);
+
         public static TheoryData TppDependencyValidationExceptions()
         {
             string randomMessage = GetRandomString();

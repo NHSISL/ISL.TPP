@@ -54,7 +54,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     }
                     catch (Exception ex)
                     {
-                        this.loggingBroker.LogError(ex);
                         exceptions.Add(ex);
                     }
                 }
@@ -70,82 +69,83 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 return files;
             });
 
-        private async ValueTask<List<string>> ProcessReportingGroupFiles(string reportingGroup)
-        {
-            List<string> files = new List<string>();
-            var exceptions = new List<Exception>();
-            var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
-
-            List<string> filePaths = await this.fileService
-                .RetrieveListOfFilesAsync(reportingGroupFolder);
-
-            string manifestFile = this.tppConfiguration.TppManifestFile;
-
-            if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
+        private ValueTask<List<string>> ProcessReportingGroupFiles(string reportingGroup) =>
+            TryCatch(async () =>
             {
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                    $"Manifest file found in {reportingGroupFolder}");
+                List<string> files = new List<string>();
+                var exceptions = new List<Exception>();
+                var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
 
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                    $"Processing {filePaths.Count} file(s)...");
+                List<string> filePaths = await this.fileService
+                    .RetrieveListOfFilesAsync(reportingGroupFolder);
 
-                var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
+                string manifestFile = this.tppConfiguration.TppManifestFile;
 
-                foreach (string filePath in filePaths)
+                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
-                    try
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Manifest file found in {reportingGroupFolder}");
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Processing {filePaths.Count} file(s)...");
+
+                    var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
+
+                    foreach (string filePath in filePaths)
                     {
-                        string file = await TryCatch(async () =>
+                        try
                         {
-                            var file = await this.fileService.ReadFromFileAsync(filePath);
-
-                            ValidateFile(file);
-
-                            var newFileName =
-                                $"{reportingGroup}\\{currentDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
-
-                            newFileName = newFileName.Replace("\\\\", "\\");
-
-                            var document = new Document
+                            string file = await TryCatch(async () =>
                             {
-                                FileName = newFileName,
-                                DocumentData = file
-                            };
+                                var file = await this.fileService.ReadFromFileAsync(filePath);
 
-                            await this.documentService.AddDocumentAsync(
-                                document,
-                                container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+                                ValidateFile(file);
 
-                            await this.fileService.DeleteFileAsync(filePath);
+                                var newFileName =
+                                    $"{reportingGroup}\\{currentDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
 
+                                newFileName = newFileName.Replace("\\\\", "\\");
+
+                                var document = new Document
+                                {
+                                    FileName = newFileName,
+                                    DocumentData = file
+                                };
+
+                                await this.documentService.AddDocumentAsync(
+                                    document,
+                                    container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
+
+                                await this.fileService.DeleteFileAsync(filePath);
+
+                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                                    $"File '{document.FileName}' successfully uploaded.");
+
+                                return document.FileName;
+                            });
+
+                            files.Add(file);
+                        }
+                        catch (Exception ex)
+                        {
                             Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                                $"File '{document.FileName}' successfully uploaded.");
+                                $"Error processing file '{filePath}'");
 
-                            return document.FileName;
-                        });
-
-                        files.Add(file);
+                            this.loggingBroker.LogError(ex);
+                            exceptions.Add(ex);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Error processing file '{filePath}'");
 
-                        this.loggingBroker.LogError(ex);
-                        exceptions.Add(ex);
-                    }
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Finished processing {files.Count} file(s).");
                 }
 
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                    $"Finished processing {files.Count} file(s).");
-            }
+                if (exceptions.Any())
+                {
+                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+                }
 
-            if (exceptions.Any())
-            {
-                throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
-            }
-
-            return files;
-        }
+                return files;
+            });
     }
 }
