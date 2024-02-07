@@ -8,10 +8,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
+using ISL.TPP.Core.Models;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using ISL.TPP.Core.Models.Foundations.Files.Exceptions;
+using ISL.TPP.Core.Services.Foundations.CsvMappers;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
@@ -27,6 +29,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
     {
         private readonly Mock<IFileService> fileServiceMock;
         private readonly Mock<IDocumentService> documentServiceMock;
+        private readonly Mock<ICsvMapperService> csvMapperServiceMock;
         private readonly TppConfiguration tppConfiguration;
         private readonly Mock<ILoggingBroker> loggingBrokerMock;
         private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
@@ -37,6 +40,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         {
             this.fileServiceMock = new Mock<IFileService>();
             this.documentServiceMock = new Mock<IDocumentService>();
+            this.csvMapperServiceMock = new Mock<ICsvMapperService>();
             this.tppConfiguration = CreateRandomTppConfiguration();
             this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
@@ -45,6 +49,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
+                csvMapperService: this.csvMapperServiceMock.Object,
                 tppConfiguration: this.tppConfiguration,
                 dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
@@ -180,6 +185,32 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var filler = new Filler<Document>();
             string filename = GetRandomString();
             filler.Setup().OnProperty(document => document.FileName).Use(() => filename);
+
+            return filler;
+        }
+
+        private static List<Manifest> CreateRandomManifests()
+        {
+            return CreateManifestFiller(dateTimeOffset: GetRandomDateTimeOffset())
+                .Create(count: GetRandomNumber())
+                    .ToList();
+        }
+
+        private static Filler<Manifest> CreateManifestFiller(DateTimeOffset dateTimeOffset)
+        {
+            DateTime fromDate = dateTimeOffset.UtcDateTime.AddDays(-1);
+            DateTime toDate = dateTimeOffset.UtcDateTime;
+
+            var filler = new Filler<Manifest>();
+
+            filler.Setup()
+                .OnType<DateTimeOffset>().Use(dateTimeOffset)
+                .OnType<DateTimeOffset?>().Use(dateTimeOffset)
+                .OnProperty(manifest => manifest.FileName).Use(() => $"{GetRandomString()}.csv")
+                .OnProperty(manifest => manifest.IsDelta).Use("Y")
+                .OnProperty(manifest => manifest.IsReference).Use("N")
+                .OnProperty(manifest => manifest.DateExtractFrom).Use($"{fromDate:yyyyMMdd}_{fromDate:HHmm}")
+                .OnProperty(manifest => manifest.DateExtractTo).Use($"{toDate:yyyyMMdd}_{toDate:HHmm}");
 
             return filler;
         }
