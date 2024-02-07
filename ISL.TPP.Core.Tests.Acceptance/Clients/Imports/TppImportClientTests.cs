@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
@@ -28,6 +29,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     AzureTenantId = "devtenantid",
                     AzureBlobContainer = "tpp"
                 },
+                ReportingGroups = new List<string> { "ReportingGroup1" },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 
