@@ -65,18 +65,24 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
-        public async ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath)
-        {
-            string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
-            bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
-
-            if (!destinationFolderExists)
+        public ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath) =>
+            TryCatch(async () =>
             {
-                await this.fileBroker.CreateDirectoryAsync(destinationFolder);
-            }
+                return await WithRetry(async () =>
+                {
+                    ValidateMoveFileArguments(sourcePath, destinationPath);
 
-            return await this.fileBroker.MoveFileAsync(sourcePath, destinationPath);
-        }
+                    string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
+                    bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
+
+                    if (!destinationFolderExists)
+                    {
+                        await this.fileBroker.CreateDirectoryAsync(destinationFolder);
+                    }
+
+                    return await this.fileBroker.MoveFileAsync(sourcePath, destinationPath);
+                });
+            });
 
         public ValueTask<List<string>> RetrieveListOfFilesAsync(string path, string searchPattern = "*") =>
             TryCatch(async () =>
