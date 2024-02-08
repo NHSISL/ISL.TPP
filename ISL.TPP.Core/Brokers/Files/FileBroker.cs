@@ -57,5 +57,12 @@ namespace ISL.TPP.Core.Brokers.Files
 
             return await Task.FromResult(true);
         }
+
+        public async ValueTask<string> GetDirectoryAsync(string path)
+        {
+            FileInfo fileInfo = new FileInfo(path);
+
+            return await Task.FromResult(fileInfo.DirectoryName);
+        }
     }
 }
