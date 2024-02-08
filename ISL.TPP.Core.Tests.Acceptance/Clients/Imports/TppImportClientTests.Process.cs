@@ -35,15 +35,20 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 broker.GetCurrentDateTimeOffset())
                     .Returns(randomDateTimeOffset);
 
+            string manifestToDate = "20231211_1707";
+            StringBuilder csvManifest = new StringBuilder();
+            csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
+            csvManifest.AppendLine($"SRSystmOnline,Y,N,20231209_2245,{manifestToDate}");
+
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
                 var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
                 files.Add($@"{pickupFolder}\manifest.csv");
                 files.Add($@"{pickupFolder}\file1.csv");
                 files.Add($@"{pickupFolder}\file2.csv");
-                expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\manifest.csv");
-                expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file1.csv");
-                expectedFiles.Add($@"{reportingGroup}\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\file2.csv");
+                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\manifest.csv");
+                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\file1.csv");
+                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\file2.csv");
 
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     pickupFolder, "*"))
@@ -52,8 +57,16 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             foreach (string file in files)
             {
-                fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
-                    .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
+                if (file.EndsWith("manifest.csv"))
+                {
+                    fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
+                        .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                }
+                else
+                {
+                    fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
+                        .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
+                }
 
                 fileBrokerMock.Setup(broker => broker.DeleteFileAsync(file))
                     .ReturnsAsync(true);
@@ -83,15 +96,23 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             foreach (string file in files)
             {
-                fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
-                    Times.Once);
+                if (file.EndsWith("manifest.csv"))
+                {
+                    fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
+                        Times.Exactly(2));
+                }
+                else
+                {
+                    fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
+                        Times.Once);
+                }
 
                 foreach (string reportingGroup in tppConfiguration.ReportingGroups)
                 {
                     var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
                     string filename =
-                        $"{reportingGroup}\\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\\" +
+                        $"{reportingGroup}\\{manifestToDate}\\" +
                         $"{file.Replace(pickupFolder, "")}";
 
                     filename = filename.Replace("\\\\", "\\");
@@ -99,7 +120,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     blobStorageBrokerMock.Verify(broker =>
                         broker.UploadFileAsync(
                             filename,
-                            ASCIIEncoding.UTF8.GetBytes(file),
+                            It.IsAny<byte[]>(),
                             tppConfiguration.BlobStorageSettings.AzureBlobContainer),
                                 Times.Once);
 
