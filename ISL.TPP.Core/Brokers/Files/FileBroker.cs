@@ -31,6 +31,13 @@ namespace ISL.TPP.Core.Brokers.Files
             return await Task.FromResult(true);
         }
 
+        public async ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath)
+        {
+            File.Move(sourcePath, destinationPath);
+
+            return await Task.FromResult(true);
+        }
+
         public async ValueTask<List<string>> GetListOfFilesAsync(string path, string searchPattern = "*") =>
             await Task.FromResult(Directory.GetFiles(path, searchPattern, SearchOption.TopDirectoryOnly).ToList());
 
