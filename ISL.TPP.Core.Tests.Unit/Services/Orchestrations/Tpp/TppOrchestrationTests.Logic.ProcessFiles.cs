@@ -143,10 +143,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                                 Times.Once);
 
                     var processedPath =
-                        $"{reportingGroup}" +
+                        $"{pickupFolder}" +
                         $"\\Processed" +
                         $"\\{manifestList.First().DateExtractTo}" +
                         $"\\{file.Replace(pickupFolder, "")}";
+
+                    processedPath = processedPath.Replace("\\\\", "\\");
 
                     this.fileServiceMock.Verify(service =>
                         service.MoveFileAsync(file, processedPath),
