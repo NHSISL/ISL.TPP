@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Clients;
@@ -18,24 +19,32 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
         public async Task ShouldProcessNewFilesIfManifestFilePresentAsync()
         {
             // given
-            string randomString = GetRandomString();
+            string randomFileName = $"{GetRandomString()}.txt";
+            string manifestToDate = DateTime.Now.ToString("yyyyMMdd_HHmm");
+            StringBuilder csvManifest = new StringBuilder();
+            csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
+            csvManifest.AppendLine($"{randomFileName},Y,N,20231209_2245,{manifestToDate}");
 
-            string manifestFile = Path.Combine(
-                this.tppConfiguration.TppPickupFolder,
-                this.tppConfiguration.TppManifestFile);
-
-            string randomFile = Path.Combine(
-                this.tppConfiguration.TppPickupFolder,
-                $"{GetRandomString(1)}.txt");
-
-            foreach (string file in Directory.EnumerateFiles(this.tppConfiguration.TppPickupFolder))
+            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                File.Delete(file);
-                Console.WriteLine($"File '{file}' deleted.");
-            }
+                string reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+                string manifestFile = Path.Combine(reportingGroupFolder, this.tppConfiguration.TppManifestFile);
+                string randomFile = Path.Combine(reportingGroupFolder, $"{GetRandomString(1)}.txt");
 
-            File.WriteAllText(manifestFile, randomString);
-            File.WriteAllText(randomFile, randomString);
+                if (!Directory.Exists(reportingGroupFolder))
+                {
+                    Directory.CreateDirectory(reportingGroupFolder);
+                }
+
+                foreach (string file in Directory.EnumerateFiles(reportingGroupFolder))
+                {
+                    File.Delete(file);
+                    Console.WriteLine($"File '{file}' deleted.");
+                }
+
+                File.WriteAllText(manifestFile, csvManifest.ToString());
+                File.WriteAllText(randomFile, randomFileName);
+            }
 
             TppClient client = new TppClient(tppConfiguration);
 
@@ -43,7 +52,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             List<string> actualFiles = await client.Imports.ProcessFilesAsync();
 
             // then
-            actualFiles.Count.Should().BeGreaterThan(0);
+            actualFiles.Count.Should().Be(2);
         }
     }
 }

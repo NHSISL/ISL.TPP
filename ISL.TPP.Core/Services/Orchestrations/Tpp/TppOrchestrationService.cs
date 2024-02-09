@@ -117,7 +117,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                     var manifestDateTime = manifest.First().DateExtractTo;
 
-                    foreach (string filePath in filePaths)
+                    foreach (string filePath in manifestFileLastList)
                     {
                         try
                         {
