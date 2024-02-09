@@ -23,15 +23,15 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         }
 
         public ValueTask<bool> CheckIfFileExistsAsync(string path) =>
-    TryCatch(async () =>
-    {
-        return await WithRetry(async () =>
-        {
-            ValidateCheckIfFileExistsArguments(path);
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateCheckIfFileExistsArguments(path);
 
-            return await this.fileBroker.CheckIfFileExistsAsync(path);
-        });
-    });
+                    return await this.fileBroker.CheckIfFileExistsAsync(path);
+                });
+            });
 
         public ValueTask<bool> WriteToFileAsync(string path, string content) =>
             TryCatch(async () =>
@@ -62,6 +62,25 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 {
                     ValidateDeleteFileArguments(path);
                     return await this.fileBroker.DeleteFileAsync(path);
+                });
+            });
+
+        public ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath) =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateMoveFileArguments(sourcePath, destinationPath);
+
+                    string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
+                    bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
+
+                    if (!destinationFolderExists)
+                    {
+                        await this.fileBroker.CreateDirectoryAsync(destinationFolder);
+                    }
+
+                    return await this.fileBroker.MoveFileAsync(sourcePath, destinationPath);
                 });
             });
 

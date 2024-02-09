@@ -18,5 +18,6 @@ namespace ISL.TPP.Core.Brokers.Files
         ValueTask<bool> CheckIfDirectoryExistsAsync(string path);
         ValueTask<bool> CreateDirectoryAsync(string path);
         ValueTask<bool> DeleteDirectoryAsync(string path, bool recursive = false);
+        ValueTask<string> GetDirectoryAsync(string path);
     }
 }

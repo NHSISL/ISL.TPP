@@ -39,6 +39,14 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 (Rule: IsInvalid(path), Parameter: nameof(path)));
         }
 
+        private void ValidateMoveFileArguments(string sourcePath, string destinationPath)
+        {
+            Validate<InvalidArgumentFileException>(
+                message: "Invalid file argument(s), please correct the errors and try again.",
+                (Rule: IsInvalid(sourcePath), Parameter: "SourcePath"),
+                (Rule: IsInvalid(destinationPath), Parameter: "DestinationPath"));
+        }
+
         private void ValidateRetrieveListOfFilesArguments(string path, string searchPattern)
         {
             Validate<InvalidArgumentFileException>(
