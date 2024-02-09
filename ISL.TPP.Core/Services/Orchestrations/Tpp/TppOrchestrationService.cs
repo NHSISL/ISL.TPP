@@ -127,7 +127,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 ValidateFile(file);
 
                                 var newFileName =
-                                    $"{reportingGroup}\\{manifestDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
+                                    $"{reportingGroup}" +
+                                    $"\\{manifestDateTime}" +
+                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
 
                                 newFileName = newFileName.Replace("\\\\", "\\");
 
@@ -141,7 +143,13 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                     document,
                                     container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
 
-                                await this.fileService.DeleteFileAsync(filePath);
+                                var processedFilePath =
+                                    $"{reportingGroup}" +
+                                    $"\\Processed" +
+                                    $"\\{manifestDateTime}" +
+                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
+
+                                await this.fileService.MoveFileAsync(filePath, processedFilePath);
 
                                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                                     $"File '{document.FileName}' successfully uploaded.");

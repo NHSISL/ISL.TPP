@@ -122,8 +122,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                             Times.AtLeastOnce);
 
                     var fileName =
-                        $"{reportingGroup}\\{manifestList.First().DateExtractTo}\\" +
-                        $"{file.Replace(pickupFolder, "")}";
+                        $"{reportingGroup}" +
+                        $"\\{manifestList.First().DateExtractTo}" +
+                        $"\\{file.Replace(pickupFolder, "")}";
 
                     fileName = fileName.Replace("\\\\", "\\");
 
@@ -141,8 +142,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                             this.tppConfiguration.BlobStorageSettings.AzureBlobContainer),
                                 Times.Once);
 
+                    var processedPath =
+                        $"{reportingGroup}" +
+                        $"\\Processed" +
+                        $"\\{manifestList.First().DateExtractTo}" +
+                        $"\\{file.Replace(pickupFolder, "")}";
+
                     this.fileServiceMock.Verify(service =>
-                        service.DeleteFileAsync(file),
+                        service.MoveFileAsync(file, processedPath),
                             Times.Once);
                 }
             }
