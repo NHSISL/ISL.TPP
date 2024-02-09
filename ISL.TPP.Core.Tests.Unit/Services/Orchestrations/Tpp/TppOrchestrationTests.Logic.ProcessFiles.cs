@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
@@ -68,14 +69,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             List<string> expectedFiles = new List<string>();
             byte[] fileBytes = Encoding.UTF8.GetBytes(GetRandomString());
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
-
-            this.dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+            List<Manifest> manifestList = CreateRandomManifests();
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
                 string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+
+                string manifestFile = Path.Combine(
+                    this.tppConfiguration.TppPickupFolder,
+                    reportingGroup,
+                    tppConfiguration.TppManifestFile);
+
                 List<string> reportingGroupFiles = files.Select(file => Path.Combine(pickupFolder, file)).ToList();
 
                 this.fileServiceMock.Setup(service =>
@@ -88,14 +92,18 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         service.ReadFromFileAsync(file))
                             .ReturnsAsync(fileBytes);
                 }
+
+                this.csvMapperServiceMock.Setup(service =>
+                    service.MapCsvToObjectAsync<Manifest>(Encoding.ASCII.GetString(fileBytes), true))
+                        .ReturnsAsync(manifestList);
             }
 
             // when
             List<string> actualFiles = await this.tppOrchestrationService.ProcessFilesAsync();
 
             // then
-            this.dateTimeBrokerMock.Verify(broker =>
-                broker.GetCurrentDateTimeOffset(),
+            this.csvMapperServiceMock.Verify(service =>
+                service.MapCsvToObjectAsync<Manifest>(Encoding.ASCII.GetString(fileBytes), true),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
@@ -111,10 +119,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 {
                     this.fileServiceMock.Verify(service =>
                         service.ReadFromFileAsync(file),
-                            Times.Once);
+                            Times.AtLeastOnce);
 
                     var fileName =
-                        $"{reportingGroup}\\{randomDateTimeOffset.ToString("yyyyMMddHHmmss")}\\" +
+                        $"{reportingGroup}\\{manifestList.First().DateExtractTo}\\" +
                         $"{file.Replace(pickupFolder, "")}";
 
                     fileName = fileName.Replace("\\\\", "\\");

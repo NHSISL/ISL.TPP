@@ -12,9 +12,11 @@ using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients.Imports;
+using ISL.TPP.Core.Models.Brokers.CsvMappers;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
+using ISL.TPP.Core.Services.Foundations.CsvMappers;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
@@ -102,9 +104,11 @@ namespace ISL.TPP.Core.Clients
 
                 .AddTransient(_ => loggingBroker)
                 .AddTransient<ILoggingBroker, LoggingBroker>()
+                .AddTransient<ICsvMapperBroker, CsvMapperBroker>()
                 .AddTransient<IFileService, FileService>()
                 .AddTransient<IDocumentService, DocumentService>()
                 .AddTransient<IImportClient, ImportClient>()
+                .AddTransient<ICsvMapperService, CsvMapperService>()
                 .AddTransient<ITppOrchestrationService, TppOrchestrationService>();
 
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();

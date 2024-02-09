@@ -22,6 +22,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
+                csvMapperService: this.csvMapperServiceMock.Object,
                 tppConfiguration: null,
                 dateTimeBroker: this.dateTimeBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
@@ -66,6 +67,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
+                csvMapperService: this.csvMapperServiceMock.Object,
 
                 tppConfiguration: new TppConfiguration
                 {
@@ -128,6 +130,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
+                csvMapperService: this.csvMapperServiceMock.Object,
 
                 tppConfiguration: new TppConfiguration
                 {

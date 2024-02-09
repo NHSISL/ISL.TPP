@@ -6,11 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Force.DeepCloner;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
+using ISL.TPP.Core.Models;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
+using ISL.TPP.Core.Services.Foundations.CsvMappers;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
 
@@ -20,6 +24,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
     {
         private readonly IFileService fileService;
         private readonly IDocumentService documentService;
+        private readonly ICsvMapperService csvMapperService;
         private readonly TppConfiguration tppConfiguration;
         private readonly IDateTimeBroker dateTimeBroker;
         private readonly ILoggingBroker loggingBroker;
@@ -27,12 +32,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         public TppOrchestrationService(
             IFileService fileService,
             IDocumentService documentService,
+            ICsvMapperService csvMapperService,
             TppConfiguration tppConfiguration,
             IDateTimeBroker dateTimeBroker,
             ILoggingBroker loggingBroker)
         {
             this.fileService = fileService;
             this.documentService = documentService;
+            this.csvMapperService = csvMapperService;
             this.tppConfiguration = tppConfiguration;
             this.dateTimeBroker = dateTimeBroker;
             this.loggingBroker = loggingBroker;
@@ -89,7 +96,25 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Processing {filePaths.Count} file(s)...");
 
-                    var currentDateTime = this.dateTimeBroker.GetCurrentDateTimeOffset().ToString("yyyyMMddHHmmss");
+                    List<string> manifestFileLastList = filePaths.DeepClone();
+
+                    string? manifestFilePath = manifestFileLastList
+                        .FindLast(file => file.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase));
+
+                    if (manifestFilePath != null)
+                    {
+                        manifestFileLastList.Remove(manifestFilePath);
+                        manifestFileLastList.Add(manifestFilePath);
+                    }
+
+                    byte[] manifestData = await this.fileService.ReadFromFileAsync(manifestFilePath);
+
+                    List<Manifest> manifest = await this.csvMapperService
+                        .MapCsvToObjectAsync<Manifest>(
+                            data: Encoding.ASCII.GetString(manifestData),
+                            hasHeaderRecord: true);
+
+                    var manifestDateTime = manifest.First().DateExtractTo;
 
                     foreach (string filePath in filePaths)
                     {
@@ -102,7 +127,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 ValidateFile(file);
 
                                 var newFileName =
-                                    $"{reportingGroup}\\{currentDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
+                                    $"{reportingGroup}\\{manifestDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
 
                                 newFileName = newFileName.Replace("\\\\", "\\");
 
