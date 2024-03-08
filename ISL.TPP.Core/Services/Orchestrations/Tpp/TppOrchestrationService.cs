@@ -108,15 +108,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     }
 
                     byte[] manifestData = await this.fileService.ReadFromFileAsync(manifestFilePath);
+                    string manifestDataString = Encoding.ASCII.GetString(manifestData);
 
                     List<Manifest> manifest = await this.csvMapperService
                         .MapCsvToObjectAsync<Manifest>(
-                            data: Encoding.ASCII.GetString(manifestData),
+                            data: manifestDataString,
                             hasHeaderRecord: true);
 
                     var manifestDateTime = manifest.First().DateExtractTo;
 
-                    foreach (string filePath in filePaths)
+                    foreach (string filePath in manifestFileLastList)
                     {
                         try
                         {
@@ -127,7 +128,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 ValidateFile(file);
 
                                 var newFileName =
-                                    $"{reportingGroup}\\{manifestDateTime}\\{filePath.Replace(reportingGroupFolder, "")}";
+                                    $"{reportingGroup}" +
+                                    $"\\{manifestDateTime}" +
+                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
 
                                 newFileName = newFileName.Replace("\\\\", "\\");
 
@@ -141,7 +144,15 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                     document,
                                     container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
 
-                                await this.fileService.DeleteFileAsync(filePath);
+                                var processedFilePath =
+                                    $"{reportingGroupFolder}" +
+                                    $"\\Processed" +
+                                    $"\\{manifestDateTime}" +
+                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
+
+                                processedFilePath = processedFilePath.Replace("\\\\", "\\");
+
+                                await this.fileService.MoveFileAsync(filePath, processedFilePath);
 
                                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                                     $"File '{document.FileName}' successfully uploaded.");

@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.Collections.Generic;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
@@ -32,6 +33,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
             var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
+            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>();
 
             this.tppConfiguration = new TppConfiguration
             {
@@ -39,6 +41,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStorageSettings = blobStorageSettings,
+                ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
         }

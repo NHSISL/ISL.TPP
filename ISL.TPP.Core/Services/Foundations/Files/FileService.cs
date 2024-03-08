@@ -80,6 +80,11 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                         await this.fileBroker.CreateDirectoryAsync(destinationFolder);
                     }
 
+                    if (await this.fileBroker.CheckIfFileExistsAsync(destinationPath))
+                    {
+                        await this.fileBroker.DeleteFileAsync(destinationPath);
+                    }
+
                     return await this.fileBroker.MoveFileAsync(sourcePath, destinationPath);
                 });
             });

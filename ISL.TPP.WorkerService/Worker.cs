@@ -48,8 +48,31 @@ namespace ISL.TPP.WorkerService
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(timerIntervalInMinutes));
-            return base.StartAsync(cancellationToken);
+            try
+            {
+                timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(timerIntervalInMinutes));
+                return base.StartAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                LogExceptionToFile(ex);
+                return Task.FromException(ex);
+            }
+        }
+
+        private void LogExceptionToFile(Exception exception)
+        {
+            string logFileName = "UnhandledExceptions.log";
+            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
+
+            // Write exception details to the log file
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine($"Timestamp: {DateTime.Now}");
+                writer.WriteLine($"Exception Message: {exception.Message}");
+                writer.WriteLine($"Stack Trace: {exception.StackTrace}");
+                writer.WriteLine(new string('-', 50));
+            }
         }
 
         private async void DoWork(object state)

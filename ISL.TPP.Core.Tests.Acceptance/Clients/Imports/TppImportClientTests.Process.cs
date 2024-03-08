@@ -39,37 +39,56 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             StringBuilder csvManifest = new StringBuilder();
             csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
             csvManifest.AppendLine($"SRSystmOnline,Y,N,20231209_2245,{manifestToDate}");
+            List<string> reportingGroupFiles = new List<string> { "manifest.csv", "file1.csv", "file2.csv" };
+
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
                 var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
-                files.Add($@"{pickupFolder}\manifest.csv");
-                files.Add($@"{pickupFolder}\file1.csv");
-                files.Add($@"{pickupFolder}\file2.csv");
-                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\manifest.csv");
-                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\file1.csv");
-                expectedFiles.Add($@"{reportingGroup}\{manifestToDate}\file2.csv");
+
+                foreach (string file in reportingGroupFiles)
+                {
+                    var filPath = $@"{pickupFolder}\{file}";
+                    var expectedPath = $@"{reportingGroup}\{manifestToDate}\{file}";
+                    files.Add(filPath);
+                    expectedFiles.Add(expectedPath);
+
+                    if (file.EndsWith("manifest.csv"))
+                    {
+                        fileBrokerMock.Setup(broker => broker.ReadFileAsync(filPath))
+                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                    }
+                    else
+                    {
+                        fileBrokerMock.Setup(broker => broker.ReadFileAsync(filPath))
+                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(filPath));
+                    }
+
+                    var processedPath =
+                        $"{pickupFolder}" +
+                        $"\\Processed" +
+                        $"\\{manifestToDate}" +
+                        $"\\{file.Replace(pickupFolder, "")}";
+
+                    processedPath = processedPath.Replace("\\\\", "\\");
+
+                    fileBrokerMock.Setup(broker => broker.GetDirectoryAsync(processedPath))
+                        .ReturnsAsync($@"{pickupFolder}\Processed\{manifestToDate}");
+
+                    fileBrokerMock.Setup(broker => broker.CheckIfFileExistsAsync(processedPath))
+                        .ReturnsAsync(false);
+
+                    fileBrokerMock.Setup(broker => broker.MoveFileAsync(filPath, processedPath))
+                        .ReturnsAsync(true);
+                }
 
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     pickupFolder, "*"))
                     .ReturnsAsync(files);
-            }
 
-            foreach (string file in files)
-            {
-                if (file.EndsWith("manifest.csv"))
-                {
-                    fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
-                        .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
-                }
-                else
-                {
-                    fileBrokerMock.Setup(broker => broker.ReadFileAsync(file))
-                        .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
-                }
-
-                fileBrokerMock.Setup(broker => broker.DeleteFileAsync(file))
-                    .ReturnsAsync(true);
+                fileBrokerMock.Setup(broker => broker.CheckIfDirectoryExistsAsync(
+                    $@"{pickupFolder}\Processed\{manifestToDate}"))
+                        .ReturnsAsync(true);
             }
 
             IServiceCollection serviceCollection = new ServiceCollection();
@@ -92,28 +111,24 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Verify(broker =>
                     broker.GetListOfFilesAsync(pickupFolder, "*"),
                         Times.Once);
-            }
 
-            foreach (string file in files)
-            {
-                if (file.EndsWith("manifest.csv"))
+                foreach (string file in reportingGroupFiles)
                 {
-                    fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
-                        Times.Exactly(2));
-                }
-                else
-                {
-                    fileBrokerMock.Verify(broker => broker.ReadFileAsync(file),
-                        Times.Once);
-                }
+                    var filPath = $@"{pickupFolder}\{file}";
 
-                foreach (string reportingGroup in tppConfiguration.ReportingGroups)
-                {
-                    var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+                    if (filPath.EndsWith("manifest.csv"))
+                    {
+                        fileBrokerMock.Verify(broker => broker.ReadFileAsync(filPath),
+                            Times.Exactly(2));
+                    }
+                    else
+                    {
+                        fileBrokerMock.Verify(broker => broker.ReadFileAsync(filPath),
+                            Times.Once);
+                    }
 
                     string filename =
-                        $"{reportingGroup}\\{manifestToDate}\\" +
-                        $"{file.Replace(pickupFolder, "")}";
+                        $"{reportingGroup}\\{manifestToDate}\\{file.Replace(pickupFolder, "")}";
 
                     filename = filename.Replace("\\\\", "\\");
 
@@ -124,10 +139,30 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                             tppConfiguration.BlobStorageSettings.AzureBlobContainer),
                                 Times.Once);
 
+                    var processedPath =
+                        $"{pickupFolder}" +
+                        $"\\Processed" +
+                        $"\\{manifestToDate}" +
+                        $"\\{file.Replace(pickupFolder, "")}";
+
+                    processedPath = processedPath.Replace("\\\\", "\\");
+
                     fileBrokerMock.Verify(broker =>
-                        broker.DeleteFileAsync(file),
+                        broker.GetDirectoryAsync(processedPath),
+                            Times.Once);
+
+                    fileBrokerMock.Verify(broker =>
+                        broker.CheckIfFileExistsAsync(processedPath),
+                            Times.Once);
+
+                    fileBrokerMock.Verify(broker =>
+                        broker.MoveFileAsync(filPath, processedPath),
                             Times.Once);
                 }
+
+                fileBrokerMock.Verify(broker =>
+                    broker.CheckIfDirectoryExistsAsync($@"{pickupFolder}\Processed\{manifestToDate}"),
+                        Times.Exactly(reportingGroupFiles.Count));
             }
 
             fileBrokerMock.VerifyNoOtherCalls();
