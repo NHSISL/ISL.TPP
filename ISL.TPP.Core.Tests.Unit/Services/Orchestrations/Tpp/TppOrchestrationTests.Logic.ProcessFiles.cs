@@ -53,6 +53,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         Times.Once);
             }
 
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogInformation(It.IsAny<string>()),
+                    Times.AtLeastOnce);
+
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
             this.dateTimeBrokerMock.VerifyNoOtherCalls();
@@ -155,6 +159,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                             Times.Once);
                 }
             }
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogInformation(It.IsAny<string>()),
+                    Times.AtLeastOnce);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.dateTimeBrokerMock.VerifyNoOtherCalls();

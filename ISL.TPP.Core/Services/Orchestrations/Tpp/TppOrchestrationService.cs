@@ -67,10 +67,15 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (exceptions.Any())
                 {
-                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+                    var aggregateException =
+                        new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+
+                    LogError($"Unable to land {exceptions.Count} document(s)", aggregateException);
+
+                    throw aggregateException;
                 }
 
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                     $"Waiting for {this.tppConfiguration.TimerIntervalInMinutes} minute(s)...");
 
                 return files;
@@ -90,10 +95,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Manifest file found in {reportingGroupFolder}");
 
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Processing {filePaths.Count} file(s)...");
 
                     List<string> manifestFileLastList = filePaths.DeepClone();
@@ -154,7 +159,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                                 await this.fileService.MoveFileAsync(filePath, processedFilePath);
 
-                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                                LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                                     $"File '{document.FileName}' successfully uploaded.");
 
                                 return document.FileName;
@@ -164,7 +169,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                                 $"Error processing file '{filePath}'");
 
                             this.loggingBroker.LogError(ex);
@@ -172,16 +177,33 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         }
                     }
 
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Finished processing {files.Count} file(s).");
                 }
 
                 if (exceptions.Any())
                 {
-                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+                    var aggregateException =
+                        new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+
+                    LogError($"Unable to land {exceptions.Count} document(s)", aggregateException);
+
+                    throw aggregateException;
                 }
 
                 return files;
             });
+
+        private void LogMessage(string message)
+        {
+            Console.WriteLine(message);
+            this.loggingBroker.LogInformation(message);
+        }
+
+        private void LogError(string message, Exception exception)
+        {
+            Console.WriteLine(message);
+            this.loggingBroker.LogError(new Exception(message, innerException: exception));
+        }
     }
 }

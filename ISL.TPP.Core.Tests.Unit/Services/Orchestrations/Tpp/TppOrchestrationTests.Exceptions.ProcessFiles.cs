@@ -71,6 +71,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
                         Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
 
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.IsAny<Exception>()),
+                    Times.AtLeastOnce);
+
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -130,6 +134,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     IsSameExceptionAs(ex as Xeption).Invoke(dependencyException) ||
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
                         Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.IsAny<Exception>()),
+                    Times.AtLeastOnce);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -195,6 +203,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     IsSameExceptionAs(ex as Xeption).Invoke(tppOrchestrationServiceException) ||
                     IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
                         Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.IsAny<Exception>()),
+                    Times.AtLeastOnce);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
