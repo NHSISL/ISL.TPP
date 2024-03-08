@@ -71,7 +71,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
 
                     LogError($"Unable to land {exceptions.Count} document(s)", aggregateException);
-
                     throw aggregateException;
                 }
 
@@ -187,7 +186,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
 
                     LogError($"Unable to land {exceptions.Count} document(s)", aggregateException);
-
                     throw aggregateException;
                 }
 
