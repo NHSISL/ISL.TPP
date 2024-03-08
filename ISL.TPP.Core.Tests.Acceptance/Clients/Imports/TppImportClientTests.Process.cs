@@ -75,6 +75,9 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     fileBrokerMock.Setup(broker => broker.GetDirectoryAsync(processedPath))
                         .ReturnsAsync($@"{pickupFolder}\Processed\{manifestToDate}");
 
+                    fileBrokerMock.Setup(broker => broker.CheckIfFileExistsAsync(processedPath))
+                        .ReturnsAsync(false);
+
                     fileBrokerMock.Setup(broker => broker.MoveFileAsync(filPath, processedPath))
                         .ReturnsAsync(true);
                 }
@@ -146,6 +149,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
                     fileBrokerMock.Verify(broker =>
                         broker.GetDirectoryAsync(processedPath),
+                            Times.Once);
+
+                    fileBrokerMock.Verify(broker =>
+                        broker.CheckIfFileExistsAsync(processedPath),
                             Times.Once);
 
                     fileBrokerMock.Verify(broker =>
