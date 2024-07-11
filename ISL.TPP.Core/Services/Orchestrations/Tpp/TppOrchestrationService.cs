@@ -169,9 +169,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                                $"Error processing file '{filePath}'");
+                            string message = $"Error processing file '{filePath}'{Environment.NewLine}" +
+                                $"{ex?.InnerException?.Message}.  {ex?.InnerException?.InnerException?.Message}";
 
+                            LogMessage($"{DateTime.Now.ToString("HH:mm:ss")} - {message}");
                             this.loggingBroker.LogError(ex);
                             exceptions.Add(ex);
                         }
