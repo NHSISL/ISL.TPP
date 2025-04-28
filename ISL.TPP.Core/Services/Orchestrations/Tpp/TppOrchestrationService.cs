@@ -145,7 +145,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 }
 
                 byte[] manifestData = await this.fileService.ReadFromFileAsync(manifestFilePath);
-                string manifestDataString = Encoding.ASCII.GetString(manifestData);
+                string manifestDataString = Encoding.UTF8.GetString(manifestData);
 
                 List<Manifest> manifest = await this.csvMapperService
                     .MapCsvToObjectAsync<Manifest>(
@@ -166,7 +166,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         destinationFilePath = destinationFilePath.Replace("\\\\", "\\");
 
-                        bool isSuccess = await WriteFileToDestination(sourceFilePath: filePath, destinationFilePath);
+                        bool isSuccess = await WriteFileToDestinationAsync(
+                            sourceFilePath: filePath,
+                            destinationFilePath);
+
+                        if (isSuccess == false)
+                        {
+                            allSuccessFull = false;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -216,7 +223,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             }
         }
 
-        virtual internal async ValueTask<bool> WriteFileToDestination(
+        virtual internal async ValueTask<bool> WriteFileToDestinationAsync(
             string sourceFilePath,
             string destinationFilePath)
         {

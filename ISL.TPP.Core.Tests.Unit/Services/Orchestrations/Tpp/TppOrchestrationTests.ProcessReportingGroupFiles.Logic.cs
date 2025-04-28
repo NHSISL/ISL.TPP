@@ -3,7 +3,11 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Force.DeepCloner;
+using ISL.TPP.Core.Models;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;
 using Xunit;
@@ -54,55 +58,127 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
 
-        [Fact]
-        public async Task ShouldProcessReportingGroupFilesWhenManifestExistAsync()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ShouldProcessReportingGroupFilesWhenManifestExistAndMoveToFolderOnSuccessOrFailAsync(
+            bool isSuccess)
         {
-            //// given
-            //var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
-            //    this.fileServiceMock.Object,
-            //    this.documentServiceMock.Object,
-            //    this.csvMapperServiceMock.Object,
-            //    this.tppConfiguration,
-            //    this.dateTimeBrokerMock.Object,
-            //    this.loggingBrokerMock.Object)
-            //{
-            //    CallBase = true
-            //};
+            // given
+            string randomReportingGroupFolder = GetRandomString();
+            string manifestFile = tppConfiguration.TppManifestFile;
+            int count = 1; //GetRandomNumber();
+            List<string> randomFiles = GetRandomStringList(count);
+            randomFiles.Add(manifestFile);
+            List<string> manifestFileLastList = randomFiles.DeepClone();
+            string manifestDataString = GetRandomString();
+            byte[] manifestData = Encoding.UTF8.GetBytes(manifestDataString);
+            bool hasHeaderRecord = true;
+            List<Manifest> manifestList = CreateRandomManifests(count);
+            var manifestDateTime = manifestList.First().DateExtractTo;
 
-            //foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
-            //{
-            //    string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+            this.fileServiceMock.Setup(service =>
+                service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*"))
+                    .ReturnsAsync(randomFiles);
 
-            //    tppOrchestrationServiceMock.Setup(service =>
-            //        service.ProcessReportingGroupFilesAsync(pickupFolder))
-            //            .Returns(ValueTask.CompletedTask);
+            this.fileServiceMock.Setup(service =>
+                service.ReadFromFileAsync(manifestFile))
+                    .ReturnsAsync(manifestData);
 
-            //    tppOrchestrationServiceMock.Setup(service =>
-            //        service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder))
-            //            .Returns(ValueTask.CompletedTask);
-            //}
+            this.csvMapperServiceMock.Setup(service =>
+                service.MapCsvToObjectAsync<Manifest>(manifestDataString, hasHeaderRecord))
+                    .ReturnsAsync(manifestList);
 
-            //// when
-            //await this.tppOrchestrationService.ProcessFilesAsync();
+            var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
+                this.fileServiceMock.Object,
+                this.documentServiceMock.Object,
+                this.csvMapperServiceMock.Object,
+                this.tppConfiguration,
+                this.dateTimeBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
 
-            //// then
-            //foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
-            //{
-            //    string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+            foreach (string filePath in manifestFileLastList)
+            {
+                var blobDestinationFilePath =
+                    $"{randomReportingGroupFolder}" +
+                    $"\\{manifestDateTime}" +
+                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
-            //    tppOrchestrationServiceMock.Verify(service =>
-            //        service.ProcessReportingGroupFilesAsync(pickupFolder),
-            //            Times.Once);
+                blobDestinationFilePath = blobDestinationFilePath.Replace("\\\\", "\\");
 
-            //    tppOrchestrationServiceMock.Verify(service =>
-            //        service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder),
-            //            Times.Once);
-            //}
+                var moveDestinationFolder = $"{randomReportingGroupFolder}" +
+                    $"\\{(isSuccess
+                        ? this.tppConfiguration.TppWorkingFolders.Processed
+                        : this.tppConfiguration.TppWorkingFolders.Errored)}" +
+                    $"\\{manifestDateTime}" +
+                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
-            //this.fileServiceMock.VerifyNoOtherCalls();
-            //this.documentServiceMock.VerifyNoOtherCalls();
-            //this.dateTimeBrokerMock.VerifyNoOtherCalls();
-            //this.loggingBrokerMock.VerifyNoOtherCalls();
+                moveDestinationFolder = moveDestinationFolder.Replace("\\\\", "\\");
+
+                tppOrchestrationServiceMock.Setup(service =>
+                    service.WriteFileToDestinationAsync(filePath, blobDestinationFilePath))
+                        .ReturnsAsync(isSuccess);
+
+                this.fileServiceMock.Setup(service =>
+                    service.MoveFileAsync(filePath, moveDestinationFolder))
+                        .ReturnsAsync(true);
+            }
+
+            // when
+            await tppOrchestrationServiceMock.Object.ProcessReportingGroupFilesAsync(randomReportingGroupFolder);
+
+            // then
+            this.fileServiceMock.Verify(service =>
+                service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*"),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
+                service.ReadFromFileAsync(manifestFile),
+                    Times.Once);
+
+            this.csvMapperServiceMock.Verify(service =>
+                service.MapCsvToObjectAsync<Manifest>(manifestDataString, hasHeaderRecord),
+                    Times.Once);
+
+            foreach (string filePath in manifestFileLastList)
+            {
+                var blobDestinationFilePath =
+                    $"{randomReportingGroupFolder}" +
+                    $"\\{manifestDateTime}" +
+                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
+
+                blobDestinationFilePath = blobDestinationFilePath.Replace("\\\\", "\\");
+
+                var moveDestinationFolder = $"{randomReportingGroupFolder}" +
+                    $"\\{(isSuccess
+                        ? this.tppConfiguration.TppWorkingFolders.Processed
+                        : this.tppConfiguration.TppWorkingFolders.Errored)}" +
+                    $"\\{manifestDateTime}" +
+                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
+
+                moveDestinationFolder = moveDestinationFolder.Replace("\\\\", "\\");
+
+                tppOrchestrationServiceMock.Verify(service =>
+                    service.WriteFileToDestinationAsync(filePath, blobDestinationFilePath),
+                        Times.Once);
+
+                this.fileServiceMock.Verify(service =>
+                    service.MoveFileAsync(filePath, moveDestinationFolder),
+                        Times.Once);
+            }
+
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder),
+                    Times.Once);
+
+            tppOrchestrationServiceMock.VerifyNoOtherCalls();
+            this.fileServiceMock.VerifyNoOtherCalls();
+            this.documentServiceMock.VerifyNoOtherCalls();
+            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }

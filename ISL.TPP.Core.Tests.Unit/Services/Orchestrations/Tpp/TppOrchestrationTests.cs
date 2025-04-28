@@ -189,6 +189,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             return filler;
         }
 
+        private static List<Manifest> CreateRandomManifests(int count)
+        {
+            return CreateManifestFiller(dateTimeOffset: GetRandomDateTimeOffset())
+                .Create(count)
+                    .ToList();
+        }
+
         private static List<Manifest> CreateRandomManifests()
         {
             return CreateManifestFiller(dateTimeOffset: GetRandomDateTimeOffset())
