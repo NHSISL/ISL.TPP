@@ -13,7 +13,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
     public partial class TppOrchestrationTests
     {
         [Fact]
-        public async Task ShouldNotProcessFilesIfManifestFileNotPresentAsync()
+        public async Task ShouldProcessFilesAsync()
         {
             // given
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -41,7 +41,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             }
 
             // when
-            await this.tppOrchestrationService.ProcessFilesAsync();
+            await tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             // then
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
