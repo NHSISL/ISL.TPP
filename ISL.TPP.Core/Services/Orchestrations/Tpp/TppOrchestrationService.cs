@@ -90,8 +90,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         virtual internal async ValueTask ProcessReportingGroupReprocessFolderFilesAsync(
             string reportingGroupFolder)
         {
-            string reprocessFolder = tppConfiguration.TppWorkingFolders.ReProcess;
-            var reprocessingFolder = Path.Combine(reportingGroupFolder, reprocessFolder);
+            var reprocessingFolder = Path.Combine(reportingGroupFolder, tppConfiguration.TppWorkingFolders.ReProcess);
             List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
 
             foreach (string folder in foldersToProcess)

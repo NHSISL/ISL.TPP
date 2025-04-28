@@ -2,7 +2,11 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Services.Orchestrations.Tpp;
+using Moq;
 using Xunit;
 
 namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
@@ -12,52 +16,65 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         [Fact]
         public async Task ShouldProcessReportingGroupReprocessFolderFilesAsync()
         {
-            //// given
-            //var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
-            //    this.fileServiceMock.Object,
-            //    this.documentServiceMock.Object,
-            //    this.csvMapperServiceMock.Object,
-            //    this.tppConfiguration,
-            //    this.dateTimeBrokerMock.Object,
-            //    this.loggingBrokerMock.Object)
-            //{
-            //    CallBase = true
-            //};
+            // given
+            string randomReportingGroupFolder = GetRandomString();
+            string inputReportingGroupFolder = randomReportingGroupFolder;
+            List<string> randomFolderList = GetRandomStringList(GetRandomNumber());
 
-            //foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
-            //{
-            //    string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+            this.fileServiceMock.Setup(service =>
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"))
+                    .ReturnsAsync(randomFolderList);
 
-            //    tppOrchestrationServiceMock.Setup(service =>
-            //        service.ProcessReportingGroupFilesAsync(pickupFolder))
-            //            .Returns(ValueTask.CompletedTask);
+            var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
+                this.fileServiceMock.Object,
+                this.documentServiceMock.Object,
+                this.csvMapperServiceMock.Object,
+                this.tppConfiguration,
+                this.dateTimeBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
 
-            //    tppOrchestrationServiceMock.Setup(service =>
-            //        service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder))
-            //            .Returns(ValueTask.CompletedTask);
-            //}
+            string pickupFolder =
+                Path.Combine(inputReportingGroupFolder, tppConfiguration.TppWorkingFolders.ReProcess);
 
-            //// when
-            //await this.tppOrchestrationService.ProcessFilesAsync();
+            fileServiceMock.Setup(service =>
+                service.RetrieveListOfSubFoldersAsync(pickupFolder, "*"))
+                    .ReturnsAsync(randomFolderList);
 
-            //// then
-            //foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
-            //{
-            //    string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+            foreach (string folder in randomFolderList)
+            {
+                tppOrchestrationServiceMock.Setup(service =>
+                    service.ProcessReportingGroupFilesAsync(folder))
+                        .Returns(ValueTask.CompletedTask);
+            }
 
-            //    tppOrchestrationServiceMock.Verify(service =>
-            //        service.ProcessReportingGroupFilesAsync(pickupFolder),
-            //            Times.Once);
+            // when
+            await tppOrchestrationServiceMock.Object
+                .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder);
 
-            //    tppOrchestrationServiceMock.Verify(service =>
-            //        service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder),
-            //            Times.Once);
-            //}
+            // then
+            fileServiceMock.Verify(service =>
+                service.RetrieveListOfSubFoldersAsync(pickupFolder, "*"),
+                    Times.Once);
 
-            //this.fileServiceMock.VerifyNoOtherCalls();
-            //this.documentServiceMock.VerifyNoOtherCalls();
-            //this.dateTimeBrokerMock.VerifyNoOtherCalls();
-            //this.loggingBrokerMock.VerifyNoOtherCalls();
+            foreach (string folder in randomFolderList)
+            {
+                tppOrchestrationServiceMock.Verify(service =>
+                    service.ProcessReportingGroupFilesAsync(folder),
+                        Times.Once);
+            }
+
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder),
+                    Times.Once);
+
+            tppOrchestrationServiceMock.VerifyNoOtherCalls();
+            this.fileServiceMock.VerifyNoOtherCalls();
+            this.documentServiceMock.VerifyNoOtherCalls();
+            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
