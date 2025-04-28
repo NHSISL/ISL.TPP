@@ -41,8 +41,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "Container",
-                values: "Text is required");
+                key: "BlobStorageSettings",
+                values: "BlobStorageSettings is required");
 
             var expectedDocumentValidationException
                 = new DocumentValidationException(
