@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
 using Xunit;
@@ -21,7 +22,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         {
             // Given
             string invalidFileName = invalidInput;
-            string invalidContainer = invalidInput;
+            BlobStorageSettings invalidBlobStorageSettings = null;
 
             var invalidDocumentException = new InvalidDocumentException(
                 message: "Invalid document. Please correct the errors and try again.");
@@ -41,7 +42,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // When
             ValueTask<string> uploadFileTask = this.documentService
-                .GetDownloadLinkAsync(invalidFileName, invalidContainer);
+                .GetDownloadLinkAsync(invalidFileName, invalidBlobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(uploadFileTask.AsTask);
@@ -55,7 +56,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-               broker.GetDownloadLinkAsync(invalidFileName, invalidContainer, It.IsAny<DateTimeOffset>()),
+               broker.GetDownloadLinkAsync(invalidFileName, invalidBlobStorageSettings, It.IsAny<DateTimeOffset>()),
                    Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

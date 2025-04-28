@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
@@ -20,7 +21,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnSelectFileAndLogItAsync()
         {
             // given
-            var randomContainer = GetRandomString();
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             var randomFileName = GetRandomString();
 
             Document randomDocument = new Document
@@ -43,12 +44,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                      innerException: failedDocumentRequestException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
+                 broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings))
                     .Throws(requestFailedException);
 
             // when
             ValueTask<Document> getDownloadFileTask =
-                this.documentService.RetrieveDocumentByFileNameAsync(randomDocument.FileName, randomContainer);
+                this.documentService.RetrieveDocumentByFileNameAsync(randomDocument.FileName, blobStorageSettings);
 
             var actualDependencyException =
                  await Assert.ThrowsAsync<DocumentDependencyException>(getDownloadFileTask.AsTask);
@@ -57,7 +58,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
+                 broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
@@ -73,7 +74,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnRetrieveFileIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            var randomContainer = GetRandomString();
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             var randomFileName = GetRandomString();
 
             Document randomDocument = new Document
@@ -96,12 +97,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: failedDocumentServiceException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
+                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings))
                    .Throws(failedDocumentServiceException);
 
             // when
             ValueTask<Document> getDownloadFileTask =
-                this.documentService.RetrieveDocumentByFileNameAsync(randomFileName, randomContainer);
+                this.documentService.RetrieveDocumentByFileNameAsync(randomFileName, blobStorageSettings);
 
             var actualServiceException =
                  await Assert.ThrowsAsync<DocumentServiceException>(getDownloadFileTask.AsTask);
@@ -110,7 +111,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
+                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>

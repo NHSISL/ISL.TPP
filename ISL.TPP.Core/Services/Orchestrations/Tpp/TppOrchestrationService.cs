@@ -12,11 +12,14 @@ using Force.DeepCloner;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
+using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
 using ISL.TPP.Core.Services.Foundations.CsvMappers;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using ISL.TPP.Core.Services.Foundations.Files;
+using Xeptions;
 
 namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 {
@@ -45,19 +48,28 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             this.loggingBroker = loggingBroker;
         }
 
-        public ValueTask<List<string>> ProcessFilesAsync() =>
+        public ValueTask ProcessFilesAsync() =>
             TryCatch(async () =>
             {
                 ValidateConfigurationSettings();
-                List<string> files = new List<string>();
                 var exceptions = new List<Exception>();
 
                 foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
                 {
+                    var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+
                     try
                     {
-                        List<string> reportingGroupFiles = await ProcessReportingGroupFiles(reportingGroup);
-                        files.AddRange(reportingGroupFiles);
+                        await ProcessReportingGroupFilesAsync(reportingGroupFolder);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+
+                    try
+                    {
+                        await ProcessReportingGroupReprocessFolderFilesAsync(reportingGroupFolder);
                     }
                     catch (Exception ex)
                     {
@@ -73,115 +85,175 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                     $"Waiting for {this.tppConfiguration.TimerIntervalInMinutes} minute(s)...");
 
-                return files;
             });
 
-        private ValueTask<List<string>> ProcessReportingGroupFiles(string reportingGroup) =>
-            TryCatch(async () =>
+        virtual internal async ValueTask ProcessReportingGroupReprocessFolderFilesAsync(
+            string reportingGroupFolder)
+        {
+            string reprocessFolder = tppConfiguration.TppWorkingFolders.ReProcess;
+            var reprocessingFolder = Path.Combine(reportingGroupFolder, reprocessFolder);
+            List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
+
+            foreach (string folder in foldersToProcess)
             {
-                List<string> files = new List<string>();
-                var exceptions = new List<Exception>();
-                var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+                await ProcessReportingGroupFilesAsync(folder);
+            }
+        }
 
-                List<string> filePaths = await this.fileService
-                    .RetrieveListOfFilesAsync(reportingGroupFolder);
+        virtual internal async ValueTask ProcessReportingGroupFilesAsync(string reportingGroupFolder)
+        {
+            var exceptions = new List<Exception>();
 
-                string manifestFile = this.tppConfiguration.TppManifestFile;
+            List<string> filePaths = await this.fileService
+                .RetrieveListOfFilesAsync(reportingGroupFolder);
 
-                if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
+            string manifestFile = this.tppConfiguration.TppManifestFile;
+
+            if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
+            {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Manifest file found in {reportingGroupFolder}");
+
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Processing {filePaths.Count} file(s)...");
+
+                List<string> manifestFileLastList = filePaths.DeepClone();
+
+                string manifestFilePath = manifestFileLastList
+                    .FindLast(file => file.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase));
+
+                if (manifestFilePath != null)
                 {
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                        $"Manifest file found in {reportingGroupFolder}");
-
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                        $"Processing {filePaths.Count} file(s)...");
-
-                    List<string> manifestFileLastList = filePaths.DeepClone();
-
-                    string? manifestFilePath = manifestFileLastList
-                        .FindLast(file => file.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase));
-
-                    if (manifestFilePath != null)
-                    {
-                        manifestFileLastList.Remove(manifestFilePath);
-                        manifestFileLastList.Add(manifestFilePath);
-                    }
-
-                    byte[] manifestData = await this.fileService.ReadFromFileAsync(manifestFilePath);
-                    string manifestDataString = Encoding.ASCII.GetString(manifestData);
-
-                    List<Manifest> manifest = await this.csvMapperService
-                        .MapCsvToObjectAsync<Manifest>(
-                            data: manifestDataString,
-                            hasHeaderRecord: true);
-
-                    var manifestDateTime = manifest.First().DateExtractTo;
-
-                    foreach (string filePath in manifestFileLastList)
-                    {
-                        try
-                        {
-                            string file = await TryCatch(async () =>
-                            {
-                                var file = await this.fileService.ReadFromFileAsync(filePath);
-
-                                ValidateFile(file);
-
-                                var newFileName =
-                                    $"{reportingGroup}" +
-                                    $"\\{manifestDateTime}" +
-                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
-
-                                newFileName = newFileName.Replace("\\\\", "\\");
-
-                                var document = new Document
-                                {
-                                    FileName = newFileName,
-                                    DocumentData = file
-                                };
-
-                                await this.documentService.AddDocumentAsync(
-                                    document,
-                                    container: this.tppConfiguration.BlobStorageSettings.AzureBlobContainer);
-
-                                var processedFilePath =
-                                    $"{reportingGroupFolder}" +
-                                    $"\\Processed" +
-                                    $"\\{manifestDateTime}" +
-                                    $"\\{filePath.Replace(reportingGroupFolder, "")}";
-
-                                processedFilePath = processedFilePath.Replace("\\\\", "\\");
-
-                                await this.fileService.MoveFileAsync(filePath, processedFilePath);
-
-                                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                                    $"File '{document.FileName}' successfully uploaded.");
-
-                                return document.FileName;
-                            });
-
-                            files.Add(file);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                                $"Error processing file '{filePath}'");
-
-                            this.loggingBroker.LogError(ex);
-                            exceptions.Add(ex);
-                        }
-                    }
-
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                        $"Finished processing {files.Count} file(s).");
+                    manifestFileLastList.Remove(manifestFilePath);
+                    manifestFileLastList.Add(manifestFilePath);
                 }
 
-                if (exceptions.Any())
+                byte[] manifestData = await this.fileService.ReadFromFileAsync(manifestFilePath);
+                string manifestDataString = Encoding.ASCII.GetString(manifestData);
+
+                List<Manifest> manifest = await this.csvMapperService
+                    .MapCsvToObjectAsync<Manifest>(
+                        data: manifestDataString,
+                        hasHeaderRecord: true);
+
+                var manifestDateTime = manifest.First().DateExtractTo;
+                bool allSuccessFull = true;
+
+                foreach (string filePath in manifestFileLastList)
                 {
-                    throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+                    try
+                    {
+                        var destinationFilePath =
+                            $"{reportingGroupFolder}" +
+                            $"\\{manifestDateTime}" +
+                            $"\\{filePath.Replace(reportingGroupFolder, "")}";
+
+                        destinationFilePath = destinationFilePath.Replace("\\\\", "\\");
+
+                        bool isSuccess = await WriteFileToDestination(sourceFilePath: filePath, destinationFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Error processing file '{filePath}'");
+
+                        this.loggingBroker.LogError(ex);
+                        exceptions.Add(ex);
+                    }
                 }
 
-                return files;
-            });
+                foreach (string filePath in manifestFileLastList)
+                {
+                    try
+                    {
+                        var destinationFolder = $"{reportingGroupFolder}" +
+                            $"\\{(allSuccessFull
+                                ? this.tppConfiguration.TppWorkingFolders.Processed
+                                : this.tppConfiguration.TppWorkingFolders.Errored)}" +
+                            $"\\{manifestDateTime}" +
+                            $"\\{filePath.Replace(reportingGroupFolder, "")}";
+
+                        destinationFolder = destinationFolder.Replace("\\\\", "\\");
+
+                        await this.fileService.MoveFileAsync(filePath, destinationFolder);
+
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Moved file to '{destinationFolder}'");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Error processing file '{filePath}'");
+
+                        this.loggingBroker.LogError(ex);
+                        exceptions.Add(ex);
+                    }
+                }
+
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Finished processing {manifestFileLastList.Count} file(s).");
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException($"Unable to land {exceptions.Count} document(s)", exceptions);
+            }
+        }
+
+        virtual internal async ValueTask<bool> WriteFileToDestination(
+            string sourceFilePath,
+            string destinationFilePath)
+        {
+            try
+            {
+                var file = await this.fileService.ReadFromFileAsync(sourceFilePath);
+                ValidateFile(file);
+
+                var document = new Document
+                {
+                    FileName = destinationFilePath,
+                    DocumentData = file
+                };
+
+                List<BlobStorageSettings> activeDestination =
+                    this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
+
+                bool allSuccessfull = true;
+
+                foreach (BlobStorageSettings blobStorageSettings in activeDestination)
+                {
+                    try
+                    {
+                        await this.documentService.AddDocumentAsync(
+                            document,
+                            blobStorageSettings);
+
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"File '{document.FileName}' successfully uploaded.");
+                    }
+                    catch (Exception exception)
+                    {
+                        string message =
+                            $"Unable to write file '{sourceFilePath}' to destination '{destinationFilePath}' on " +
+                            $"{blobStorageSettings.Name}";
+
+                        FailedDocumentTppOrchestrationServiceException failedDocumentTppOrchestrationServiceException =
+                            new FailedDocumentTppOrchestrationServiceException(
+                                message,
+                                innerException: exception as Xeption);
+
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - {message}");
+                        this.loggingBroker.LogError(failedDocumentTppOrchestrationServiceException);
+                        allSuccessfull = false;
+                    }
+                }
+
+                return allSuccessfull;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

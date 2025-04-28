@@ -99,6 +99,16 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
+        public ValueTask<List<string>> RetrieveListOfSubFoldersAsync(string path, string searchPattern = "*") =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateRetrieveListOfFilesArguments(path, searchPattern);
+                    return await this.fileBroker.GetListOfSubFoldersAsync(path, searchPattern);
+                });
+            });
+
         public ValueTask<bool> CheckIfDirectoryExistsAsync(string path) =>
             TryCatch(async () =>
             {

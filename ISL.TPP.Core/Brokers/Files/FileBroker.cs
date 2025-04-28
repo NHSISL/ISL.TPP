@@ -41,6 +41,9 @@ namespace ISL.TPP.Core.Brokers.Files
         public async ValueTask<List<string>> GetListOfFilesAsync(string path, string searchPattern = "*") =>
             await Task.FromResult(Directory.GetFiles(path, searchPattern, SearchOption.TopDirectoryOnly).ToList());
 
+        public async ValueTask<List<string>> GetListOfSubFoldersAsync(string path, string searchPattern = "*") =>
+            await Task.FromResult(Directory.GetDirectories(path, searchPattern, SearchOption.TopDirectoryOnly).ToList());
+
         public async ValueTask<bool> CheckIfDirectoryExistsAsync(string path) =>
             await Task.FromResult(Directory.Exists(path));
 

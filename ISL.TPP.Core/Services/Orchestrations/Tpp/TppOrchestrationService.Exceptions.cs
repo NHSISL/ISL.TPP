@@ -14,14 +14,15 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 {
     internal partial class TppOrchestrationService : ITppOrchestrationService
     {
+        private delegate ValueTask ReturningNothingFunction();
         private delegate ValueTask<List<string>> ReturningStringListFunction();
         private delegate ValueTask<string> ReturningStringFunction();
 
-        private async ValueTask<List<string>> TryCatch(ReturningStringListFunction returningStringListFunction)
+        private async ValueTask TryCatch(ReturningNothingFunction returningNothingFunction)
         {
             try
             {
-                return await returningStringListFunction();
+                await returningNothingFunction();
             }
             catch (InvalidArgumentTppOrchestrationException invalidArgumentTppOrchestrationException)
             {

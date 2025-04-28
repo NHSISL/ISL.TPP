@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
@@ -28,24 +29,26 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             this.loggingBroker = loggingBroker;
         }
 
-        public ValueTask AddDocumentAsync(Document document, string container) =>
+        public ValueTask AddDocumentAsync(Document document, BlobStorageSettings blobStorageSettings) =>
             TryCatch(async () =>
             {
-                ValidateDocumentOnAdd(document, container);
+                ValidateDocumentOnAdd(document, blobStorageSettings);
 
                 await this.blobStorageBroker.UploadFileAsync(
                    fileName: document.FileName,
                    data: document.DocumentData,
-                   container);
+                   blobStorageSettings);
             });
 
-        public ValueTask<Document> RetrieveDocumentByFileNameAsync(string fileName, string container) =>
+        public ValueTask<Document> RetrieveDocumentByFileNameAsync(
+            string fileName,
+            BlobStorageSettings blobStorageSettings) =>
              TryCatch(async () =>
              {
-                 ValidateDocumentOnRetrieve(fileName, container);
+                 ValidateDocumentOnRetrieve(fileName, blobStorageSettings);
 
                  byte[] retrievedDocument = await this.blobStorageBroker
-                     .DownloadByFileNameAsync(fileName, container);
+                     .DownloadByFileNameAsync(fileName, blobStorageSettings);
 
                  ValidateStorageDocument(retrievedDocument, fileName);
 
@@ -65,20 +68,20 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
                  }
              });
 
-        public ValueTask RemoveDocumentByFileNameAsync(string fileName, string container) =>
+        public ValueTask RemoveDocumentByFileNameAsync(string fileName, BlobStorageSettings blobStorageSettings) =>
            TryCatch(async () =>
            {
-               ValidateDeleteArguments(fileName, container);
-               await this.blobStorageBroker.DeleteFileAsync(fileName, container);
+               ValidateDeleteArguments(fileName, blobStorageSettings);
+               await this.blobStorageBroker.DeleteFileAsync(fileName, blobStorageSettings);
            });
 
-        public ValueTask<string> GetDownloadLinkAsync(string fileName, string container) =>
+        public ValueTask<string> GetDownloadLinkAsync(string fileName, BlobStorageSettings blobStorageSettings) =>
            TryCatch(async () =>
            {
-               ValidateGetDownloadLinkArguments(fileName, container);
+               ValidateGetDownloadLinkArguments(fileName, blobStorageSettings);
                var expireOn = this.dateTimeBroker.GetCurrentDateTimeOffset().AddMinutes(5);
 
-               return await this.blobStorageBroker.GetDownloadLinkAsync(fileName, container, expireOn);
+               return await this.blobStorageBroker.GetDownloadLinkAsync(fileName, blobStorageSettings, expireOn);
            });
     }
 }

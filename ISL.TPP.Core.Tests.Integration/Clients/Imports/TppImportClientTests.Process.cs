@@ -3,11 +3,9 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using ISL.TPP.Core.Clients;
 using ISL.TPP.Core.Tests.Integrations;
 
@@ -49,10 +47,9 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             TppClient client = new TppClient(tppConfiguration);
 
             // when
-            List<string> actualFiles = await client.Imports.ProcessFilesAsync();
+            await client.Imports.ProcessFilesAsync();
 
             // then
-            actualFiles.Count.Should().Be(2);
         }
     }
 }

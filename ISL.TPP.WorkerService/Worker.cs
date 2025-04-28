@@ -28,15 +28,23 @@ namespace ISL.TPP.WorkerService
             CreateEventLogSource(eventSourceName, logName);
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
-            var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
-            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>();
+
+            var blobStoragesSettings = configuration.GetSection("blobStorages").Get<List<BlobStorageSettings>>()
+                ?? new List<BlobStorageSettings>();
+
+            var tppWorkingFolders = configuration.GetSection("tppWorkingFolders").Get<TppWorkingFolders>()
+                ?? new TppWorkingFolders();
+
+            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>()
+                ?? new List<string>();
 
             var tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = tppManifestFile,
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
-                BlobStorageSettings = blobStorageSettings,
+                BlobStoragesSettings = blobStoragesSettings,
+                TppWorkingFolders = tppWorkingFolders,
                 ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };

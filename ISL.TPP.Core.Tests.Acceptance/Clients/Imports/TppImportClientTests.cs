@@ -21,13 +21,18 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             {
                 TppManifestFile = "manifest.csv",
                 TppPickupFolder = @"c:\tpp\pickup",
-                BlobStorageSettings = new BlobStorageSettings
+                BlobStoragesSettings = new List<BlobStorageSettings>()
                 {
-                    AzureBlobServiceUri = "https://localhost:10000/devclientaccount",
-                    AzureClientId = "devclientaccount",
-                    AzureClientSecret = "Eby8vdM02xSZFPTOtr/KBHBeksoGMGw==",
-                    AzureTenantId = "devtenantid",
-                    AzureBlobContainer = "tpp"
+                    new BlobStorageSettings
+                    {
+                        Name = "development",
+                        Enabled = true,
+                        AzureBlobServiceUri = "https://localhost:10000/devclientaccount",
+                        AzureClientId = "devclientaccount",
+                        AzureClientSecret = "Eby8vdM02xSZFPTOtr/KBHBeksoGMGw==",
+                        AzureTenantId = "devtenantid",
+                        AzureBlobContainer = "tpp"
+                    }
                 },
                 ReportingGroups = new List<string> { "ReportingGroup1" },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)

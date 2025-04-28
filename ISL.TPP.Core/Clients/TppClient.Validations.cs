@@ -32,27 +32,30 @@ namespace ISL.TPP.Core.Clients
                 (Rule: IsInvalid(tppConfiguration.TppManifestFile),
                     Parameter: "TppManifestFile"),
 
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings),
+                (Rule: IsInvalid(tppConfiguration.BlobStoragesSettings),
                     Parameter: "BlobStorageSettings"),
 
                 (Rule: IsInvalid(tppConfiguration.RetryConfig),
                     Parameter: "RetryConfig"));
 
-            Validate(
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureBlobServiceUri),
-                    Parameter: "BlobStorageSettings.AzureBlobServiceUri"),
+            foreach (BlobStorageSettings blobStorageSettings in tppConfiguration.BlobStoragesSettings)
+            {
+                Validate(
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobServiceUri),
+                    Parameter: $"BlobStorageSettings.{blobStorageSettings.Name}.AzureBlobServiceUri"),
 
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureTenantId),
-                    Parameter: "BlobStorageSettings.AzureTenantId"),
+                (Rule: IsInvalid(blobStorageSettings.AzureTenantId),
+                    Parameter: $"BlobStorageSettings.{blobStorageSettings.Name}.AzureTenantId"),
 
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureClientId),
-                    Parameter: "BlobStorageSettings.AzureTenantId"),
+                (Rule: IsInvalid(blobStorageSettings.AzureClientId),
+                    Parameter: $"BlobStorageSettings.{blobStorageSettings.Name}.AzureTenantId"),
 
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureClientSecret),
-                    Parameter: "BlobStorageSettings.AzureTenantId"),
+                (Rule: IsInvalid(blobStorageSettings.AzureClientSecret),
+                    Parameter: $"BlobStorageSettings.{blobStorageSettings.Name}.AzureTenantId"),
 
-                (Rule: IsInvalid(tppConfiguration.BlobStorageSettings.AzureBlobContainer),
-                    Parameter: "BlobStorageSettings.Container"));
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobContainer),
+                    Parameter: $"BlobStorageSettings.{blobStorageSettings.Name}.Container"));
+            }
         }
 
         private static dynamic IsInvalid(string? text) => new
@@ -61,7 +64,7 @@ namespace ISL.TPP.Core.Clients
             Message = "Configuration value does not exist or is invalid."
         };
 
-        private static dynamic IsInvalid(BlobStorageSettings? value) => new
+        private static dynamic IsInvalid(List<BlobStorageSettings> value) => new
         {
             Condition = value is null,
             Message = "Configuration not defined."

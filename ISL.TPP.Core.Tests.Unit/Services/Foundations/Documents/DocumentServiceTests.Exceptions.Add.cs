@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
@@ -20,7 +21,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnUploadFileAndLogItAsync()
         {
             // given
-            string encryptedFileContainer = "emislanding";
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var randomBytes = Encoding.ASCII.GetBytes(GetRandomString());
             var randomMessage = GetRandomString();
@@ -43,11 +44,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                      innerException: failedDocumentRequestException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, blobStorageSettings))
                     .Throws(requestFailedException);
 
             // when
-            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, encryptedFileContainer);
+            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, blobStorageSettings);
 
             var actualDependencyException =
                  await Assert.ThrowsAsync<DocumentDependencyException>(uploadFileTask.AsTask);
@@ -56,7 +57,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer),
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, blobStorageSettings),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
@@ -72,7 +73,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnUploadFileIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            string encryptedFileContainer = "emislanding";
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var randomBytes = Encoding.ASCII.GetBytes(GetRandomString());
             var randomMessage = GetRandomString();
@@ -95,11 +96,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: failedDocumentServiceException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer))
+                 broker.UploadFileAsync(document.FileName, document.DocumentData, blobStorageSettings))
                      .Throws(failedDocumentServiceException);
 
             // when
-            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, encryptedFileContainer);
+            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, blobStorageSettings);
 
             var actualServiceException =
                  await Assert.ThrowsAsync<DocumentServiceException>(uploadFileTask.AsTask);
@@ -108,7 +109,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(document.FileName, document.DocumentData, encryptedFileContainer),
+                broker.UploadFileAsync(document.FileName, document.DocumentData, blobStorageSettings),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>

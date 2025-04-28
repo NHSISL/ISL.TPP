@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Force.DeepCloner;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
@@ -19,7 +20,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldRetrieveFileAsync()
         {
             // Given
-            var randomContainer = GetRandomString();
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             string randomFileName = GetRandomString();
 
             Document randomDocument = new Document
@@ -32,19 +33,19 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             expectedDocument.SHA256Hash = ComputeSHA256Hash(randomDocument.DocumentData);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer))
+                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings))
                     .ReturnsAsync(randomDocument.DocumentData);
 
             // When
             Document actualDocument =
                 await this.documentService
-                    .RetrieveDocumentByFileNameAsync(fileName: randomDocument.FileName, container: randomContainer);
+                    .RetrieveDocumentByFileNameAsync(fileName: randomDocument.FileName, blobStorageSettings);
 
             // Then
             actualDocument.Should().BeEquivalentTo(expectedDocument);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, randomContainer),
+                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings),
                     Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();

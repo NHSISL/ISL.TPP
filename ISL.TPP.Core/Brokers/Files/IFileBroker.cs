@@ -15,6 +15,7 @@ namespace ISL.TPP.Core.Brokers.Files
         ValueTask<bool> DeleteFileAsync(string path);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);
         ValueTask<List<string>> GetListOfFilesAsync(string path, string searchPattern = "*");
+        ValueTask<List<string>> GetListOfSubFoldersAsync(string path, string searchPattern = "*");
         ValueTask<bool> CheckIfDirectoryExistsAsync(string path);
         ValueTask<bool> CreateDirectoryAsync(string path);
         ValueTask<bool> DeleteDirectoryAsync(string path, bool recursive = false);

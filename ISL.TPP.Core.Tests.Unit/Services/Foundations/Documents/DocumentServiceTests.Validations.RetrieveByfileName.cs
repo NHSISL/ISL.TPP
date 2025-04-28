@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using ISL.TPP.Core.Services.Foundations.Documents;
@@ -23,7 +24,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnSelectByFileNameIfInputsIsInvalid(string invalidInput)
         {
             // Given
-            string invalidContainer = invalidInput;
+            BlobStorageSettings invalidBlobStorageSettings = null;
             string containerName = invalidInput;
 
             Document document = new Document
@@ -65,7 +66,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             ValueTask<Document> getDownloadLinkTask =
                 documentService.RetrieveDocumentByFileNameAsync(
                     fileName: document.FileName,
-                    container: invalidContainer);
+                    invalidBlobStorageSettings);
 
             DocumentValidationException actualDocumentBlobValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(getDownloadLinkTask.AsTask);
@@ -79,7 +80,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -90,7 +91,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowNotFoundExceptionOnRetrieveByFileNameIfDocumentIsNotFoundAndLogItAsync()
         {
             //given
-            string someContainer = GetRandomString();
+            BlobStorageSettings someBlobStorageSettings = CreateRandomBlobStorageSettings();
             string someFileName = GetRandomString();
             byte[] nullByte = null;
 
@@ -103,14 +104,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: notFoundDocumentException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()))
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
                     .ReturnsAsync(nullByte);
 
             //when
             ValueTask<Document> retrieveDocumentByIdTask =
                 this.documentService.RetrieveDocumentByFileNameAsync(
                     fileName: someFileName,
-                    container: someContainer);
+                    blobStorageSettings: someBlobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(
@@ -120,7 +121,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<string>()),
+                broker.DownloadByFileNameAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Once());
 
             this.loggingBrokerMock.Verify(broker =>
