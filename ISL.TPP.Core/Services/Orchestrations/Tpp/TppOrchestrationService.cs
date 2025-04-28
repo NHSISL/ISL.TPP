@@ -92,10 +92,27 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         {
             var reprocessingFolder = Path.Combine(reportingGroupFolder, tppConfiguration.TppWorkingFolders.ReProcess);
             List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
+            var exceptions = new List<Exception>();
 
             foreach (string folder in foldersToProcess)
             {
-                await ProcessReportingGroupFilesAsync(folder);
+                try
+                {
+                    await ProcessReportingGroupFilesAsync(folder);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Error processing folder '{folder}'");
+
+                    this.loggingBroker.LogError(ex);
+                    exceptions.Add(ex);
+                }
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException($"Unable to land document(s)", exceptions);
             }
         }
 
