@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace ISL.TPP.Core.Services.Foundations.Files
@@ -14,8 +15,17 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         ValueTask<byte[]> ReadFromFileAsync(string path);
         ValueTask<bool> DeleteFileAsync(string path);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);
-        ValueTask<List<string>> RetrieveListOfFilesAsync(string path, string searchPattern = "*");
-        ValueTask<List<string>> RetrieveListOfSubFoldersAsync(string path, string searchPattern = "*");
+
+        ValueTask<List<string>> RetrieveListOfFilesAsync(
+            string path,
+            string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly);
+
+        ValueTask<List<string>> RetrieveListOfSubFoldersAsync(
+            string path,
+            string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly);
+
         ValueTask<bool> CheckIfDirectoryExistsAsync(string path);
         ValueTask<bool> CreateDirectoryAsync(string path);
         ValueTask<bool> DeleteDirectoryAsync(string path, bool recursive = false);

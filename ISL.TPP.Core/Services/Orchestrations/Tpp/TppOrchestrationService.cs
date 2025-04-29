@@ -206,11 +206,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             $"\\{filePath.Replace(reportingGroupFolder, "")}";
 
                         cleanupDestinationFolder = cleanupDestinationFolder.Replace("\\\\", "\\");
-
                         await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
-
                         string sourceFolder = await this.fileService.GetDirectoryAsync(filePath);
-                        List<string> files = await this.fileService.RetrieveListOfFilesAsync(sourceFolder);
+
+                        List<string> files = await this.fileService
+                            .RetrieveListOfFilesAsync(path: sourceFolder, searchOption: SearchOption.AllDirectories);
 
                         if (!files.Any())
                         {

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Foundations.Files.Exceptions;
@@ -35,7 +36,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: invalidFileServiceDependencyException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern))
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()))
                     .ThrowsAsync(dependencyValidationException);
 
             // when
@@ -49,7 +50,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileDependencyValidationException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern),
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()),
                     Times.Once);
 
             this.fileBrokerMock.VerifyNoOtherCalls();
@@ -80,7 +81,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: failedFileDependencyException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern))
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()))
                     .ThrowsAsync(dependencyException);
 
             // when
@@ -94,7 +95,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileDependencyException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern),
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()),
                     Times.AtLeastOnce);
 
             this.fileBrokerMock.VerifyNoOtherCalls();
@@ -119,7 +120,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: failedFileServiceException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern))
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()))
                     .ThrowsAsync(serviceException);
 
             // when
@@ -133,7 +134,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileServiceException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(somePath, someSearchPattern),
+                broker.GetListOfFilesAsync(somePath, someSearchPattern, It.IsAny<SearchOption>()),
                     Times.Once);
 
             this.fileBrokerMock.VerifyNoOtherCalls();

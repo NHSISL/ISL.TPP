@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
@@ -27,7 +28,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var exceptions = new List<Exception>();
 
             this.fileServiceMock.Setup(service =>
-                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"))
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
                     .ReturnsAsync(randomFolderList);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -42,7 +43,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             };
 
             fileServiceMock.Setup(service =>
-                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"))
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
                     .ReturnsAsync(randomFolderList);
 
             foreach (string folder in randomFolderList)
@@ -68,7 +69,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualAggregateException.Should().BeEquivalentTo(expectedAggregateException);
 
             fileServiceMock.Verify(service =>
-                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"),
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly),
                     Times.Once);
 
             foreach (string folder in randomFolderList)
