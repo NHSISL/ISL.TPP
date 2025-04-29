@@ -198,7 +198,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 {
                     try
                     {
-                        var cleanupDestinationFolder = $"{reportingGroupFolder}" +
+                        var cleanupDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{reportingGroup}" +
                             $"\\{(allSuccessFull
                                 ? this.tppConfiguration.TppWorkingFolders.Processed
                                 : this.tppConfiguration.TppWorkingFolders.Errored)}" +
@@ -261,7 +261,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             blobStorageSettings);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"File '{document.FileName}' successfully uploaded.");
+                            $"File '{sourceFilePath}' to destination '{destinationFilePath}' on " +
+                            $"{blobStorageSettings.AzureBlobServiceUri}{blobStorageSettings.AzureBlobContainer}");
                     }
                     catch (Exception exception)
                     {

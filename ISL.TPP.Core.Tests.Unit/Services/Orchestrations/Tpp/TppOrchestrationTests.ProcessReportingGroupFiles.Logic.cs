@@ -112,10 +112,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
                 blobDestinationFilePath = blobDestinationFilePath.Replace("\\\\", "\\");
 
-                var moveDestinationFolder = $"{randomReportingGroupFolder}" +
+                var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
                     $"\\{(isSuccess
-                        ? this.tppConfiguration.TppWorkingFolders.Processed
-                        : this.tppConfiguration.TppWorkingFolders.Errored)}" +
+                        ? tppConfiguration.TppWorkingFolders.Processed
+                        : tppConfiguration.TppWorkingFolders.Errored)}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
@@ -156,10 +156,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
                 blobDestinationFilePath = blobDestinationFilePath.Replace("\\\\", "\\");
 
-                var moveDestinationFolder = $"{randomReportingGroupFolder}" +
+                var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
                     $"\\{(isSuccess
-                        ? this.tppConfiguration.TppWorkingFolders.Processed
-                        : this.tppConfiguration.TppWorkingFolders.Errored)}" +
+                        ? tppConfiguration.TppWorkingFolders.Processed
+                        : tppConfiguration.TppWorkingFolders.Errored)}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
