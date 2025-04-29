@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;
@@ -36,11 +35,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            string pickupFolder =
-                Path.Combine(inputReportingGroupFolder, tppConfiguration.TppWorkingFolders.ReProcess);
+
 
             fileServiceMock.Setup(service =>
-                service.RetrieveListOfSubFoldersAsync(pickupFolder, "*"))
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"))
                     .ReturnsAsync(randomFolderList);
 
             foreach (string folder in randomFolderList)
@@ -56,7 +54,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             fileServiceMock.Verify(service =>
-                service.RetrieveListOfSubFoldersAsync(pickupFolder, "*"),
+                service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*"),
                     Times.Once);
 
             foreach (string folder in randomFolderList)

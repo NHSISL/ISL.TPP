@@ -4,6 +4,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;
 using Xunit;
@@ -16,27 +17,35 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldProcessFilesAsync()
         {
             // given
+            int count = 1; //GetRandomNumber();
+            TppConfiguration tppConfiguration = CreateRandomTppConfiguration(count);
+
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
                 this.csvMapperServiceMock.Object,
-                this.tppConfiguration,
+                tppConfiguration,
                 this.dateTimeBrokerMock.Object,
                 this.loggingBrokerMock.Object)
             {
                 CallBase = true
             };
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
-                string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+                string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+
+                string reprocessfolder = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup,
+                    tppConfiguration.TppWorkingFolders.ReProcess);
 
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupFilesAsync(pickupFolder))
+                    service.ProcessReportingGroupFilesAsync(folder))
                         .Returns(ValueTask.CompletedTask);
 
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder))
+                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder))
                         .Returns(ValueTask.CompletedTask);
             }
 
@@ -44,16 +53,21 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             await tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             // then
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
-                string pickupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
+                string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+
+                string reprocessfolder = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup,
+                    tppConfiguration.TppWorkingFolders.ReProcess);
 
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupFilesAsync(pickupFolder),
+                    service.ProcessReportingGroupFilesAsync(folder),
                         Times.Once);
 
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupReprocessFolderFilesAsync(pickupFolder),
+                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder),
                         Times.Once);
             }
 

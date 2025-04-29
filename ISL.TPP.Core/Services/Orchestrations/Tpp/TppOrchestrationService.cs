@@ -56,10 +56,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
                 {
-                    var reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
-
                     try
                     {
+                        var reportingGroupFolder = Path.Combine(
+                            this.tppConfiguration.TppPickupFolder,
+                            reportingGroup);
+
                         await ProcessReportingGroupFilesAsync(reportingGroupFolder);
                     }
                     catch (Exception ex)
@@ -69,6 +71,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                     try
                     {
+                        var reportingGroupFolder = Path.Combine(
+                            this.tppConfiguration.TppPickupFolder,
+                            reportingGroup,
+                            tppConfiguration.TppWorkingFolders.ReProcess);
+
                         await ProcessReportingGroupReprocessFolderFilesAsync(reportingGroupFolder);
                     }
                     catch (Exception ex)
@@ -88,9 +95,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             });
 
         virtual internal async ValueTask ProcessReportingGroupReprocessFolderFilesAsync(
-            string reportingGroupFolder)
+            string reprocessingFolder)
         {
-            var reprocessingFolder = Path.Combine(reportingGroupFolder, tppConfiguration.TppWorkingFolders.ReProcess);
             List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
             var exceptions = new List<Exception>();
 
@@ -160,7 +166,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     try
                     {
                         var destinationFilePath =
-                            $"{reportingGroupFolder}" +
+                            $"{reportingGroupFolder.Replace(tppConfiguration.TppPickupFolder, "")}" +
                             $"\\{manifestDateTime}" +
                             $"\\{filePath.Replace(reportingGroupFolder, "")}";
 

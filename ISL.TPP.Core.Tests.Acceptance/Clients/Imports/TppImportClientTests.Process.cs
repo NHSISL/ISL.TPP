@@ -2,7 +2,16 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Brokers.DateTimes;
+using ISL.TPP.Core.Brokers.Files;
+using ISL.TPP.Core.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Clients;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
@@ -157,55 +166,50 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
         [Fact(Skip = "Skipped")]
         public async Task ShouldNotProcessNewFilesIfManifestFileNotPresentAsync()
         {
-            //// given
-            //List<string> files = new List<string>();
+            // given
+            List<string> files = new List<string>();
+            DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
+            Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
+            Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
+            Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
 
-            //DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
-            //List<string> expectedFiles = new List<string>();
+            dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Returns(randomDateTimeOffset);
 
-            //Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
-            //Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
-            //Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            {
+                files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file1.csv");
+                files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file2.csv");
+                var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
-            //dateTimeBrokerMock.Setup(broker =>
-            //    broker.GetCurrentDateTimeOffset())
-            //        .Returns(randomDateTimeOffset);
+                fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
+                    pickupFolder, "*"))
+                    .ReturnsAsync(files);
+            }
 
-            //foreach (string reportingGroup in tppConfiguration.ReportingGroups)
-            //{
-            //    files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file1.csv");
-            //    files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file2.csv");
-            //    var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(_ => fileBrokerMock.Object);
+            serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
+            serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
 
-            //    fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
-            //        pickupFolder, "*"))
-            //        .ReturnsAsync(files);
-            //}
+            TppClient client = new TppClient(tppConfiguration, serviceCollection);
 
-            //IServiceCollection serviceCollection = new ServiceCollection();
-            //serviceCollection.AddTransient(_ => fileBrokerMock.Object);
-            //serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
-            //serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
+            // when
+            await client.Imports.ProcessFilesAsync();
 
-            //TppClient client = new TppClient(tppConfiguration, serviceCollection);
+            // then
+            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            {
+                var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
-            //// when
-            //List<string> actualFiles = await client.Imports.ProcessFilesAsync();
+                fileBrokerMock.Verify(broker =>
+                    broker.GetListOfFilesAsync(pickupFolder, "*"),
+                        Times.Once);
+            }
 
-            //// then
-            //actualFiles.Should().BeEquivalentTo(expectedFiles);
-
-            //foreach (string reportingGroup in tppConfiguration.ReportingGroups)
-            //{
-            //    var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
-
-            //    fileBrokerMock.Verify(broker =>
-            //        broker.GetListOfFilesAsync(pickupFolder, "*"),
-            //            Times.Once);
-            //}
-
-            //fileBrokerMock.VerifyNoOtherCalls();
-            //blobStorageBrokerMock.VerifyNoOtherCalls();
+            fileBrokerMock.VerifyNoOtherCalls();
+            blobStorageBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
