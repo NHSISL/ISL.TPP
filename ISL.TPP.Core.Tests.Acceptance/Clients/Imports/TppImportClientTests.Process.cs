@@ -182,8 +182,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     Times.AtLeastOnce);
 
             fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(someFolder, "*", It.IsAny<SearchOption>()),
-                    Times.Exactly(allFiles.Count));
+                broker.GetListOfFilesAsync(someFolder, "*", SearchOption.AllDirectories),
+                    Times.Exactly(2));
 
             fileBrokerMock.Verify(broker =>
                 broker.CheckIfDirectoryExistsAsync(It.IsAny<string>()),
