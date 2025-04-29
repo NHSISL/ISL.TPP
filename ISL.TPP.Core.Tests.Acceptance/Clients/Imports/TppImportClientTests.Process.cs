@@ -163,12 +163,14 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             //blobStorageBrokerMock.VerifyNoOtherCalls();
         }
 
-        [Fact(Skip = "Skipped")]
+        [Fact]
         public async Task ShouldNotProcessNewFilesIfManifestFileNotPresentAsync()
         {
             // given
             List<string> files = new List<string>();
+            List<string> reprocessFiles = new List<string>();
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
+            string manifestToDate = randomDateTimeOffset.ToString("yyyyMMdd_HHmm");
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
@@ -179,20 +181,43 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
-                files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file1.csv");
-                files.Add($@"{tppConfiguration.TppPickupFolder}\{reportingGroup}\file2.csv");
-                var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+                string filePath = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup);
+
+                string reprocessFolderPath = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup,
+                    tppConfiguration.TppWorkingFolders.ReProcess);
+
+                string reprocessSubFolderPath = Path.Combine(
+                    reprocessFolderPath,
+                    manifestToDate);
+
+                List<string> reprocessFolders = new List<string> { reprocessSubFolderPath };
+
+                files.Add($@"{filePath}\file1.csv");
+                files.Add($@"{filePath}\file2.csv");
+                reprocessFiles.Add($@"{reprocessSubFolderPath}\file1.csv");
+                reprocessFiles.Add($@"{reprocessSubFolderPath}\file2.csv");
 
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
-                    pickupFolder, "*"))
-                    .ReturnsAsync(files);
+                    filePath, It.IsAny<string>()))
+                        .ReturnsAsync(files);
+
+                fileBrokerMock.Setup(broker => broker.GetListOfSubFoldersAsync(
+                    reprocessFolderPath, It.IsAny<string>()))
+                        .ReturnsAsync(reprocessFolders);
+
+                fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
+                    reprocessSubFolderPath, It.IsAny<string>()))
+                        .ReturnsAsync(reprocessFiles);
             }
 
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
             serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
-
             TppClient client = new TppClient(tppConfiguration, serviceCollection);
 
             // when
@@ -201,15 +226,37 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             // then
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
-                var pickupFolder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
+                string filePath = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup);
 
-                fileBrokerMock.Verify(broker =>
-                    broker.GetListOfFilesAsync(pickupFolder, "*"),
+                string reprocessFolderPath = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    reportingGroup,
+                    tppConfiguration.TppWorkingFolders.ReProcess);
+
+                string reprocessSubFolderPath = Path.Combine(
+                    reprocessFolderPath,
+                    manifestToDate);
+
+                List<string> reprocessFolders = new List<string> { reprocessSubFolderPath };
+
+                fileBrokerMock.Verify(broker => broker.GetListOfFilesAsync(
+                    filePath, It.IsAny<string>()),
+                        Times.Once);
+
+                fileBrokerMock.Verify(broker => broker.GetListOfSubFoldersAsync(
+                    reprocessFolderPath, It.IsAny<string>()),
+                        Times.Once);
+
+                fileBrokerMock.Verify(broker => broker.GetListOfFilesAsync(
+                    reprocessSubFolderPath, It.IsAny<string>()),
                         Times.Once);
             }
 
             fileBrokerMock.VerifyNoOtherCalls();
             blobStorageBrokerMock.VerifyNoOtherCalls();
+            dateTimeBrokerMock.VerifyNoOtherCalls();
         }
     }
 }

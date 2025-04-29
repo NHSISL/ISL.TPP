@@ -41,11 +41,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     tppConfiguration.TppWorkingFolders.ReProcess);
 
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupFilesAsync(folder))
+                    service.ProcessReportingGroupFilesAsync(folder, reportingGroup))
                         .Returns(ValueTask.CompletedTask);
 
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder))
+                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder, reportingGroup))
                         .Returns(ValueTask.CompletedTask);
             }
 
@@ -63,11 +63,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     tppConfiguration.TppWorkingFolders.ReProcess);
 
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupFilesAsync(folder),
+                    service.ProcessReportingGroupFilesAsync(folder, reportingGroup),
                         Times.Once);
 
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder),
+                    service.ProcessReportingGroupReprocessFolderFilesAsync(reprocessfolder, reportingGroup),
                         Times.Once);
             }
 

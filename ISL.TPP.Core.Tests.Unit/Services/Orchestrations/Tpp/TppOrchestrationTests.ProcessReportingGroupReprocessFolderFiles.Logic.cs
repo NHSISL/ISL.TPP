@@ -16,7 +16,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldProcessReportingGroupReprocessFolderFilesAsync()
         {
             // given
-            string randomReportingGroupFolder = GetRandomString();
+            string randomReportingGroup = GetRandomString();
+            string inputReportingGroup = randomReportingGroup;
+            string randomReportingGroupFolder = $"{GetRandomString()}\\{inputReportingGroup}";
             string inputReportingGroupFolder = randomReportingGroupFolder;
             List<string> randomFolderList = GetRandomStringList(GetRandomNumber());
 
@@ -44,13 +46,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (string folder in randomFolderList)
             {
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupFilesAsync(folder))
+                    service.ProcessReportingGroupFilesAsync(folder, inputReportingGroup))
                         .Returns(ValueTask.CompletedTask);
             }
 
             // when
             await tppOrchestrationServiceMock.Object
-                .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder);
+                .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder, inputReportingGroup);
 
             // then
             fileServiceMock.Verify(service =>
@@ -60,12 +62,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (string folder in randomFolderList)
             {
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupFilesAsync(folder),
+                    service.ProcessReportingGroupFilesAsync(folder, inputReportingGroup),
                         Times.Once);
             }
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder),
+                service.ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder, inputReportingGroup),
                     Times.Once);
 
             tppOrchestrationServiceMock.VerifyNoOtherCalls();

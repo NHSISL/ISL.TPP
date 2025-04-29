@@ -62,7 +62,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             this.tppConfiguration.TppPickupFolder,
                             reportingGroup);
 
-                        await ProcessReportingGroupFilesAsync(reportingGroupFolder);
+                        await ProcessReportingGroupFilesAsync(reportingGroupFolder, reportingGroup);
                     }
                     catch (Exception ex)
                     {
@@ -76,7 +76,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             reportingGroup,
                             tppConfiguration.TppWorkingFolders.ReProcess);
 
-                        await ProcessReportingGroupReprocessFolderFilesAsync(reportingGroupFolder);
+                        await ProcessReportingGroupReprocessFolderFilesAsync(reportingGroupFolder, reportingGroup);
                     }
                     catch (Exception ex)
                     {
@@ -95,7 +95,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             });
 
         virtual internal async ValueTask ProcessReportingGroupReprocessFolderFilesAsync(
-            string reprocessingFolder)
+            string reprocessingFolder,
+            string reportingGroup)
         {
             List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
             var exceptions = new List<Exception>();
@@ -104,7 +105,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             {
                 try
                 {
-                    await ProcessReportingGroupFilesAsync(folder);
+                    await ProcessReportingGroupFilesAsync(folder, reportingGroup);
                 }
                 catch (Exception ex)
                 {
@@ -122,7 +123,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             }
         }
 
-        virtual internal async ValueTask ProcessReportingGroupFilesAsync(string reportingGroupFolder)
+        virtual internal async ValueTask ProcessReportingGroupFilesAsync(
+            string reportingGroupFolder,
+            string reportingGroup)
         {
             var exceptions = new List<Exception>();
 
@@ -165,16 +168,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 {
                     try
                     {
-                        var destinationFilePath =
-                            $"{reportingGroupFolder.Replace(tppConfiguration.TppPickupFolder, "")}" +
+                        var blobDestinationPath =
+                            $"{reportingGroup}" +
                             $"\\{manifestDateTime}" +
                             $"\\{filePath.Replace(reportingGroupFolder, "")}";
 
-                        destinationFilePath = destinationFilePath.Replace("\\\\", "\\");
+                        blobDestinationPath = blobDestinationPath.Replace("\\\\", "\\");
 
                         bool isSuccess = await WriteFileToDestinationAsync(
                             sourceFilePath: filePath,
-                            destinationFilePath);
+                            blobDestinationPath);
 
                         if (isSuccess == false)
                         {
@@ -195,19 +198,19 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 {
                     try
                     {
-                        var destinationFolder = $"{reportingGroupFolder}" +
+                        var cleanupDestinationFolder = $"{reportingGroupFolder}" +
                             $"\\{(allSuccessFull
                                 ? this.tppConfiguration.TppWorkingFolders.Processed
                                 : this.tppConfiguration.TppWorkingFolders.Errored)}" +
                             $"\\{manifestDateTime}" +
                             $"\\{filePath.Replace(reportingGroupFolder, "")}";
 
-                        destinationFolder = destinationFolder.Replace("\\\\", "\\");
+                        cleanupDestinationFolder = cleanupDestinationFolder.Replace("\\\\", "\\");
 
-                        await this.fileService.MoveFileAsync(filePath, destinationFolder);
+                        await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Moved file to '{destinationFolder}'");
+                            $"Moved file to '{cleanupDestinationFolder}'");
                     }
                     catch (Exception ex)
                     {

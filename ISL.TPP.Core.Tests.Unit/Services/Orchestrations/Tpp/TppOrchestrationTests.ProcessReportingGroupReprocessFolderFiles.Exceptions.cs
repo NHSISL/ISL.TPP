@@ -19,7 +19,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldThrowAggregateExceptionOnProcessReportingGroupReprocessFolderFilesAsync()
         {
             // given
-            string randomReportingGroupFolder = GetRandomString();
+            string randomReportingGroup = GetRandomString();
+            string randomReportingGroupFolder = $"{GetRandomString()}\\{randomReportingGroup}";
             string inputReportingGroupFolder = randomReportingGroupFolder;
             List<string> randomFolderList = GetRandomStringList(GetRandomNumber());
             Xeption someException = new Xeption("Some exception");
@@ -49,7 +50,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 exceptions.Add(someException);
 
                 tppOrchestrationServiceMock.Setup(service =>
-                    service.ProcessReportingGroupFilesAsync(folder))
+                    service.ProcessReportingGroupFilesAsync(folder, randomReportingGroup))
                         .ThrowsAsync(someException);
             }
 
@@ -58,7 +59,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // when
             ValueTask processReportingGroupReprocessFolderFilesTask = tppOrchestrationServiceMock.Object
-                .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder);
+                .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder, randomReportingGroup);
 
             AggregateException actualAggregateException =
                 await Assert.ThrowsAsync<AggregateException>(processReportingGroupReprocessFolderFilesTask.AsTask);
@@ -73,7 +74,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (string folder in randomFolderList)
             {
                 tppOrchestrationServiceMock.Verify(service =>
-                    service.ProcessReportingGroupFilesAsync(folder),
+                    service.ProcessReportingGroupFilesAsync(folder, randomReportingGroup),
                         Times.Once);
             }
 
@@ -82,7 +83,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Exactly(randomFolderList.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder),
+                service.ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder, randomReportingGroup),
                     Times.Once);
 
             tppOrchestrationServiceMock.VerifyNoOtherCalls();

@@ -61,11 +61,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: failedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyValidationException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyValidationException);
 
             // when
@@ -79,11 +79,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 .BeEquivalentTo(expectedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
@@ -141,11 +141,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: failedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyException);
 
             // when
@@ -158,11 +158,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
@@ -224,11 +224,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     innerException: outerFailedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(serviceException);
 
             tppOrchestrationServiceMock.Setup(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()))
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(serviceException);
 
             // when
@@ -241,11 +241,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>()),
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>

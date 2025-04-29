@@ -20,7 +20,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldNotProcessReportingGroupFilesWhenManifestDontExistAsync()
         {
             // given
-            string randomReportingGroupFolder = GetRandomString();
+            string randomReportingGroup = GetRandomString();
+            string randomReportingGroupFolder = $"{GetRandomString()}\\{randomReportingGroup}";
             string manifestFile = tppConfiguration.TppManifestFile;
             List<string> randomFiles = GetRandomStringList(GetRandomNumber());
 
@@ -40,7 +41,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             };
 
             // when
-            await tppOrchestrationServiceMock.Object.ProcessReportingGroupFilesAsync(randomReportingGroupFolder);
+            await tppOrchestrationServiceMock.Object
+                .ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup);
 
             // then
             this.fileServiceMock.Verify(service =>
@@ -48,7 +50,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Once);
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder),
+                service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
                     Times.Once);
 
             tppOrchestrationServiceMock.VerifyNoOtherCalls();
@@ -65,7 +67,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             bool isSuccess)
         {
             // given
-            string randomReportingGroupFolder = GetRandomString();
+            string randomReportingGroup = GetRandomString();
+            string randomReportingGroupFolder = $"{GetRandomString()}\\{randomReportingGroup}";
             string manifestFile = tppConfiguration.TppManifestFile;
             int count = 1; //GetRandomNumber();
             List<string> randomFiles = GetRandomStringList(count);
@@ -103,7 +106,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (string filePath in manifestFileLastList)
             {
                 var blobDestinationFilePath =
-                    $"{randomReportingGroupFolder}" +
+                    $"{randomReportingGroup}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
@@ -128,7 +131,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             }
 
             // when
-            await tppOrchestrationServiceMock.Object.ProcessReportingGroupFilesAsync(randomReportingGroupFolder);
+            await tppOrchestrationServiceMock.Object
+                .ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup);
 
             // then
             this.fileServiceMock.Verify(service =>
@@ -146,7 +150,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (string filePath in manifestFileLastList)
             {
                 var blobDestinationFilePath =
-                    $"{randomReportingGroupFolder}" +
+                    $"{randomReportingGroup}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
@@ -171,7 +175,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             }
 
             tppOrchestrationServiceMock.Verify(service =>
-                service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder),
+                service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
                     Times.Once);
 
             tppOrchestrationServiceMock.VerifyNoOtherCalls();
