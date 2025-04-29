@@ -105,7 +105,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 return await WithRetry(async () =>
                 {
                     ValidateRetrieveListOfFilesArguments(path, searchPattern);
-                    return await this.fileBroker.GetListOfSubFoldersAsync(path, searchPattern);
+                    return await this.fileBroker.GetListOfSubFoldersAsync(path, searchPattern) ?? new List<string>();
                 });
             });
 
