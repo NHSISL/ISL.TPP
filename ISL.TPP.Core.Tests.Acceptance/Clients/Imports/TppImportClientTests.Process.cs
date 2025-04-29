@@ -106,6 +106,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     .ReturnsAsync(someFolder);
 
             fileBrokerMock.Setup(broker =>
+                broker.GetListOfFilesAsync(someFolder, "*"))
+                    .ReturnsAsync(reprocessFiles);
+
+            fileBrokerMock.Setup(broker =>
                 broker.CheckIfDirectoryExistsAsync(It.IsAny<string>()))
                     .ReturnsAsync(true);
 
@@ -176,6 +180,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             fileBrokerMock.Verify(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()),
                     Times.AtLeastOnce);
+
+            fileBrokerMock.Verify(broker =>
+                broker.GetListOfFilesAsync(someFolder, "*"),
+                    Times.Exactly(allFiles.Count));
 
             fileBrokerMock.Verify(broker =>
                 broker.CheckIfDirectoryExistsAsync(It.IsAny<string>()),
