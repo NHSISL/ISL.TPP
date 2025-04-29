@@ -96,8 +96,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldReturnFalseIfUnableToWriteFileToActiveDestinationsAsync()
         {
             // given
-            TppConfiguration configuration = new TppConfiguration();
-
             string randomSource = GetRandomString();
             string randomDestination = GetRandomString();
             byte[] randomFileBytes = Encoding.UTF8.GetBytes(GetRandomString());
