@@ -228,7 +228,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 if (!files.Any())
                 {
-                    await this.fileService.DeleteDirectoryAsync(sourceFolder);
+                    await this.fileService.DeleteDirectoryAsync(sourceFolder, recursive: true);
                 }
 
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
