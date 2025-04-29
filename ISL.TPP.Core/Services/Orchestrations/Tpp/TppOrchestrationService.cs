@@ -207,15 +207,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         cleanupDestinationFolder = cleanupDestinationFolder.Replace("\\\\", "\\");
                         await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
-                        string sourceFolder = await this.fileService.GetDirectoryAsync(filePath);
-
-                        List<string> files = await this.fileService
-                            .RetrieveListOfFilesAsync(path: sourceFolder, searchOption: SearchOption.AllDirectories);
-
-                        if (!files.Any())
-                        {
-                            await this.fileService.DeleteDirectoryAsync(sourceFolder);
-                        }
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                             $"Moved file to '{cleanupDestinationFolder}'");
@@ -228,6 +219,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         this.loggingBroker.LogError(ex);
                         exceptions.Add(ex);
                     }
+                }
+
+                string sourceFolder = await this.fileService.GetDirectoryAsync(manifestFileLastList.Last());
+
+                List<string> files = await this.fileService
+                    .RetrieveListOfFilesAsync(path: sourceFolder, searchOption: SearchOption.AllDirectories);
+
+                if (!files.Any())
+                {
+                    await this.fileService.DeleteDirectoryAsync(sourceFolder);
                 }
 
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +

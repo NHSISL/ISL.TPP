@@ -133,11 +133,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 this.fileServiceMock.Setup(service =>
                     service.GetDirectoryAsync(filePath))
                         .ReturnsAsync(filePath);
-
-                this.fileServiceMock.Setup(service =>
-                    service.RetrieveListOfFilesAsync(filePath, "*", SearchOption.AllDirectories))
-                        .ReturnsAsync(manifestFileLastList);
             }
+
+            this.fileServiceMock.Setup(service =>
+                service.RetrieveListOfFilesAsync(manifestFileLastList.Last(), "*", SearchOption.AllDirectories))
+                    .ReturnsAsync(manifestFileLastList);
 
             // when
             await tppOrchestrationServiceMock.Object
@@ -181,15 +181,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 this.fileServiceMock.Verify(service =>
                     service.MoveFileAsync(filePath, moveDestinationFolder),
                         Times.Once);
-
-                this.fileServiceMock.Verify(service =>
-                    service.GetDirectoryAsync(filePath),
-                        Times.Once);
-
-                this.fileServiceMock.Verify(service =>
-                    service.RetrieveListOfFilesAsync(filePath, "*", SearchOption.AllDirectories),
-                        Times.Once);
             }
+
+            this.fileServiceMock.Verify(service =>
+                service.GetDirectoryAsync(manifestFileLastList.Last()),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
+                service.RetrieveListOfFilesAsync(manifestFileLastList.Last(), "*", SearchOption.AllDirectories),
+                    Times.Once);
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
