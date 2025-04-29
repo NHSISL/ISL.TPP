@@ -142,6 +142,17 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
+        public ValueTask<string> GetDirectoryAsync(string path) =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateReadFromFileArguments(path);
+
+                    return await this.fileBroker.GetDirectoryAsync(path);
+                });
+            });
+
         public ValueTask<string> ComputeSHA256Hash(string path) =>
             TryCatch(async () =>
             {

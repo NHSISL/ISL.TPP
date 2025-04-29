@@ -209,6 +209,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
 
+                        string sourceFolder = await this.fileService.GetDirectoryAsync(filePath);
+                        List<string> files = await this.fileService.RetrieveListOfFilesAsync(sourceFolder);
+
+                        if (!files.Any())
+                        {
+                            await this.fileService.DeleteDirectoryAsync(sourceFolder);
+                        }
+
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                             $"Moved file to '{cleanupDestinationFolder}'");
                     }

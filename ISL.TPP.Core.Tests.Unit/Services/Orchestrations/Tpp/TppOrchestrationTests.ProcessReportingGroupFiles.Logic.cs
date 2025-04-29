@@ -128,6 +128,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 this.fileServiceMock.Setup(service =>
                     service.MoveFileAsync(filePath, moveDestinationFolder))
                         .ReturnsAsync(true);
+
+                this.fileServiceMock.Setup(service =>
+                    service.GetDirectoryAsync(filePath))
+                        .ReturnsAsync(filePath);
+
+                this.fileServiceMock.Setup(service =>
+                    service.RetrieveListOfFilesAsync(filePath, "*"))
+                        .ReturnsAsync(manifestFileLastList);
             }
 
             // when
@@ -171,6 +179,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
                 this.fileServiceMock.Verify(service =>
                     service.MoveFileAsync(filePath, moveDestinationFolder),
+                        Times.Once);
+
+                this.fileServiceMock.Verify(service =>
+                    service.GetDirectoryAsync(filePath),
+                        Times.Once);
+
+                this.fileServiceMock.Verify(service =>
+                    service.RetrieveListOfFilesAsync(filePath, "*"),
                         Times.Once);
             }
 
