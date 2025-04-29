@@ -42,5 +42,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
         private static DateTimeOffset GetRandomDateTimeOffset() =>
             new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
+        private static string GetRandomString() =>
+            new MnemonicString().GetValue();
     }
 }
