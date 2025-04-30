@@ -20,7 +20,7 @@ namespace ISL.TPP.Infrastructure.Services
         {
             var githubPipeline = new GithubPipeline
             {
-                Name = ".Net",
+                Name = "Build",
 
                 OnEvents = new Events
                 {
@@ -40,7 +40,7 @@ namespace ISL.TPP.Infrastructure.Services
                         new Job
                         {
                             Name = "Build",
-                            RunsOn = BuildMachines.WindowsLatest,
+                            RunsOn = BuildMachines.UbuntuLatest,
 
                             Steps = new List<GithubTask>
                             {
@@ -55,7 +55,7 @@ namespace ISL.TPP.Infrastructure.Services
 
                                     With = new TargetDotNetVersionV3
                                     {
-                                        DotNetVersion = "9.0.100"
+                                        DotNetVersion = dotNetVersion
                                     }
                                 },
 
