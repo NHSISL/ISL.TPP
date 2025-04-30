@@ -129,6 +129,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         {
             var exceptions = new List<Exception>();
 
+            if (!await this.fileService.CheckIfDirectoryExistsAsync(reportingGroupFolder))
+            {
+                await this.fileService.CreateDirectoryAsync(reportingGroupFolder);
+            }
+
             List<string> filePaths = await this.fileService
                 .RetrieveListOfFilesAsync(reportingGroupFolder);
 
