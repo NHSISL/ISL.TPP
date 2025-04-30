@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -12,7 +12,7 @@
 	<ItemGroup>
 		<PackageReference Include="CompareNETObjects" Version="4.83.0" />
 		<PackageReference Include="DeepCloner" Version="0.10.4" />
-		<PackageReference Include="FluentAssertions" Version="7.2.0" />
+		<PackageReference Include="FluentAssertions" Version="8.2.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
 		<PackageReference Include="CleanMoq" Version="42.42.42" />
 		<PackageReference Include="Tynamix.ObjectFiller" Version="1.5.9" />
