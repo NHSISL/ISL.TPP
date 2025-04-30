@@ -100,17 +100,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "Document dependency error occurred, contact support.",
                     innerException),
 
-                //new DocumentServiceException(
-                //    message: "Document service error occurred, contact support.",
-                //    innerException),
+                new DocumentServiceException(
+                    message: "Document service error occurred, contact support.",
+                    innerException),
 
-                //new FileDependencyException(
-                //    message: "File dependency error occurred, contact support.",
-                //    innerException),
+                new FileDependencyException(
+                    message: "File dependency error occurred, contact support.",
+                    innerException),
 
-                //new FileServiceException(
-                //    message: "File service error occurred, contact support.",
-                //    innerException)
+                new FileServiceException(
+                    message: "File service error occurred, contact support.",
+                    innerException)
             };
         }
 
