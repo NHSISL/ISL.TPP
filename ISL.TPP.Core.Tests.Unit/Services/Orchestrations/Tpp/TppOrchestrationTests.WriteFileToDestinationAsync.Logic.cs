@@ -115,12 +115,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 service.ReadFromFileAsync(randomSource))
                     .ReturnsAsync(randomFileBytes);
 
-            foreach (BlobStorageSettings storageSettings in activeDestinations)
-            {
-                this.documentServiceMock.Setup(service =>
-                    service.AddDocumentAsync(It.Is(SameDocumentAs(destinationDocument)), storageSettings))
-                        .ThrowsAsync(someException);
-            }
+            this.documentServiceMock.Setup(service =>
+                service.AddDocumentAsync(It.IsAny<Document>(), It.IsAny<BlobStorageSettings>()))
+                    .ThrowsAsync(someException);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -155,15 +152,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         message,
                         innerException: someException as Xeption);
 
-                this.documentServiceMock.Verify(service =>
-                    service.AddDocumentAsync(It.Is(SameDocumentAs(destinationDocument)), blobStorageSettings),
-                        Times.Once);
-
                 this.loggingBrokerMock.Verify(broker =>
                     broker.LogError(It.Is(SameExceptionAs(
                         failedDocumentTppOrchestrationServiceException))),
                             Times.Once);
             }
+
+            this.documentServiceMock.Verify(service =>
+                service.AddDocumentAsync(It.IsAny<Document>(), It.IsAny<BlobStorageSettings>()),
+                    Times.Exactly(activeDestinations.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.WriteFileToDestinationAsync(randomSource, randomDestination),

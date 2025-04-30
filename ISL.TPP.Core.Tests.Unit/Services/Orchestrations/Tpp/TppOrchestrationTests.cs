@@ -158,6 +158,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static Filler<BlobStorageSettings> GetRandomBlobStorageFiller()
         {
             var filler = new Filler<BlobStorageSettings>();
+            filler.Setup().OnProperty(setting => setting.Enabled).Use(() => true);
 
             return filler;
         }
