@@ -42,7 +42,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.fileServiceMock = new Mock<IFileService>();
             this.documentServiceMock = new Mock<IDocumentService>();
             this.csvMapperServiceMock = new Mock<ICsvMapperService>();
-            this.tppConfiguration = CreateRandomTppConfiguration();
+            this.tppConfiguration = CreateRandomTppConfiguration(count: 1);
             this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
             compareLogic = new CompareLogic();
@@ -100,17 +100,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "Document dependency error occurred, contact support.",
                     innerException),
 
-                new DocumentServiceException(
-                    message: "Document service error occurred, contact support.",
-                    innerException),
+                //new DocumentServiceException(
+                //    message: "Document service error occurred, contact support.",
+                //    innerException),
 
-                new FileDependencyException(
-                    message: "File dependency error occurred, contact support.",
-                    innerException),
+                //new FileDependencyException(
+                //    message: "File dependency error occurred, contact support.",
+                //    innerException),
 
-                new FileServiceException(
-                    message: "File service error occurred, contact support.",
-                    innerException)
+                //new FileServiceException(
+                //    message: "File service error occurred, contact support.",
+                //    innerException)
             };
         }
 

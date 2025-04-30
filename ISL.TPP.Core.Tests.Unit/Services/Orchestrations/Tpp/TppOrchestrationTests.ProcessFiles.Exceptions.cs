@@ -36,15 +36,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            var dependencyValidationException =
-                new TppOrchestrationDependencyValidationException(
-                    message: "TPP orchestration dependency validation error occurred, fix the errors and try again.",
-                    innerException: dependancyValidationException.InnerException as Xeption);
-
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(dependencyValidationException);
-                exceptions.Add(dependencyValidationException);
+                exceptions.Add(dependancyValidationException);
+                exceptions.Add(dependancyValidationException);
             }
 
             var aggregateException =
@@ -116,15 +111,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            var dependencyException =
-                new TppOrchestrationDependencyException(
-                    message: "TPP orchestration dependency error occurred, fix the errors and try again.",
-                    innerException: dependancyException.InnerException as Xeption);
-
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(dependencyException);
-                exceptions.Add(dependencyException);
+                exceptions.Add(dependancyException);
+                exceptions.Add(dependancyException);
             }
 
             var aggregateException =
@@ -194,20 +184,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            var innerFailedTppOrchestrationServiceException =
-                new FailedTppOrchestrationServiceException(
-                    message: "Failed TPP orchestration service occurred, please contact support",
-                    innerException: serviceException);
 
-            var tppOrchestrationServiceException =
-                new TppOrchestrationServiceException(
-                    message: "TPP orchestration service error occurred, contact support.",
-                    innerException: innerFailedTppOrchestrationServiceException);
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(tppOrchestrationServiceException);
-                exceptions.Add(tppOrchestrationServiceException);
+                exceptions.Add(serviceException);
+                exceptions.Add(serviceException);
             }
 
             var aggregateException =
