@@ -62,7 +62,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static Func<Xeption, bool> IsSameExceptionAs(Xeption expectedException) =>
             actualException => actualException.SameExceptionAs(expectedException);
 
-        public static TheoryData TppDependencyValidationExceptions()
+        public static TheoryData<Xeption> TppDependencyValidationExceptions()
         {
             string randomMessage = GetRandomString();
             string exceptionMessage = randomMessage;
@@ -88,7 +88,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             };
         }
 
-        public static TheoryData TppDependencyExceptions()
+        public static TheoryData<Xeption> TppDependencyExceptions()
         {
             string randomMessage = GetRandomString();
             string exceptionMessage = randomMessage;

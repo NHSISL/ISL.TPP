@@ -97,7 +97,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             this.blobStorageBrokerMock.Setup(broker =>
                  broker.UploadFileAsync(document.FileName, document.DocumentData, blobStorageSettings))
-                     .Throws(failedDocumentServiceException);
+                     .Throws(serviceException);
 
             // when
             ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, blobStorageSettings);
