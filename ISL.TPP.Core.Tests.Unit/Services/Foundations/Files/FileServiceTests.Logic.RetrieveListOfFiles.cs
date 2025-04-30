@@ -1,10 +1,9 @@
 ﻿// ---------------------------------------------------------------
-// Copyright (c) Christo du Toit. All rights reserved.
-// Licensed under the MIT License.
-// See License.txt in the project root for license information.
+// Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -27,7 +26,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             List<string> expectedResult = randomResult;
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetListOfFilesAsync(inputFilePath, inputSearchPattern))
+                broker.GetListOfFilesAsync(inputFilePath, inputSearchPattern, It.IsAny<SearchOption>()))
                     .ReturnsAsync(outputResult);
 
             // when
@@ -38,7 +37,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualResult.Should().BeEquivalentTo(expectedResult);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(inputFilePath, inputSearchPattern),
+                broker.GetListOfFilesAsync(inputFilePath, inputSearchPattern, It.IsAny<SearchOption>()),
                     Times.Once);
 
             this.fileBrokerMock.VerifyNoOtherCalls();

@@ -4,6 +4,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
@@ -15,7 +16,7 @@ public partial class DocumentServiceTests
     public async Task ShouldDeleteFileAsync()
     {
         // Given
-        var randomContainer = GetRandomString();
+        BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
         string randomFileName = GetRandomString();
 
         Document randomDocument = new Document
@@ -27,11 +28,11 @@ public partial class DocumentServiceTests
         // When
         await this.documentService.RemoveDocumentByFileNameAsync(
             filename: randomDocument.FileName,
-            container: randomContainer);
+            blobStorageSettings);
 
         // Then
         this.blobStorageBrokerMock.Verify(broker =>
-            broker.DeleteFileAsync(randomDocument.FileName, randomContainer),
+            broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings),
                 Times.Once);
 
         this.blobStorageBrokerMock.VerifyNoOtherCalls();

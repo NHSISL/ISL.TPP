@@ -17,20 +17,15 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
 {
     internal class BlobStorageBroker : IBlobStorageBroker
     {
-        private readonly BlobServiceClient blobServiceClient;
-
-        public BlobStorageBroker(BlobStorageSettings blobStorageSettings)
+        public async ValueTask UploadFileAsync(string fileName, byte[] data, BlobStorageSettings blobStorageSettings)
         {
-            this.blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
-        }
+            BlobServiceClient blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
 
-        public async ValueTask UploadFileAsync(string fileName, byte[] data, string container)
-        {
-            var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(fileName);
+            var blobClient = blobServiceClient.GetBlobContainerClient(blobStorageSettings.AzureBlobContainer)
+                .GetBlobClient(fileName);
 
             using (MemoryStream stream = new MemoryStream(data))
             {
-
                 var options = new BlobUploadOptions
                 {
                     TransferOptions = new Azure.Storage.StorageTransferOptions()
@@ -44,10 +39,12 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
             }
         }
 
-        public async ValueTask<byte[]> DownloadByFileNameAsync(string fileName, string container)
+        public async ValueTask<byte[]> DownloadByFileNameAsync(string fileName, BlobStorageSettings blobStorageSettings)
         {
+            BlobServiceClient blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
+
             var blobClient = blobServiceClient
-                .GetBlobContainerClient(container).GetBlobClient(fileName);
+                .GetBlobContainerClient(blobStorageSettings.AzureBlobContainer).GetBlobClient(fileName);
 
             var memoryStream = new MemoryStream();
             await blobClient.DownloadToAsync(memoryStream);
@@ -55,15 +52,23 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
             return memoryStream.ToArray();
         }
 
-        public async ValueTask DeleteFileAsync(string fileName, string container)
+        public async ValueTask DeleteFileAsync(string fileName, BlobStorageSettings blobStorageSettings)
         {
-            var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(fileName);
+            BlobServiceClient blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
+
+            var blobClient = blobServiceClient.GetBlobContainerClient(blobStorageSettings.AzureBlobContainer)
+                .GetBlobClient(fileName);
+
             await blobClient.DeleteAsync(DeleteSnapshotsOption.None);
         }
 
-        public async ValueTask<string> GetDownloadLinkAsync(string fileName, string container, DateTimeOffset expiresOn)
+        public async ValueTask<string> GetDownloadLinkAsync(string fileName, BlobStorageSettings blobStorageSettings, DateTimeOffset expiresOn)
         {
-            var blobClient = blobServiceClient.GetBlobContainerClient(container).GetBlobClient(fileName);
+            BlobServiceClient blobServiceClient = SetupBlobServiceClient(blobStorageSettings);
+
+            var blobClient = blobServiceClient.GetBlobContainerClient(blobStorageSettings.AzureBlobContainer)
+                .GetBlobClient(fileName);
+
             var userDelegationKey = blobServiceClient.GetUserDelegationKey(DateTimeOffset.UtcNow, expiresOn);
 
             var sasBuilder = new BlobSasBuilder()

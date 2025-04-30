@@ -39,7 +39,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
         private static Expression<Func<Xeption, bool>> SameExceptionAs(Xeption expectedException) =>
             actualException => actualException.SameExceptionAs(expectedException);
 
-        public static TheoryData FileServiceDependencyValidationExceptions()
+        public static TheoryData<Exception> FileServiceDependencyValidationExceptions()
         {
             return new TheoryData<Exception>()
             {
@@ -49,7 +49,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             };
         }
 
-        public static TheoryData FileServiceDependencyExceptions()
+        public static TheoryData<Exception> FileServiceDependencyExceptions()
         {
             return new TheoryData<Exception>()
             {

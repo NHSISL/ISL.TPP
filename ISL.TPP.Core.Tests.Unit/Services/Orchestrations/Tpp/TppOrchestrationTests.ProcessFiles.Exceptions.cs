@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
+using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;
 using Xeptions;
 using Xunit;
@@ -17,21 +18,28 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
     {
         [Theory]
         [MemberData(nameof(TppDependencyValidationExceptions))]
-        public async Task ShouldThrowDependencyValidationOnDecryptIfDependencyValidationOccursAndLogItAsync(
+        public async Task ShouldThrowAggregateExceptionOnProcessFilesIfDependencyValidationOccursAndLogItAsync(
             Xeption dependancyValidationException)
         {
             // given
             string randomFileName = GetRandomString();
             List<Exception> exceptions = new List<Exception>();
 
-            var dependencyValidationException =
-                new TppOrchestrationDependencyValidationException(
-                    message: "TPP orchestration dependency validation error occurred, fix the errors and try again.",
-                    innerException: dependancyValidationException.InnerException as Xeption);
+            var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
+                this.fileServiceMock.Object,
+                this.documentServiceMock.Object,
+                this.csvMapperServiceMock.Object,
+                tppConfiguration,
+                this.dateTimeBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(dependencyValidationException);
+                exceptions.Add(dependancyValidationException);
+                exceptions.Add(dependancyValidationException);
             }
 
             var aggregateException =
@@ -47,12 +55,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "TPP orchestration service error occurred, contact support.",
                     innerException: failedTppOrchestrationServiceException);
 
-            this.fileServiceMock.Setup(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
+                    .ThrowsAsync(dependancyValidationException);
+
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyValidationException);
 
             // when
-            ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
+            ValueTask processTask = tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             TppOrchestrationServiceException actualTppOrchestrationServiceException =
                 await Assert.ThrowsAsync<TppOrchestrationServiceException>(processTask.AsTask);
@@ -61,15 +73,18 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualTppOrchestrationServiceException.Should()
                 .BeEquivalentTo(expectedTppOrchestrationServiceException);
 
-            this.fileServiceMock.Verify(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is<Exception>(ex =>
-                    IsSameExceptionAs(ex as Xeption).Invoke(dependencyValidationException) ||
-                    IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedTppOrchestrationServiceException))),
+                        Times.Once);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -78,21 +93,28 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
         [Theory]
         [MemberData(nameof(TppDependencyExceptions))]
-        public async Task ShouldThrowDependencyExceptionOnDycryptIfDependencyExceptionOccursAndLogItAsync(
+        public async Task ShouldThrowAggregateExceptionOnProcessFilesIfDependencyExceptionOccursAndLogItAsync(
             Xeption dependancyException)
         {
             // given
             string randomFileName = GetRandomString();
             List<Exception> exceptions = new List<Exception>();
 
-            var dependencyException =
-                new TppOrchestrationDependencyException(
-                    message: "TPP orchestration dependency error occurred, fix the errors and try again.",
-                    innerException: dependancyException.InnerException as Xeption);
+            var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
+                this.fileServiceMock.Object,
+                this.documentServiceMock.Object,
+                this.csvMapperServiceMock.Object,
+                tppConfiguration,
+                this.dateTimeBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(dependencyException);
+                exceptions.Add(dependancyException);
+                exceptions.Add(dependancyException);
             }
 
             var aggregateException =
@@ -108,12 +130,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "TPP orchestration service error occurred, contact support.",
                     innerException: failedTppOrchestrationServiceException);
 
-            this.fileServiceMock.Setup(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
+                    .ThrowsAsync(dependancyException);
+
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(dependancyException);
 
             // when
-            ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
+            ValueTask processTask = tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             TppOrchestrationServiceException actualException =
                 await Assert.ThrowsAsync<TppOrchestrationServiceException>(processTask.AsTask);
@@ -121,15 +147,18 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
-            this.fileServiceMock.Verify(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is<Exception>(ex =>
-                    IsSameExceptionAs(ex as Xeption).Invoke(dependencyException) ||
-                    IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedTppOrchestrationServiceException))),
+                        Times.Once);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
@@ -137,26 +166,30 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         }
 
         [Fact]
-        public async Task ShouldThrowServiceExceptionOnProcessIfServiceErrorOccursAndLogItAsync()
+        public async Task ShouldThrowAggregateExceptionOnProcessFilesIfServiceErrorOccursAndLogItAsync()
         {
             //Given
             string randomFileName = GetRandomString();
             var serviceException = new Exception();
             List<Exception> exceptions = new List<Exception>();
 
-            var innerfailedTppOrchestrationServiceException =
-                new FailedTppOrchestrationServiceException(
-                    message: "Failed TPP orchestration service occurred, please contact support",
-                    innerException: serviceException);
+            var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
+                this.fileServiceMock.Object,
+                this.documentServiceMock.Object,
+                this.csvMapperServiceMock.Object,
+                tppConfiguration,
+                this.dateTimeBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
 
-            var tppOrchestrationServiceException =
-                new TppOrchestrationServiceException(
-                    message: "TPP orchestration service error occurred, contact support.",
-                    innerException: innerfailedTppOrchestrationServiceException);
+
 
             foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
             {
-                exceptions.Add(tppOrchestrationServiceException);
+                exceptions.Add(serviceException);
+                exceptions.Add(serviceException);
             }
 
             var aggregateException =
@@ -172,13 +205,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     message: "TPP orchestration service error occurred, contact support.",
                     innerException: outerFailedTppOrchestrationServiceException);
 
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
+                    .ThrowsAsync(serviceException);
 
-            this.fileServiceMock.Setup(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"))
+            tppOrchestrationServiceMock.Setup(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(serviceException);
 
             // when
-            ValueTask<List<string>> processTask = this.tppOrchestrationService.ProcessFilesAsync();
+            ValueTask processTask = tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             TppOrchestrationServiceException actualException =
                 await Assert.ThrowsAsync<TppOrchestrationServiceException>(processTask.AsTask);
@@ -186,15 +222,18 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
-            this.fileServiceMock.Verify(service =>
-                service.RetrieveListOfFilesAsync(It.IsAny<string>(), "*"),
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+
+            tppOrchestrationServiceMock.Verify(service =>
+                service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is<Exception>(ex =>
-                    IsSameExceptionAs(ex as Xeption).Invoke(tppOrchestrationServiceException) ||
-                    IsSameExceptionAs(ex as Xeption).Invoke(expectedTppOrchestrationServiceException))),
-                        Times.Exactly(this.tppConfiguration.ReportingGroups.Count + 1));
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedTppOrchestrationServiceException))),
+                        Times.Once);
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();

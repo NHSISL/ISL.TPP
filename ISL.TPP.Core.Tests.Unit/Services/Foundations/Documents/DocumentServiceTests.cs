@@ -10,6 +10,7 @@ using Azure;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -57,6 +58,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 byte[] hashBytes = sha256.ComputeHash(bytes);
                 return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             }
+        }
+
+        private static BlobStorageSettings CreateRandomBlobStorageSettings() =>
+            CreateRandomBlobStorageSettingsFiller().Create();
+
+        private static Filler<BlobStorageSettings> CreateRandomBlobStorageSettingsFiller()
+        {
+            var filler = new Filler<BlobStorageSettings>();
+            filler.Setup();
+
+            return filler;
         }
     }
 }

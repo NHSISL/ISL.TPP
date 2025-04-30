@@ -4,6 +4,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
@@ -17,7 +18,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldAddFileAsync()
         {
             // Given
-            string randomContainer = GetRandomString();
+            BlobStorageSettings randomBlobStorageSettings = CreateRandomBlobStorageSettings();
             string randomFileName = GetRandomString();
 
             Document randomDocument = new Document
@@ -27,11 +28,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             };
 
             // When
-            await this.documentService.AddDocumentAsync(document: randomDocument, container: randomContainer);
+            await this.documentService
+                .AddDocumentAsync(document: randomDocument, blobStorageSettings: randomBlobStorageSettings);
 
             // Then
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(randomDocument.FileName, randomDocument.DocumentData, randomContainer),
+                broker.UploadFileAsync(randomDocument.FileName, randomDocument.DocumentData, randomBlobStorageSettings),
                 Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();

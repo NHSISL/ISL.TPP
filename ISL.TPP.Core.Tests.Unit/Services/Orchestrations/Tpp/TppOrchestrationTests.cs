@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
@@ -41,7 +42,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.fileServiceMock = new Mock<IFileService>();
             this.documentServiceMock = new Mock<IDocumentService>();
             this.csvMapperServiceMock = new Mock<ICsvMapperService>();
-            this.tppConfiguration = CreateRandomTppConfiguration();
+            this.tppConfiguration = CreateRandomTppConfiguration(count: 1);
             this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
             compareLogic = new CompareLogic();
@@ -61,7 +62,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static Func<Xeption, bool> IsSameExceptionAs(Xeption expectedException) =>
             actualException => actualException.SameExceptionAs(expectedException);
 
-        public static TheoryData TppDependencyValidationExceptions()
+        public static TheoryData<Xeption> TppDependencyValidationExceptions()
         {
             string randomMessage = GetRandomString();
             string exceptionMessage = randomMessage;
@@ -87,7 +88,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             };
         }
 
-        public static TheoryData TppDependencyExceptions()
+        public static TheoryData<Xeption> TppDependencyExceptions()
         {
             string randomMessage = GetRandomString();
             string exceptionMessage = randomMessage;
@@ -130,18 +131,34 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static DateTimeOffset GetRandomDateTimeOffset() =>
             new DateTimeRange(earliestDate: new DateTime()).GetValue();
 
+        private static TppConfiguration CreateRandomTppConfiguration(int count) =>
+            CreateRandomTppConfigurationFiller(count).Create();
+
         private static TppConfiguration CreateRandomTppConfiguration() =>
-            CreateRandomTppConfigurationFiller().Create();
+            CreateRandomTppConfigurationFiller(GetRandomNumber()).Create();
 
-        private static Filler<TppConfiguration> CreateRandomTppConfigurationFiller()
+        private static Filler<TppConfiguration> CreateRandomTppConfigurationFiller(int count)
         {
-            int number = GetRandomNumber();
-
             var filler = new Filler<TppConfiguration>();
             filler.Setup()
+                .OnProperty(config => config.BlobStoragesSettings).Use(() => GetRandomBlobStorages(count))
                 .OnProperty(config => config.TppPickupFolder).Use(() => $"c:\\{GetRandomString()}")
                 .OnProperty(config => config.TppManifestFile).Use(() => $"{GetRandomString()}Manifest.csv")
-                .OnProperty(config => config.ReportingGroups).Use(() => GetRandomStringList(number));
+                .OnProperty(config => config.ReportingGroups).Use(() => GetRandomStringList(count));
+
+            return filler;
+        }
+
+        private static List<BlobStorageSettings> GetRandomBlobStorages(int count) =>
+            Enumerable.Range(0, count).Select(_ => GetRandomBlobStorage()).ToList();
+
+        private static BlobStorageSettings GetRandomBlobStorage() =>
+            GetRandomBlobStorageFiller().Create();
+
+        private static Filler<BlobStorageSettings> GetRandomBlobStorageFiller()
+        {
+            var filler = new Filler<BlobStorageSettings>();
+            filler.Setup().OnProperty(setting => setting.Enabled).Use(() => true);
 
             return filler;
         }
@@ -187,6 +204,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             filler.Setup().OnProperty(document => document.FileName).Use(() => filename);
 
             return filler;
+        }
+
+        private static List<Manifest> CreateRandomManifests(int count)
+        {
+            return CreateManifestFiller(dateTimeOffset: GetRandomDateTimeOffset())
+                .Create(count)
+                    .ToList();
         }
 
         private static List<Manifest> CreateRandomManifests()

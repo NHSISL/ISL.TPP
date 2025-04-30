@@ -32,15 +32,15 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             var timerIntervalInMinutes = configuration.GetValue<int>("TimerIntervalInMinutes");
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
-            var blobStorageSettings = configuration.GetSection("blobStorage").Get<BlobStorageSettings>();
-            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>();
+            var blobStoragesSettings = configuration.GetSection("blobStorages").Get<List<BlobStorageSettings>>() ?? [];
+            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>() ?? [];
 
             this.tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = tppManifestFile,
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
-                BlobStorageSettings = blobStorageSettings,
+                BlobStoragesSettings = blobStoragesSettings,
                 ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };

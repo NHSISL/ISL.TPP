@@ -2,7 +2,6 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Models.Clients.Exceptions;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
@@ -20,11 +19,11 @@ namespace ISL.TPP.Core.Clients.Imports
             this.tppOrchestrationService = tppOrchestrationService;
         }
 
-        public async ValueTask<List<string>> ProcessFilesAsync()
+        public async ValueTask ProcessFilesAsync()
         {
             try
             {
-                return await this.tppOrchestrationService.ProcessFilesAsync();
+                await this.tppOrchestrationService.ProcessFilesAsync();
             }
             catch (TppOrchestrationValidationException tppOrchestrationValidationException)
             {

@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Foundations.Files.Exceptions;
@@ -51,7 +52,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileValidationException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(invalidPath, invalidSearchPattern),
+                broker.GetListOfFilesAsync(invalidPath, invalidSearchPattern, It.IsAny<SearchOption>()),
                     Times.Never);
 
             this.fileBrokerMock.VerifyNoOtherCalls();

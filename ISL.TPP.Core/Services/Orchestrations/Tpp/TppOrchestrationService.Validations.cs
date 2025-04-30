@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.Collections.Generic;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
 
@@ -26,8 +27,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 (Rule: IsInvalid(this.tppConfiguration.TppPickupFolder),
                     Parameter: "TppPickupFolder"),
 
-                (Rule: IsInvalid(this.tppConfiguration.BlobStorageSettings),
-                    Parameter: "BlobStorageSettings.AzureBlobContainer"));
+                (Rule: IsInvalid(this.tppConfiguration.BlobStoragesSettings),
+                    Parameter: "BlobStoragesSettings"));
         }
 
         private void ValidateTppConfigurationIsNotNull()
@@ -52,10 +53,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             Message = "File has no data"
         };
 
-        private static dynamic IsInvalid(BlobStorageSettings? config) => new
+        private static dynamic IsInvalid(List<BlobStorageSettings> config) => new
         {
-            Condition = config is null || string.IsNullOrWhiteSpace(config.AzureBlobContainer),
-            Message = "BlobStorageSettings.AzureBlobContainer is required"
+            Condition = config is null,
+            Message = "BlobStoragesSettings is required"
         };
 
         private static void Validate(params (dynamic Rule, string Parameter)[] validations)

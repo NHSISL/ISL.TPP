@@ -4,6 +4,7 @@
 
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using Moq;
@@ -20,7 +21,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnDeleteFileIfInputsIsInvalid(string invalidInput)
         {
             // Given
-            string invalidContainer = invalidInput;
+            BlobStorageSettings invalidBlobStorageSettings = null;
             string invalidFileName = invalidInput;
             string containerName = invalidInput;
 
@@ -33,8 +34,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "Container",
-                values: "Text is required");
+                key: "BlobStorageSettings",
+                values: "BlobStorageSettings is required");
 
             var expectedDocumentValidationException
                 = new DocumentValidationException(
@@ -48,7 +49,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // When
             ValueTask deleteFileTask = documentService
-                .RemoveDocumentByFileNameAsync(fileName: invalidFileName, invalidContainer);
+                .RemoveDocumentByFileNameAsync(fileName: invalidFileName, invalidBlobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(deleteFileTask.AsTask);
@@ -62,7 +63,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()),
+                broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

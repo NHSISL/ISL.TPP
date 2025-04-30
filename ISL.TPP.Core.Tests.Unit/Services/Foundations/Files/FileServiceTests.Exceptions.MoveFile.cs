@@ -62,15 +62,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             string someSourcePath = GetRandomString();
             string someDestinationPath = GetRandomString();
 
-            var invalidFileServiceDependencyException =
-                new InvalidFileServiceDependencyException(
-                    message: "Invalid file dependency validation error occurred.",
-                    innerException: dependencyException);
-
             var failedFileDependencyException =
                 new FailedFileDependencyException(
                     message: "Failed file dependency error occurred, contact support.",
-                    innerException: invalidFileServiceDependencyException);
+                    innerException: dependencyException);
 
             var expectedFileDependencyException =
                 new FileDependencyException(

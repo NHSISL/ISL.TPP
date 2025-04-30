@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.Files;
@@ -89,13 +90,29 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
-        public ValueTask<List<string>> RetrieveListOfFilesAsync(string path, string searchPattern = "*") =>
+        public ValueTask<List<string>> RetrieveListOfFilesAsync(
+            string path,
+            string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
             TryCatch(async () =>
             {
                 return await WithRetry(async () =>
                 {
                     ValidateRetrieveListOfFilesArguments(path, searchPattern);
-                    return await this.fileBroker.GetListOfFilesAsync(path, searchPattern);
+                    return await this.fileBroker.GetListOfFilesAsync(path, searchPattern, searchOption);
+                });
+            });
+
+        public ValueTask<List<string>> RetrieveListOfSubFoldersAsync(
+            string path,
+            string searchPattern = "*",
+            SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateRetrieveListOfFilesArguments(path, searchPattern);
+                    return await this.fileBroker.GetListOfSubFoldersAsync(path, searchPattern, searchOption) ?? new List<string>();
                 });
             });
 
@@ -129,6 +146,17 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                     ValidateDeleteDirectoryArguments(path);
 
                     return await this.fileBroker.DeleteDirectoryAsync(path, recursive);
+                });
+            });
+
+        public ValueTask<string> GetDirectoryAsync(string path) =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateReadFromFileArguments(path);
+
+                    return await this.fileBroker.GetDirectoryAsync(path);
                 });
             });
 

@@ -5,6 +5,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using ISL.TPP.Core.Services.Foundations.Documents;
@@ -19,7 +20,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionsOnAddIfDocumentIsNullAndLogItAsync()
         {
             // given
-            var randomContainer = GetRandomString();
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             Document nullDocument = null;
 
             var nullDocumentException =
@@ -32,7 +33,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // when
             ValueTask AddDocumentTask =
-                this.documentService.AddDocumentAsync(nullDocument, randomContainer);
+                this.documentService.AddDocumentAsync(nullDocument, blobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(AddDocumentTask.AsTask);
@@ -55,7 +56,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnAddIfDocumentDataIsInvalidAndLogItAsync()
         {
             // Given
-            var randomContainer = GetRandomString();
+            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
             string validFileName = GetRandomString();
             byte[] invalidData = null;
 
@@ -78,7 +79,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: invalidDocumentException);
 
             // When
-            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, randomContainer);
+            ValueTask uploadFileTask = this.documentService.AddDocumentAsync(document, blobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(uploadFileTask.AsTask);
@@ -92,7 +93,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(validFileName, It.IsAny<byte[]>(), randomContainer),
+                broker.UploadFileAsync(validFileName, It.IsAny<byte[]>(), blobStorageSettings),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();
@@ -106,7 +107,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnAddIfFileNameIsInvalid(string invalidInput)
         {
             // Given
-            var invalidContainer = invalidInput;
+            BlobStorageSettings invalidBlobStorageSettings = null;
 
             var documentService = new DocumentService(
                blobStorageBroker: this.blobStorageBrokerMock.Object,
@@ -129,8 +130,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "Container",
-                values: "Text is required");
+                key: "BlobStorageSettings",
+                values: "BlobStorageSettings is required");
 
             var expectedDocumentValidationException
                 = new DocumentValidationException(
@@ -138,7 +139,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     innerException: invalidDocumentException);
 
             // When
-            ValueTask uploadFileTask = documentService.AddDocumentAsync(document, invalidContainer);
+            ValueTask uploadFileTask = documentService.AddDocumentAsync(document, invalidBlobStorageSettings);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(uploadFileTask.AsTask);
@@ -152,7 +153,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-               broker.UploadFileAsync(invalidFileName, document.DocumentData, invalidContainer),
+               broker.UploadFileAsync(invalidFileName, document.DocumentData, invalidBlobStorageSettings),
                    Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

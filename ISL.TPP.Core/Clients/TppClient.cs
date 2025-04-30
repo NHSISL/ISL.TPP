@@ -3,10 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Net.Http;
-using Azure.Core.Pipeline;
-using Azure.Identity;
-using Azure.Storage.Blobs;
+using System.Collections.Generic;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Loggings;
@@ -76,14 +73,10 @@ namespace ISL.TPP.Core.Clients
 
             if (!acceptanceTests)
             {
-                BlobStorageSettings blobStorageSettings = tppConfiguration.BlobStorageSettings;
-
-                BlobServiceClient blobServiceClient =
-                    SetupBlobServiceClient(tppConfiguration);
+                IEnumerable<BlobStorageSettings> blobStoragesSettings = tppConfiguration.BlobStoragesSettings;
 
                 serviceCollection
-                    .AddSingleton(blobServiceClient)
-                    .AddSingleton(_ => blobStorageSettings)
+                    .AddSingleton(_ => blobStoragesSettings)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                     .AddTransient<IFileBroker, FileBroker>()
                     .AddTransient<IDateTimeBroker, DateTimeBroker>();
@@ -114,27 +107,6 @@ namespace ISL.TPP.Core.Clients
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
 
             return serviceProvider;
-        }
-
-        private static BlobServiceClient SetupBlobServiceClient(
-            TppConfiguration tppConfiguration)
-        {
-            var blobServiceClientOptions = new BlobClientOptions()
-            {
-                Transport = new HttpClientTransport(new HttpClient { Timeout = new TimeSpan(1, 0, 0) }),
-                Retry = { NetworkTimeout = new TimeSpan(1, 0, 0) },
-                EnableTenantDiscovery = true
-            };
-
-            var blobServiceClient = new BlobServiceClient(
-                serviceUri: new Uri(tppConfiguration.BlobStorageSettings.AzureBlobServiceUri),
-                credential: new DefaultAzureCredential(
-                    new DefaultAzureCredentialOptions
-                    {
-                        VisualStudioTenantId = tppConfiguration.BlobStorageSettings.AzureTenantId,
-                    }),
-                options: blobServiceClientOptions);
-            return blobServiceClient;
         }
     }
 }

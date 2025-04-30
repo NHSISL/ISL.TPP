@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 
@@ -10,34 +11,34 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
 {
     internal partial class DocumentService
     {
-        private static void ValidateDocumentOnAdd(Document document, string container)
+        private static void ValidateDocumentOnAdd(Document document, BlobStorageSettings blobStorageSettings)
         {
             ValidateDocumentIsNotNull(document);
 
             Validate(
-                (Rule: IsInvalid(container), Parameter: "Container"),
+                (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
                 (Rule: IsInvalid(document.DocumentData), Parameter: nameof(Document.DocumentData)),
                 (Rule: IsInvalid(document.FileName), Parameter: nameof(Document.FileName)));
         }
 
-        private static void ValidateDocumentOnRetrieve(string fileName, string container)
+        private static void ValidateDocumentOnRetrieve(string fileName, BlobStorageSettings blobStorageSettings)
         {
             Validate(
-                (Rule: IsInvalid(container), Parameter: "Container"),
+                (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
                 (Rule: IsInvalid(fileName), Parameter: "FileName"));
         }
 
-        private void ValidateDeleteArguments(string fileName, string container)
+        private void ValidateDeleteArguments(string fileName, BlobStorageSettings blobStorageSettings)
         {
             Validate(
-               (Rule: IsInvalid(container), Parameter: "Container"),
+               (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
         }
 
-        private void ValidateGetDownloadLinkArguments(string fileName, string container)
+        private void ValidateGetDownloadLinkArguments(string fileName, BlobStorageSettings blobStorageSettings)
         {
             Validate(
-               (Rule: IsInvalid(container), Parameter: "Container"),
+               (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
         }
 
@@ -58,6 +59,12 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
                 throw new NotFoundDocumentException(message: $"Couldn't find documents with fileName: {fileName}.");
             }
         }
+
+        private static dynamic IsInvalid(BlobStorageSettings blobStorageSettings) => new
+        {
+            Condition = blobStorageSettings == null,
+            Message = "BlobStorageSettings is required"
+        };
 
         private static dynamic IsInvalid(byte[] data) => new
         {
