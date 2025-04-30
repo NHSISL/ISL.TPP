@@ -257,6 +257,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                         .ReturnsAsync(reprocessFiles);
             }
 
+            fileBrokerMock.Setup(service =>
+                service.CheckIfDirectoryExistsAsync(It.IsAny<string>()))
+                    .ReturnsAsync(true);
+
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
@@ -296,6 +300,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     reprocessSubFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()),
                         Times.Once);
             }
+
+            fileBrokerMock.Verify(service =>
+                service.CheckIfDirectoryExistsAsync(It.IsAny<string>()),
+                    Times.Exactly(2));
 
             fileBrokerMock.VerifyNoOtherCalls();
             blobStorageBrokerMock.VerifyNoOtherCalls();

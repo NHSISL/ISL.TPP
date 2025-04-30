@@ -131,6 +131,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
             if (!await this.fileService.CheckIfDirectoryExistsAsync(reportingGroupFolder))
             {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Folder not found.  Creating folder '{reportingGroupFolder}'");
+
                 await this.fileService.CreateDirectoryAsync(reportingGroupFolder);
             }
 
@@ -142,7 +145,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
             {
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                    $"Manifest file found in {reportingGroupFolder}");
+                    $"Manifest file found in '{reportingGroupFolder}'");
 
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                     $"Processing {filePaths.Count} file(s)...");
@@ -238,6 +241,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                     $"Finished processing {manifestFileLastList.Count} file(s).");
+            }
+            else
+            {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"No manifest file found in '{reportingGroupFolder}'.  Sleeping till next cycle...");
             }
 
             if (exceptions.Any())
