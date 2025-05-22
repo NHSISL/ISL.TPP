@@ -98,6 +98,13 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             string reprocessingFolder,
             string reportingGroup)
         {
+            bool folderExists = await this.fileService.CheckIfDirectoryExistsAsync(reprocessingFolder);
+
+            if (!folderExists)
+            {
+                await this.fileService.CreateDirectoryAsync(reprocessingFolder);
+            }
+
             List<string> foldersToProcess = await this.fileService.RetrieveListOfSubFoldersAsync(reprocessingFolder);
             var exceptions = new List<Exception>();
 
