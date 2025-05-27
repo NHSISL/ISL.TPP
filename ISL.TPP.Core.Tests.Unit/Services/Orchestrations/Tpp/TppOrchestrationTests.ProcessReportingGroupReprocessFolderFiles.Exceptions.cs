@@ -28,6 +28,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var exceptions = new List<Exception>();
 
             this.fileServiceMock.Setup(service =>
+                service.CheckIfDirectoryExistsAsync(inputReportingGroupFolder))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
                     .ReturnsAsync(randomFolderList);
 
@@ -67,6 +71,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             actualAggregateException.Should().BeEquivalentTo(expectedAggregateException);
+
+            fileServiceMock.Verify(service =>
+                service.CheckIfDirectoryExistsAsync(inputReportingGroupFolder),
+                    Times.Once);
 
             fileServiceMock.Verify(service =>
                 service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly),

@@ -303,7 +303,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             fileBrokerMock.Verify(service =>
                 service.CheckIfDirectoryExistsAsync(It.IsAny<string>()),
-                    Times.Exactly(2));
+                    Times.Exactly(3));
 
             fileBrokerMock.VerifyNoOtherCalls();
             blobStorageBrokerMock.VerifyNoOtherCalls();

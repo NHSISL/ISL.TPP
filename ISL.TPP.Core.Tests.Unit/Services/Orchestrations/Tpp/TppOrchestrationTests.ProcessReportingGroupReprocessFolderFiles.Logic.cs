@@ -24,6 +24,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             List<string> randomFolderList = GetRandomStringList(GetRandomNumber());
 
             this.fileServiceMock.Setup(service =>
+                service.CheckIfDirectoryExistsAsync(inputReportingGroupFolder))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
                     .ReturnsAsync(randomFolderList);
 
@@ -37,8 +41,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             {
                 CallBase = true
             };
-
-
 
             fileServiceMock.Setup(service =>
                 service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
@@ -56,6 +58,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 .ProcessReportingGroupReprocessFolderFilesAsync(inputReportingGroupFolder, inputReportingGroup);
 
             // then
+            fileServiceMock.Verify(service =>
+                service.CheckIfDirectoryExistsAsync(inputReportingGroupFolder),
+                    Times.Once);
+
             fileServiceMock.Verify(service =>
                 service.RetrieveListOfSubFoldersAsync(inputReportingGroupFolder, "*", SearchOption.TopDirectoryOnly),
                     Times.Once);
