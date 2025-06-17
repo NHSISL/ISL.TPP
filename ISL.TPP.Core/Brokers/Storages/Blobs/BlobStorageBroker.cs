@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Azure.Core.Pipeline;
 using Azure.Identity;
@@ -26,15 +27,26 @@ namespace ISL.TPP.Core.Brokers.Storages.Blobs
 
             using (MemoryStream stream = new MemoryStream(data))
             {
+                byte[] contentHash;
+                using (var md5 = MD5.Create())
+                {
+                    contentHash = md5.ComputeHash(data);
+                }
+
+                stream.Position = 0;
+
                 var options = new BlobUploadOptions
                 {
+                    HttpHeaders = new BlobHttpHeaders
+                    {
+                        ContentHash = contentHash
+                    },
                     TransferOptions = new Azure.Storage.StorageTransferOptions()
                     {
                         InitialTransferSize = stream.Length
                     }
                 };
 
-                stream.Position = 0;
                 await blobClient.UploadAsync(stream, options);
             }
         }
