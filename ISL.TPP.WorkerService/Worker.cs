@@ -18,10 +18,16 @@ namespace ISL.TPP.WorkerService
         private Timer timer;
         private readonly int timerIntervalInMinutes;
 
-        public Worker(IConfiguration configuration, ILogger<Worker> logger)
+        public Worker(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            if (loggerFactory is null)
+            {
+                loggerFactory = LoggerFactory.Create(builder => { });
+            }
+
+            this.logger = loggerFactory.CreateLogger<Worker>();
             timerIntervalInMinutes = this.configuration.GetValue<int>("timerIntervalInMinutes");
             string eventSourceName = this.configuration.GetValue<string>("Logging:EventLog:SourceName");
             string logName = this.configuration.GetValue<string>("Logging:EventLog:LogName");
@@ -49,7 +55,7 @@ namespace ISL.TPP.WorkerService
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 
-            tppClient = new TppClient(tppConfiguration);
+            tppClient = new TppClient(tppConfiguration, loggerFactory);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;

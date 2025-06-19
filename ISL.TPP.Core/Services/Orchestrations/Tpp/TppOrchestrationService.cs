@@ -213,14 +213,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 {
                     try
                     {
-                        var cleanupDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{reportingGroup}" +
-                            $"\\{(allSuccessFull
-                                ? this.tppConfiguration.TppWorkingFolders.Processed
-                                : this.tppConfiguration.TppWorkingFolders.Errored)}" +
-                            $"\\{manifestDateTime}" +
-                            $"\\{filePath.Replace(reportingGroupFolder, "")}";
+                        var cleanupDestinationFolder =
+                            Path.Combine(
+                                tppConfiguration.TppPickupFolder,
+                                reportingGroup,
+                                allSuccessFull
+                                    ? this.tppConfiguration.TppWorkingFolders.Processed
+                                    : this.tppConfiguration.TppWorkingFolders.Errored,
+                                manifestDateTime,
+                                filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
 
-                        cleanupDestinationFolder = cleanupDestinationFolder.Replace("\\\\", "\\");
                         await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
