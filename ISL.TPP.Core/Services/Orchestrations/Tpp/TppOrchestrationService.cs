@@ -231,9 +231,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     catch (Exception ex)
                     {
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Error processing file '{filePath}'");
+                            $"Unable to move file '{filePath}' to error folder.");
 
-                        this.loggingBroker.LogError(ex);
+                        this.loggingBroker.LogCritical(ex);
                         exceptions.Add(ex);
                     }
                 }

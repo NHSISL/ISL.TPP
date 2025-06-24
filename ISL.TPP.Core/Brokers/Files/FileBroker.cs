@@ -33,7 +33,7 @@ namespace ISL.TPP.Core.Brokers.Files
 
         public async ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath)
         {
-            File.Move(sourcePath, destinationPath);
+            File.Move(sourcePath, destinationPath, overwrite: true);
 
             return await Task.FromResult(true);
         }

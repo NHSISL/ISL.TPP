@@ -47,6 +47,13 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 (Rule: IsInvalid(destinationPath), Parameter: "DestinationPath"));
         }
 
+        private void ValidateSourcePath(string sourcePath, bool sourceFileExists)
+        {
+            Validate<InvalidArgumentFileException>(
+                message: "Invalid file argument(s), please correct the errors and try again.",
+                (Rule: IsInvalidSource(sourcePath, sourceFileExists), Parameter: "SourcePath"));
+        }
+
         private void ValidateRetrieveListOfFilesArguments(string path, string searchPattern)
         {
             Validate<InvalidArgumentFileException>(
@@ -80,6 +87,12 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         {
             Condition = String.IsNullOrWhiteSpace(text),
             Message = "Text is required"
+        };
+
+        private static dynamic IsInvalidSource(string sourcePath, bool fileExists) => new
+        {
+            Condition = fileExists == false,
+            Message = $"File does not exist. Filename: {sourcePath}"
         };
 
         private static void Validate<T>(string message, params (dynamic Rule, string Parameter)[] validations)
