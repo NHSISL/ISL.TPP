@@ -33,7 +33,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: invalidFileServiceDependencyException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()))
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()))
                     .ThrowsAsync(dependencyValidationException);
 
             // when
@@ -47,7 +47,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileDependencyValidationException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()),
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()),
                     Times.Once);
 
             this.fileBrokerMock.VerifyNoOtherCalls();
@@ -73,7 +73,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: failedFileDependencyException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()))
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()))
                     .ThrowsAsync(dependencyException);
 
             // when
@@ -87,7 +87,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileDependencyException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()),
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()),
                     Times.AtLeastOnce);
 
             this.fileBrokerMock.VerifyNoOtherCalls();

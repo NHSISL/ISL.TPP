@@ -79,6 +79,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     reprocessSubFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()))
                         .ReturnsAsync(reprocessFiles);
+
+                fileBrokerMock.Setup(broker =>
+                    broker.DeleteFileAsync(It.IsAny<string>()))
+                        .ReturnsAsync(true);
             }
 
             List<string> allFiles = [.. files, .. reprocessFiles];
@@ -115,7 +119,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             fileBrokerMock.Setup(broker =>
                 broker.CheckIfFileExistsAsync(It.IsAny<string>()))
-                    .ReturnsAsync(false);
+                    .ReturnsAsync(true);
 
             fileBrokerMock.Setup(broker =>
                 broker.MoveFileAsync(It.IsAny<string>(), It.IsAny<string>()))
@@ -176,6 +180,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                             Times.Once);
                 }
             }
+
+            fileBrokerMock.Verify(broker =>
+                broker.DeleteFileAsync(It.IsAny<string>()),
+                    Times.Exactly(allFiles.Count));
 
             fileBrokerMock.Verify(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()),
