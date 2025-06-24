@@ -92,7 +92,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         private static dynamic IsInvalidSource(string sourcePath, bool fileExists) => new
         {
             Condition = fileExists == false,
-            Message = $"File does not exist. Filename: {sourcePath}"
+            Message = $"Invalid path: {sourcePath}"
         };
 
         private static void Validate<T>(string message, params (dynamic Rule, string Parameter)[] validations)

@@ -73,7 +73,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
 
             invalidArgumentFileException.AddData(
                 key: "SourcePath",
-                values: $"File does not exist. Filename: {fullSourcePath}");
+                values: $"Invalid path: {fullSourcePath}");
 
             var expectedFileValidationException =
                 new FileValidationException(
