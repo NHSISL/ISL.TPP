@@ -72,12 +72,10 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 return await WithRetry(async () =>
                 {
                     ValidateMoveFileArguments(sourcePath, destinationPath);
-
+                    bool sourceFileExists = await this.fileBroker.CheckIfFileExistsAsync(sourcePath);
+                    ValidateSourcePath(sourcePath, sourceFileExists);
                     string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
                     bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
-                    bool sourceFileExists = await this.fileBroker.CheckIfFileExistsAsync(sourcePath);
-
-                    ValidateSourcePath(sourcePath, sourceFileExists);
 
                     if (!destinationFolderExists)
                     {

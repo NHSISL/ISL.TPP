@@ -81,14 +81,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: invalidArgumentFileException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetDirectoryAsync(fullDestinationPath))
-                    .ReturnsAsync(destinationPath);
-
-            this.fileBrokerMock.Setup(broker =>
-                broker.CheckIfDirectoryExistsAsync(destinationPath))
-                    .ReturnsAsync(false);
-
-            this.fileBrokerMock.Setup(broker =>
                 broker.CheckIfFileExistsAsync(fullSourcePath))
                     .ReturnsAsync(false);
 
@@ -101,14 +93,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
 
             // then
             actualException.Should().BeEquivalentTo(expectedFileValidationException);
-
-            this.fileBrokerMock.Verify(broker =>
-                broker.GetDirectoryAsync(fullDestinationPath),
-                    Times.Once);
-
-            this.fileBrokerMock.Verify(broker =>
-                broker.CheckIfDirectoryExistsAsync(destinationPath),
-                    Times.Once);
 
             this.fileBrokerMock.Verify(broker =>
                 broker.CheckIfFileExistsAsync(fullSourcePath),
