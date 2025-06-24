@@ -112,7 +112,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     innerException: failedFileServiceException);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()))
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()))
                     .ThrowsAsync(serviceException);
 
             // when
@@ -125,7 +125,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
             actualException.Should().BeEquivalentTo(expectedFileServiceException);
 
             this.fileBrokerMock.Verify(broker =>
-                broker.GetDirectoryAsync(It.IsAny<string>()),
+                broker.CheckIfFileExistsAsync(It.IsAny<string>()),
                     Times.Once);
 
             this.fileBrokerMock.VerifyNoOtherCalls();
