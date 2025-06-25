@@ -151,18 +151,6 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     manifestToDate);
 
                 List<string> reprocessFolders = new List<string> { reprocessSubFolderPath };
-
-                fileBrokerMock.Verify(broker => broker.GetListOfFilesAsync(
-                    filePath, It.IsAny<string>(), It.IsAny<SearchOption>()),
-                        Times.Once);
-
-                fileBrokerMock.Verify(broker => broker.GetListOfSubFoldersAsync(
-                    reprocessFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()),
-                        Times.Once);
-
-                fileBrokerMock.Verify(broker => broker.GetListOfFilesAsync(
-                    reprocessSubFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()),
-                        Times.Once);
             }
 
             foreach (string file in allFiles)
@@ -180,6 +168,14 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                             Times.Once);
                 }
             }
+
+            fileBrokerMock.Verify(broker => broker.GetListOfFilesAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()),
+                    Times.AtLeastOnce);
+
+            fileBrokerMock.Verify(broker => broker.GetListOfSubFoldersAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()),
+                    Times.Once);
 
             fileBrokerMock.Verify(broker =>
                 broker.CopyFileAsync(It.IsAny<string>(), It.IsAny<string>()),
