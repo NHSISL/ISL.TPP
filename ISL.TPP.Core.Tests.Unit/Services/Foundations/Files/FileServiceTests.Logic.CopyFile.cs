@@ -38,10 +38,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     .ReturnsAsync(true);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.CheckIfFileExistsAsync(fullDestinationPath))
-                    .ReturnsAsync(false);
-
-            this.fileBrokerMock.Setup(broker =>
                 broker.CopyFileAsync(fullSourcePath, fullDestinationPath))
                     .ReturnsAsync(true);
 
@@ -59,10 +55,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
 
             this.fileBrokerMock.Verify(broker =>
                 broker.CheckIfFileExistsAsync(fullSourcePath),
-                    Times.Once);
-
-            this.fileBrokerMock.Verify(broker =>
-                broker.CheckIfFileExistsAsync(fullDestinationPath),
                     Times.Once);
 
             this.fileBrokerMock.Verify(broker =>
@@ -99,10 +91,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
                     .ReturnsAsync(true);
 
             this.fileBrokerMock.Setup(broker =>
-                broker.CheckIfFileExistsAsync(fullDestinationPath))
-                    .ReturnsAsync(false);
-
-            this.fileBrokerMock.Setup(broker =>
                 broker.CopyFileAsync(fullSourcePath, fullDestinationPath))
                     .ReturnsAsync(true);
 
@@ -120,10 +108,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Files
 
             this.fileBrokerMock.Verify(broker =>
                 broker.CheckIfFileExistsAsync(fullSourcePath),
-                    Times.Once);
-
-            this.fileBrokerMock.Verify(broker =>
-                broker.CheckIfFileExistsAsync(fullDestinationPath),
                     Times.Once);
 
             this.fileBrokerMock.Verify(broker =>

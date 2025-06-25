@@ -187,7 +187,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             fileBrokerMock.Verify(broker =>
                 broker.DeleteFileAsync(It.IsAny<string>()),
-                    Times.Exactly(allFiles.Count * 2));
+                    Times.Exactly(allFiles.Count));
 
             fileBrokerMock.Verify(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()),

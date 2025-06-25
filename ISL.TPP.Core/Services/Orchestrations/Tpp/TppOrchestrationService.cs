@@ -223,19 +223,30 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 manifestDateTime,
                                 filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
 
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Copy file from '{filePath}' to '{cleanupDestinationFolder}'");
+
                         await this.fileService.CopyFileAsync(
                             sourcePath: filePath,
                             destinationPath: cleanupDestinationFolder);
 
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Deleting file '{filePath}'");
+
                         await this.fileService.DeleteFileAsync(filePath);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Moved file to '{cleanupDestinationFolder}'");
+                            $"Completed file move to '{cleanupDestinationFolder}'");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Unable to move file '{filePath}' to error folder.");
+                        string message =
+                            $"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Unable to move file '{filePath}' to error folder." + Environment.NewLine +
+                            $"Error: {ex.Message} {ex?.InnerException?.Message} " +
+                            $"{ex?.InnerException?.InnerException?.Message}";
+
+                        Console.WriteLine(message);
 
                         this.loggingBroker.LogCritical(ex);
                         exceptions.Add(ex);
