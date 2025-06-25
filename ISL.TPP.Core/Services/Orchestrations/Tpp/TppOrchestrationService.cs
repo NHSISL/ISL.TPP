@@ -223,7 +223,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 manifestDateTime,
                                 filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
 
-                        await this.fileService.MoveFileAsync(filePath, cleanupDestinationFolder);
+                        await this.fileService.CopyFileAsync(
+                            sourcePath: filePath,
+                            destinationPath: cleanupDestinationFolder);
+
+                        await this.fileService.DeleteFileAsync(filePath);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                             $"Moved file to '{cleanupDestinationFolder}'");
@@ -236,16 +240,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         this.loggingBroker.LogCritical(ex);
                         exceptions.Add(ex);
                     }
-                }
-
-                string sourceFolder = await this.fileService.GetDirectoryAsync(manifestFileLastList.Last());
-
-                List<string> files = await this.fileService
-                    .RetrieveListOfFilesAsync(path: sourceFolder, searchOption: SearchOption.AllDirectories);
-
-                if (!files.Any())
-                {
-                    await this.fileService.DeleteDirectoryAsync(sourceFolder, recursive: true);
                 }
 
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +

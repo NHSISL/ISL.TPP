@@ -5,6 +5,7 @@
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>dotnet-ISL.TPP.WorkerService-ff537aac-38a3-4d7e-87f1-1c258e3d4497</UserSecretsId>
+		<NoWarn>CS1998,CS8632</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

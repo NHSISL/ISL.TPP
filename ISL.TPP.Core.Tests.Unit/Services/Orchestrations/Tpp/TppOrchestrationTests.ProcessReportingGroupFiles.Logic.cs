@@ -98,6 +98,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var manifestDateTime = manifestList.First().DateExtractTo;
 
             this.fileServiceMock.Setup(service =>
+                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder))
+                    .ReturnsAsync(false);
+
+            this.fileServiceMock.Setup(service =>
+                service.CreateDirectoryAsync(randomReportingGroupFolder))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
                     .ReturnsAsync(randomFiles);
 
@@ -108,14 +116,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.csvMapperServiceMock.Setup(service =>
                 service.MapCsvToObjectAsync<Manifest>(manifestDataString, hasHeaderRecord))
                     .ReturnsAsync(manifestList);
-
-            this.fileServiceMock.Setup(service =>
-                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder))
-                    .ReturnsAsync(false);
-
-            this.fileServiceMock.Setup(service =>
-                service.CreateDirectoryAsync(randomReportingGroupFolder))
-                    .ReturnsAsync(true);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -151,12 +151,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         .ReturnsAsync(isSuccess);
 
                 this.fileServiceMock.Setup(service =>
-                    service.MoveFileAsync(filePath, moveDestinationFolder))
+                    service.CopyFileAsync(filePath, moveDestinationFolder))
                         .ReturnsAsync(true);
 
                 this.fileServiceMock.Setup(service =>
-                    service.GetDirectoryAsync(filePath))
-                        .ReturnsAsync(filePath);
+                    service.DeleteFileAsync(filePath))
+                        .ReturnsAsync(true);
             }
 
             this.fileServiceMock.Setup(service =>
@@ -168,6 +168,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 .ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup);
 
             // then
+
+            this.fileServiceMock.Verify(service =>
+                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
+                service.CreateDirectoryAsync(randomReportingGroupFolder),
+                    Times.Once);
+
             this.fileServiceMock.Verify(service =>
                 service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*", SearchOption.TopDirectoryOnly),
                     Times.Once);
@@ -178,14 +187,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.csvMapperServiceMock.Verify(service =>
                 service.MapCsvToObjectAsync<Manifest>(manifestDataString, hasHeaderRecord),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.CreateDirectoryAsync(randomReportingGroupFolder),
                     Times.Once);
 
             foreach (string filePath in manifestFileLastList)
@@ -211,17 +212,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         Times.Once);
 
                 this.fileServiceMock.Verify(service =>
-                    service.MoveFileAsync(filePath, moveDestinationFolder),
+                    service.CopyFileAsync(filePath, moveDestinationFolder),
+                        Times.Once);
+
+                this.fileServiceMock.Verify(service =>
+                    service.DeleteFileAsync(filePath),
                         Times.Once);
             }
-
-            this.fileServiceMock.Verify(service =>
-                service.GetDirectoryAsync(manifestFileLastList.Last()),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.RetrieveListOfFilesAsync(manifestFileLastList.Last(), "*", SearchOption.AllDirectories),
-                    Times.Once);
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
