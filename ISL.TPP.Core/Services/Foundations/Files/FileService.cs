@@ -66,6 +66,31 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
+        public ValueTask<bool> CopyFileAsync(string sourcePath, string destinationPath) =>
+            TryCatch(async () =>
+            {
+                return await WithRetry(async () =>
+                {
+                    ValidateMoveFileArguments(sourcePath, destinationPath);
+                    bool sourceFileExists = await this.fileBroker.CheckIfFileExistsAsync(sourcePath);
+                    ValidateSourcePath(sourcePath, sourceFileExists);
+                    string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
+                    bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
+
+                    if (!destinationFolderExists)
+                    {
+                        await this.fileBroker.CreateDirectoryAsync(destinationFolder);
+                    }
+
+                    if (await this.fileBroker.CheckIfFileExistsAsync(destinationPath))
+                    {
+                        await this.fileBroker.DeleteFileAsync(destinationPath);
+                    }
+
+                    return await this.fileBroker.CopyFileAsync(sourcePath, destinationPath);
+                });
+            });
+
         public ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath) =>
             TryCatch(async () =>
             {

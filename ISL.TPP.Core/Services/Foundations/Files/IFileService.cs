@@ -14,6 +14,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         ValueTask<bool> WriteToFileAsync(string path, string content);
         ValueTask<byte[]> ReadFromFileAsync(string path);
         ValueTask<bool> DeleteFileAsync(string path);
+        ValueTask<bool> CopyFileAsync(string sourcePath, string destinationPath);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);
 
         ValueTask<List<string>> RetrieveListOfFilesAsync(
