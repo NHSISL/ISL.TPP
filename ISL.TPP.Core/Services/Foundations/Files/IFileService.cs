@@ -30,6 +30,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         ValueTask<bool> CreateDirectoryAsync(string path);
         ValueTask<bool> DeleteDirectoryAsync(string path, bool recursive = false);
         ValueTask<string> GetDirectoryAsync(string path);
+        ValueTask<bool> MoveDirectoryAsync(string sourceDirectory, string destinationDirectory);
         ValueTask<string> ComputeSHA256Hash(string filePath);
     }
 }

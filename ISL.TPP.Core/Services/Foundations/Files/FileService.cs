@@ -91,29 +91,49 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
-        public ValueTask<bool> MoveDirectoryAsync(string sourcePath, string destinationPath) =>
+        public ValueTask<bool> MoveDirectoryAsync(string sourceDirectory, string destinationDirectory) =>
             TryCatch(async () =>
             {
                 return await WithRetry(async () =>
                 {
-                    ValidateMoveFileArguments(sourcePath, destinationPath);
-                    bool sourceFileExists = await this.fileBroker.CheckIfDirectoryExistsAsync(sourcePath);
-                    ValidateSourcePath(sourcePath, sourceFileExists);
-                    string sourceFolder = await this.fileBroker.GetDirectoryAsync(sourcePath);
-                    string destinationFolder = await this.fileBroker.GetDirectoryAsync(destinationPath);
-                    bool destinationFolderExists = await this.fileBroker.CheckIfDirectoryExistsAsync(destinationFolder);
+                    ValidateMoveFileArguments(sourceDirectory, destinationDirectory);
+                    bool sourceFileExists = await this.fileBroker.CheckIfDirectoryExistsAsync(sourceDirectory);
+                    ValidateSourcePath(sourceDirectory, sourceFileExists);
+
+                    bool destinationFolderExists =
+                        await this.fileBroker.CheckIfDirectoryExistsAsync(destinationDirectory);
 
                     if (!destinationFolderExists)
                     {
-                        await this.fileBroker.CreateDirectoryAsync(destinationFolder);
+                        await this.fileBroker.CreateDirectoryAsync(destinationDirectory);
                     }
 
-                    if (await this.fileBroker.CheckIfFileExistsAsync(destinationPath))
+                    List<string> sourceFiles = await this.fileBroker.GetListOfFilesAsync(sourceDirectory);
+
+                    foreach (string file in sourceFiles)
                     {
-                        await this.fileBroker.DeleteFileAsync(destinationPath);
+                        string destFile = Path.Combine(destinationDirectory, Path.GetFileName(file));
+
+                        if (await this.fileBroker.CheckIfFileExistsAsync(destFile))
+                        {
+                            await this.fileBroker.DeleteFileAsync(destFile);
+                        }
+
+                        await this.fileBroker.MoveFileAsync(file, destFile);
                     }
 
-                    return await this.fileBroker.MoveFileAsync(sourcePath, destinationPath);
+                    List<string> sourceSubDirectories =
+                        await this.fileBroker.GetListOfSubFoldersAsync(sourceDirectory);
+
+                    foreach (string sourceDirectory in sourceSubDirectories)
+                    {
+                        string destinationSubDirectory =
+                            Path.Combine(destinationDirectory, Path.GetFileName(sourceDirectory));
+
+                        await MoveDirectoryAsync(sourceDirectory, destinationSubDirectory);
+                    }
+
+                    return await this.fileBroker.DeleteDirectoryAsync(sourceDirectory, recursive: true);
                 });
             });
 
