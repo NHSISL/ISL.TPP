@@ -209,47 +209,37 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     }
                 }
 
-                foreach (string filePath in manifestFileLastList)
+                try
                 {
-                    try
+                    await CleanupFilesAsync(
+                        fileList: manifestFileLastList,
+                        reportingGroup,
+                        reportingGroupFolder,
+                        manifestDateTime,
+                        allSuccessFull);
+                }
+                catch (Exception exception)
+                {
+                    string message =
+                        $"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Unable to move files." + Environment.NewLine +
+                        $"Error: {exception.Message} {exception?.InnerException?.Message} " +
+                        $"{exception?.InnerException?.InnerException?.Message}";
+
+                    Console.WriteLine(message);
+
+                    if (exception is AggregateException)
                     {
-                        var cleanupDestinationFolder =
-                            Path.Combine(
-                                tppConfiguration.TppPickupFolder,
-                                reportingGroup,
-                                allSuccessFull
-                                    ? this.tppConfiguration.TppWorkingFolders.Processed
-                                    : this.tppConfiguration.TppWorkingFolders.Errored,
-                                manifestDateTime,
-                                filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
-
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Copy file from '{filePath}' to '{cleanupDestinationFolder}'");
-
-                        await this.fileService.CopyFileAsync(
-                            sourcePath: filePath,
-                            destinationPath: cleanupDestinationFolder);
-
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Deleting file '{filePath}'");
-
-                        await this.fileService.DeleteFileAsync(filePath);
-
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Completed file move to '{cleanupDestinationFolder}'");
+                        foreach (var innerException in ((AggregateException)exception).InnerExceptions)
+                        {
+                            this.loggingBroker.LogCritical(innerException);
+                            exceptions.Add(innerException);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        string message =
-                            $"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Unable to move file '{filePath}' to error folder." + Environment.NewLine +
-                            $"Error: {ex.Message} {ex?.InnerException?.Message} " +
-                            $"{ex?.InnerException?.InnerException?.Message}";
-
-                        Console.WriteLine(message);
-
-                        this.loggingBroker.LogCritical(ex);
-                        exceptions.Add(ex);
+                        this.loggingBroker.LogCritical(exception);
+                        exceptions.Add(exception);
                     }
                 }
 
@@ -322,6 +312,83 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        virtual internal async ValueTask CleanupFilesAsync(
+            List<string> fileList,
+            string reportingGroup,
+            string reportingGroupFolder,
+            string manifestDateTime,
+            bool allSuccessFull)
+        {
+            List<Exception> exceptions = new List<Exception>();
+
+            foreach (string filePath in fileList)
+            {
+                try
+                {
+                    var cleanupDestinationFolder =
+                        Path.Combine(
+                            tppConfiguration.TppPickupFolder,
+                            reportingGroup,
+                            allSuccessFull
+                                ? this.tppConfiguration.TppWorkingFolders.Processed
+                                : this.tppConfiguration.TppWorkingFolders.Errored,
+                            manifestDateTime,
+                            filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Copy file from '{filePath}' to '{cleanupDestinationFolder}'");
+
+                    await this.fileService.CopyFileAsync(
+                        sourcePath: filePath,
+                        destinationPath: cleanupDestinationFolder);
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Deleting file '{filePath}'");
+
+                    await this.fileService.DeleteFileAsync(filePath);
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Completed file move to '{cleanupDestinationFolder}'");
+                }
+                catch (Exception ex)
+                {
+                    string message =
+                        $"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Unable to move file '{filePath}' to error folder." + Environment.NewLine +
+                        $"Error: {ex.Message} {ex?.InnerException?.Message} " +
+                        $"{ex?.InnerException?.InnerException?.Message}";
+
+                    Console.WriteLine(message);
+
+                    this.loggingBroker.LogCritical(ex);
+                    exceptions.Add(ex);
+                }
+            }
+
+            List<string> files = await this.fileService.RetrieveListOfFilesAsync(
+                path: reportingGroupFolder,
+                searchPattern: "*",
+                searchOption: SearchOption.AllDirectories);
+
+            if (files is null || !files.Any())
+            {
+                await this.fileService.DeleteDirectoryAsync(reportingGroupFolder, recursive: true);
+
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Removed folder '{reportingGroupFolder}'");
+            }
+            else
+            {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"Found {files.Count} file(s) in '{reportingGroupFolder}'.  Cleanup not completed");
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException($"Unable to cleanup {exceptions.Count} file(s)", exceptions);
             }
         }
     }
