@@ -10,6 +10,29 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 {
     internal partial class TppOrchestrationService : ITppOrchestrationService
     {
+        private void ValidateArgumentsOnCleanupFiles(
+            List<string> fileList,
+            string reportingGroup,
+            string reportingGroupFolder,
+            string manifestDateTime)
+        {
+            Validate(
+                (Rule: IsInvalid(fileList), Parameter: "fileList"),
+                (Rule: IsInvalid(reportingGroup), Parameter: "reportingGroup"),
+                (Rule: IsInvalid(reportingGroupFolder), Parameter: "reportingGroupFolder"),
+                (Rule: IsInvalid(manifestDateTime), Parameter: "manifestDateTime"));
+        }
+
+        private void ValidateFolderExistOnCleanupFiles(bool folderExists, string reportingGroupFolder)
+        {
+            Validate((Rule: IsInvalidPath(folderExists, reportingGroupFolder), Parameter: "reportingGroupFolder"));
+        }
+
+        private void ValidateFileExistOnCleanupFiles(bool fileExists, string filePath)
+        {
+            Validate((Rule: IsInvalidPath(fileExists, filePath), Parameter: "filePath"));
+        }
+
         private void ValidateFile(byte[] file)
         {
             Validate(
@@ -41,10 +64,22 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             }
         }
 
+        private static dynamic IsInvalidPath(bool exists, string path) => new
+        {
+            Condition = exists != true,
+            Message = $"Path does not exist: '{path}'"
+        };
+
         private static dynamic IsInvalid(string text) => new
         {
             Condition = string.IsNullOrWhiteSpace(text),
             Message = "Text is required"
+        };
+
+        private static dynamic IsInvalid(List<string> list) => new
+        {
+            Condition = list == null,
+            Message = "Items is required"
         };
 
         private static dynamic IsInvalid(byte[] data) => new

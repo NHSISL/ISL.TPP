@@ -17,66 +17,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 {
     public partial class TppOrchestrationTests
     {
-        //[Fact]
-        //public async Task ShouldNotDeleteFilesOnCleanupErrorAsync()
-        //{
-        //    // given
-        //    string randomReportingGroup = GetRandomString();
-        //    string randomReportingGroupFolder = $"{GetRandomString()}\\{randomReportingGroup}";
-        //    string manifestFile = tppConfiguration.TppManifestFile;
-        //    List<string> randomFiles = GetRandomStringList(GetRandomNumber());
-
-        //    this.fileServiceMock.Setup(service =>
-        //        service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*", SearchOption.TopDirectoryOnly))
-        //            .ReturnsAsync(randomFiles);
-
-        //    this.fileServiceMock.Setup(service =>
-        //        service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder))
-        //            .ReturnsAsync(false);
-
-        //    this.fileServiceMock.Setup(service =>
-        //        service.CreateDirectoryAsync(randomReportingGroupFolder))
-        //            .ReturnsAsync(true);
-
-        //    var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
-        //        this.fileServiceMock.Object,
-        //        this.documentServiceMock.Object,
-        //        this.csvMapperServiceMock.Object,
-        //        this.tppConfiguration,
-        //        this.dateTimeBrokerMock.Object,
-        //        this.loggingBrokerMock.Object)
-        //    {
-        //        CallBase = true
-        //    };
-
-        //    // when
-        //    await tppOrchestrationServiceMock.Object
-        //        .ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup);
-
-        //    // then
-        //    this.fileServiceMock.Verify(service =>
-        //        service.RetrieveListOfFilesAsync(randomReportingGroupFolder, "*", SearchOption.TopDirectoryOnly),
-        //            Times.Once);
-
-        //    tppOrchestrationServiceMock.Verify(service =>
-        //        service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
-        //            Times.Once);
-
-        //    this.fileServiceMock.Verify(service =>
-        //        service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
-        //            Times.Once);
-
-        //    this.fileServiceMock.Verify(service =>
-        //        service.CreateDirectoryAsync(randomReportingGroupFolder),
-        //            Times.Once);
-
-        //    tppOrchestrationServiceMock.VerifyNoOtherCalls();
-        //    this.fileServiceMock.VerifyNoOtherCalls();
-        //    this.documentServiceMock.VerifyNoOtherCalls();
-        //    this.dateTimeBrokerMock.VerifyNoOtherCalls();
-        //    this.loggingBrokerMock.VerifyNoOtherCalls();
-        //}
-
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -107,8 +47,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
+            this.fileServiceMock.Setup(service =>
+                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder))
+                    .ReturnsAsync(true);
+
             foreach (string filePath in manifestFileLastList)
             {
+                this.fileServiceMock.Setup(service =>
+                    service.CheckIfFileExistsAsync(filePath))
+                        .ReturnsAsync(true);
+
                 var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
                     $"\\{(isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed
@@ -144,8 +92,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 allSuccessFull: isSuccess);
 
             // then
+            this.fileServiceMock.Verify(service =>
+                service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
+                    Times.Once);
+
             foreach (string filePath in manifestFileLastList)
             {
+                this.fileServiceMock.Verify(service =>
+                    service.CheckIfFileExistsAsync(filePath),
+                        Times.Once);
+
                 var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
                     $"\\{(isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed

@@ -322,12 +322,28 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             string manifestDateTime,
             bool allSuccessFull)
         {
+            ValidateArgumentsOnCleanupFiles(
+                fileList: fileList,
+                reportingGroup: reportingGroup,
+                reportingGroupFolder: reportingGroupFolder,
+                manifestDateTime: manifestDateTime);
+
+            bool folderExists =
+                await this.fileService.CheckIfDirectoryExistsAsync(reportingGroupFolder);
+
+            ValidateFolderExistOnCleanupFiles(folderExists, reportingGroupFolder);
+
             List<Exception> exceptions = new List<Exception>();
 
             foreach (string filePath in fileList)
             {
                 try
                 {
+                    bool fileExists =
+                        await this.fileService.CheckIfFileExistsAsync(filePath);
+
+                    ValidateFileExistOnCleanupFiles(fileExists, filePath);
+
                     var cleanupDestinationFolder =
                         Path.Combine(
                             tppConfiguration.TppPickupFolder,
