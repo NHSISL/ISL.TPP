@@ -149,15 +149,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 tppOrchestrationServiceMock.Setup(service =>
                     service.WriteFileToDestinationAsync(filePath, blobDestinationFilePath))
                         .ReturnsAsync(isSuccess);
-
-                this.fileServiceMock.Setup(service =>
-                    service.CopyFileAsync(filePath, moveDestinationFolder))
-                        .ReturnsAsync(true);
-
-                this.fileServiceMock.Setup(service =>
-                    service.DeleteFileAsync(filePath))
-                        .ReturnsAsync(true);
             }
+
+            tppOrchestrationServiceMock.Setup(service =>
+                service.CleanupFilesAsync(
+                    manifestFileLastList,
+                    randomReportingGroup,
+                    randomReportingGroupFolder,
+                    manifestDateTime,
+                    isSuccess))
+                .Returns(ValueTask.CompletedTask);
 
             this.fileServiceMock.Setup(service =>
                 service.RetrieveListOfFilesAsync(manifestFileLastList.Last(), "*", SearchOption.AllDirectories))
@@ -168,7 +169,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 .ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup);
 
             // then
-
             this.fileServiceMock.Verify(service =>
                 service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
                     Times.Once);
@@ -210,15 +210,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 tppOrchestrationServiceMock.Verify(service =>
                     service.WriteFileToDestinationAsync(filePath, blobDestinationFilePath),
                         Times.Once);
-
-                this.fileServiceMock.Verify(service =>
-                    service.CopyFileAsync(filePath, moveDestinationFolder),
-                        Times.Once);
-
-                this.fileServiceMock.Verify(service =>
-                    service.DeleteFileAsync(filePath),
-                        Times.Once);
             }
+
+            tppOrchestrationServiceMock.Verify(service => service.CleanupFilesAsync(
+                manifestFileLastList,
+                randomReportingGroup,
+                randomReportingGroupFolder,
+                manifestDateTime,
+                isSuccess),
+                    Times.Once);
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(randomReportingGroupFolder, randomReportingGroup),
