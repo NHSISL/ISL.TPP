@@ -79,10 +79,6 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     reprocessSubFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()))
                         .ReturnsAsync(reprocessFiles);
-
-                fileBrokerMock.Setup(broker =>
-                    broker.DeleteFileAsync(It.IsAny<string>()))
-                        .ReturnsAsync(true);
             }
 
             List<string> allFiles = [.. files, .. reprocessFiles];
@@ -122,7 +118,11 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     .ReturnsAsync(true);
 
             fileBrokerMock.Setup(broker =>
-                broker.MoveFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+                broker.CopyFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+                    .ReturnsAsync(true);
+
+            fileBrokerMock.Setup(broker =>
+                broker.DeleteFileAsync(It.IsAny<string>()))
                     .ReturnsAsync(true);
 
             IServiceCollection serviceCollection = new ServiceCollection();
@@ -182,16 +182,16 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             }
 
             fileBrokerMock.Verify(broker =>
-                broker.DeleteFileAsync(It.IsAny<string>()),
+                broker.CopyFileAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(allFiles.Count));
+
+            fileBrokerMock.Verify(broker =>
+                broker.DeleteFileAsync(It.IsAny<string>()),
+                    Times.Exactly(allFiles.Count * 2));
 
             fileBrokerMock.Verify(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()),
                     Times.AtLeastOnce);
-
-            fileBrokerMock.Verify(broker =>
-                broker.GetListOfFilesAsync(someFolder, "*", SearchOption.AllDirectories),
-                    Times.Exactly(2));
 
             fileBrokerMock.Verify(broker =>
                 broker.CheckIfDirectoryExistsAsync(It.IsAny<string>()),
@@ -200,10 +200,6 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             fileBrokerMock.Verify(broker =>
                 broker.CheckIfFileExistsAsync(It.IsAny<string>()),
                     Times.AtLeastOnce);
-
-            fileBrokerMock.Verify(broker =>
-                broker.MoveFileAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(allFiles.Count));
 
             blobStorageBrokerMock.Verify(broker =>
                 broker.UploadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<BlobStorageSettings>()),
