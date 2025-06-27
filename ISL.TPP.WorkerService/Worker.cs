@@ -15,7 +15,6 @@ namespace ISL.TPP.WorkerService
         private readonly IConfiguration configuration;
         private readonly TppClient tppClient;
         private readonly ILogger<Worker> logger;
-        private Timer timer;
         private readonly int timerIntervalInMinutes;
 
         public Worker(IConfiguration configuration, ILoggerFactory loggerFactory)
@@ -29,9 +28,11 @@ namespace ISL.TPP.WorkerService
 
             this.logger = loggerFactory.CreateLogger<Worker>();
             timerIntervalInMinutes = this.configuration.GetValue<int>("timerIntervalInMinutes");
+
             string eventSourceName = this.configuration.GetValue<string>("Logging:EventLog:SourceName");
             string logName = this.configuration.GetValue<string>("Logging:EventLog:LogName");
             CreateEventLogSource(eventSourceName, logName);
+
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
 
@@ -58,20 +59,44 @@ namespace ISL.TPP.WorkerService
             tppClient = new TppClient(tppConfiguration, loggerFactory);
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
-
-        public override Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            while (!stoppingToken.IsCancellationRequested)
             {
-                timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(timerIntervalInMinutes));
-                return base.StartAsync(cancellationToken);
+                var startTime = DateTime.UtcNow;
+
+                try
+                {
+                    await this.tppClient.Imports.ProcessFilesAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred during ProcessFilesAsync.");
+                    LogExceptionToFile(ex);
+                }
+
+                var duration = DateTime.UtcNow - startTime;
+                var delay = TimeSpan.FromMinutes(timerIntervalInMinutes) - duration;
+
+                if (delay > TimeSpan.Zero)
+                {
+                    try
+                    {
+                        await Task.Delay(delay, stoppingToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                LogExceptionToFile(ex);
-                return Task.FromException(ex);
-            }
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            logger.LogInformation("Worker is stopping...");
+            await base.StopAsync(cancellationToken);
+            logger.LogInformation("Worker stopped cleanly.");
         }
 
         private void LogExceptionToFile(Exception exception)
@@ -79,7 +104,6 @@ namespace ISL.TPP.WorkerService
             string logFileName = "UnhandledExceptions.log";
             string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
 
-            // Write exception details to the log file
             using (StreamWriter writer = new StreamWriter(logFilePath, true))
             {
                 writer.WriteLine($"Timestamp: {DateTime.Now}");
@@ -87,24 +111,6 @@ namespace ISL.TPP.WorkerService
                 writer.WriteLine($"Stack Trace: {exception.StackTrace}");
                 writer.WriteLine(new string('-', 50));
             }
-        }
-
-        private async void DoWork(object state)
-        {
-            try
-            {
-                await this.tppClient.Imports.ProcessFilesAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred during DoWork.");
-            }
-        }
-
-        public override Task StopAsync(CancellationToken cancellationToken)
-        {
-            timer?.Change(Timeout.Infinite, 0);
-            return base.StopAsync(cancellationToken);
         }
 
         private void CreateEventLogSource(string eventSourceName, string logName)

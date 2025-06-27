@@ -42,6 +42,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
 
             this.fileServiceMock.Setup(service =>
+                service.CheckIfFileExistsAsync(randomSource))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
                 service.ReadFromFileAsync(randomSource))
                     .ReturnsAsync(randomFileBytes);
 
@@ -69,6 +73,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             actualResult.Should().Be(expectedResult);
+
+            this.fileServiceMock.Verify(service =>
+                service.CheckIfFileExistsAsync(randomSource),
+                    Times.Once);
 
             this.fileServiceMock.Verify(service =>
                 service.ReadFromFileAsync(randomSource),
@@ -112,6 +120,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
 
             this.fileServiceMock.Setup(service =>
+                service.CheckIfFileExistsAsync(randomSource))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
                 service.ReadFromFileAsync(randomSource))
                     .ReturnsAsync(randomFileBytes);
 
@@ -136,6 +148,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             // then
             actualResult.Should().Be(expectedResult);
+
+            this.fileServiceMock.Verify(service =>
+                service.CheckIfFileExistsAsync(randomSource),
+                    Times.Once);
 
             this.fileServiceMock.Verify(service =>
                 service.ReadFromFileAsync(randomSource),

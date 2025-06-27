@@ -147,6 +147,17 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             List<string> filePaths = await this.fileService
                 .RetrieveListOfFilesAsync(reportingGroupFolder);
 
+            List<string> distinctFilePaths = filePaths
+                .Select(filePath => filePath.Trim())
+                .Distinct()
+                .ToList();
+
+            if (distinctFilePaths.Count != filePaths.Count)
+            {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"-------- LIST NOT DISTINCT ----------");
+            }
+
             string manifestFile = this.tppConfiguration.TppManifestFile;
 
             if (filePaths.Any(filePath => filePath.EndsWith(manifestFile, StringComparison.OrdinalIgnoreCase)))
@@ -190,9 +201,16 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                         blobDestinationPath = blobDestinationPath.Replace("\\\\", "\\");
 
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"Attempting to upload file to blobstore: file: '{filePath}', " +
+                                $"destination: {blobDestinationPath}");
+
                         bool isSuccess = await WriteFileToDestinationAsync(
                             sourceFilePath: filePath,
                             blobDestinationPath);
+
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                            $"File '{filePath}' upload to blobstore {(isSuccess ? "SUCCEEDED" : "FAILED")}");
 
                         if (isSuccess == false)
                         {
@@ -202,7 +220,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     catch (Exception ex)
                     {
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"Error processing file '{filePath}'");
+                            $"Error processing file '{filePath}'" + Environment.NewLine +
+                            $"Error: {ex.Message} {ex?.InnerException?.Message} ");
 
                         this.loggingBroker.LogError(ex);
                         exceptions.Add(ex);
@@ -264,6 +283,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         {
             try
             {
+                bool fileExists =
+                    await this.fileService.CheckIfFileExistsAsync(sourceFilePath);
+
+                if (!fileExists)
+                {
+                    throw new FileNotFoundException($"Unable to read file: {sourceFilePath}");
+                }
+
                 var file = await this.fileService.ReadFromFileAsync(sourceFilePath);
                 ValidateFile(file);
 
@@ -287,21 +314,24 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             blobStorageSettings);
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                            $"File '{sourceFilePath}' to destination '{destinationFilePath}' on " +
+                            $"Port file to blobstore.  Copy from '{sourceFilePath}' " +
+                            $"to destination '{destinationFilePath}' on " +
                             $"{blobStorageSettings.AzureBlobServiceUri}{blobStorageSettings.AzureBlobContainer}");
                     }
                     catch (Exception exception)
                     {
                         string message =
                             $"Unable to write file '{sourceFilePath}' to destination '{destinationFilePath}' on " +
-                            $"{blobStorageSettings.Name}";
+                            $"{blobStorageSettings.Name}" + Environment.NewLine +
+                            $"{exception.Message} {exception?.InnerException?.Message}";
+
+                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - {message}");
 
                         FailedDocumentTppOrchestrationServiceException failedDocumentTppOrchestrationServiceException =
                             new FailedDocumentTppOrchestrationServiceException(
                                 message,
                                 innerException: exception as Xeption);
 
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - {message}");
                         this.loggingBroker.LogError(failedDocumentTppOrchestrationServiceException);
                         allSuccessfull = false;
                     }
@@ -309,8 +339,14 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 return allSuccessfull;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                    $"WriteFileToDestination error - file '{sourceFilePath}' to destination '{destinationFilePath}'" +
+                    Environment.NewLine +
+                    $"Error: {exception.Message} {exception?.InnerException?.Message} " +
+                    $"{exception.InnerException?.InnerException?.Message}");
+
                 return false;
             }
         }
@@ -367,7 +403,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     await this.fileService.DeleteFileAsync(filePath);
 
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                        $"Completed file move to '{cleanupDestinationFolder}'");
+                        $"Completed file move from '{filePath}' to '{cleanupDestinationFolder}'");
                 }
                 catch (Exception ex)
                 {
@@ -391,10 +427,15 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
             if (files is null || !files.Any())
             {
-                await this.fileService.DeleteDirectoryAsync(reportingGroupFolder, recursive: true);
+                bool exists = await this.fileService.CheckIfDirectoryExistsAsync(reportingGroupFolder);
 
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
-                    $"Removed folder '{reportingGroupFolder}'");
+                if (exists)
+                {
+                    await this.fileService.DeleteDirectoryAsync(reportingGroupFolder, recursive: true);
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
+                        $"Removed folder '{reportingGroupFolder}'");
+                }
             }
             else
             {
