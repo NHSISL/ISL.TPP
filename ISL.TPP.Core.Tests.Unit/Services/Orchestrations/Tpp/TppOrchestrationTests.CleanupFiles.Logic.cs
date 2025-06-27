@@ -94,7 +94,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             this.fileServiceMock.Verify(service =>
                 service.CheckIfDirectoryExistsAsync(randomReportingGroupFolder),
-                    Times.Once);
+                    Times.Exactly(2));
 
             foreach (string filePath in manifestFileLastList)
             {
