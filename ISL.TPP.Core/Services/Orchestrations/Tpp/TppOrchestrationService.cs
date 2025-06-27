@@ -322,8 +322,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     {
                         string message =
                             $"Unable to write file '{sourceFilePath}' to destination '{destinationFilePath}' on " +
-                            $"{blobStorageSettings.Name}" + Environment.NewLine +
-                            $"{exception.Message} {exception?.InnerException?.Message}";
+                            $"{blobStorageSettings.Name}";
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - {message}");
 
