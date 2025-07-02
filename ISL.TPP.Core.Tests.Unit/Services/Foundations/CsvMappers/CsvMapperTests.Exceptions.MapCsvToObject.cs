@@ -50,7 +50,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.CsvMappers
             actualCsvMapperServiceException.Should().BeEquivalentTo(expectedCsvMapperServiceException);
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedCsvMapperServiceException))),
                         Times.Once);
 

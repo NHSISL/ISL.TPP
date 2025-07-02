@@ -3,12 +3,13 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 
 namespace ISL.TPP.Core.Brokers.DateTimes
 {
     internal class DateTimeBroker : IDateTimeBroker
     {
-        public DateTimeOffset GetCurrentDateTimeOffset() =>
+        public async ValueTask<DateTimeOffset> GetCurrentDateTimeOffsetAsync() =>
             DateTimeOffset.UtcNow;
     }
 }

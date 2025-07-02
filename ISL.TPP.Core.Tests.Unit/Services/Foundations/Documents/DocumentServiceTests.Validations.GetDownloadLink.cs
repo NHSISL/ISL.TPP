@@ -5,7 +5,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
 using Xunit;
@@ -22,7 +21,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         {
             // Given
             string invalidFileName = invalidInput;
-            BlobStorageSettings invalidBlobStorageSettings = null;
+            string invalidContainer = invalidInput;
 
             var invalidDocumentException = new InvalidDocumentException(
                 message: "Invalid document. Please correct the errors and try again.");
@@ -32,8 +31,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "BlobStorageSettings",
-                values: "BlobStorageSettings is required");
+                key: "Container",
+                values: "Text is required");
 
             var expectedDocumentValidationException =
                 new DocumentValidationException(
@@ -42,7 +41,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // When
             ValueTask<string> uploadFileTask = this.documentService
-                .GetDownloadLinkAsync(invalidFileName, invalidBlobStorageSettings);
+                .GetDownloadLinkAsync(invalidFileName, invalidContainer);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(uploadFileTask.AsTask);
@@ -51,12 +50,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedDocumentValidationException))),
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-               broker.GetDownloadLinkAsync(invalidFileName, invalidBlobStorageSettings, It.IsAny<DateTimeOffset>()),
+               broker.GetDownloadLinkAsync(invalidFileName, invalidContainer, It.IsAny<DateTimeOffset>()),
                    Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

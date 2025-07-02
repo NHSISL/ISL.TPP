@@ -2,14 +2,11 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using System;
-using System.Security.Cryptography;
+using System.IO;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Foundations.Documents;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
@@ -29,59 +26,36 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             this.loggingBroker = loggingBroker;
         }
 
-        public ValueTask AddDocumentAsync(Document document, BlobStorageSettings blobStorageSettings) =>
+        public ValueTask AddDocumentAsync(Stream input, string fileName, string container) =>
             TryCatch(async () =>
             {
-                ValidateDocumentOnAdd(document, blobStorageSettings);
-
-                await this.blobStorageBroker.UploadFileAsync(
-                   fileName: document.FileName,
-                   data: document.DocumentData,
-                   blobStorageSettings);
+                ValidateDocumentOnAdd(input, fileName, container);
+                await this.blobStorageBroker.InsertFileAsync(input, fileName, container);
             });
 
-        public ValueTask<Document> RetrieveDocumentByFileNameAsync(
-            string fileName,
-            BlobStorageSettings blobStorageSettings) =>
+        public ValueTask RetrieveDocumentByFileNameAsync(Stream output, string fileName, string container) =>
              TryCatch(async () =>
              {
-                 ValidateDocumentOnRetrieve(fileName, blobStorageSettings);
-
-                 byte[] retrievedDocument = await this.blobStorageBroker
-                     .DownloadByFileNameAsync(fileName, blobStorageSettings);
-
-                 ValidateStorageDocument(retrievedDocument, fileName);
-
-                 using (SHA256 sha256 = SHA256.Create())
-                 {
-                     byte[] hashBytes = sha256.ComputeHash(retrievedDocument);
-                     var sha256Hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-
-                     var document = new Document
-                     {
-                         FileName = fileName,
-                         DocumentData = retrievedDocument,
-                         SHA256Hash = sha256Hash
-                     };
-
-                     return document;
-                 }
+                 ValidateArgumentsOnRetrieve(output, fileName, container);
+                 await this.blobStorageBroker.SelectByFileNameAsync(output, fileName, container);
+                 ValidateStorageDocument(output, fileName);
              });
 
-        public ValueTask RemoveDocumentByFileNameAsync(string fileName, BlobStorageSettings blobStorageSettings) =>
+        public ValueTask RemoveDocumentByFileNameAsync(string fileName, string container) =>
            TryCatch(async () =>
            {
-               ValidateDeleteArguments(fileName, blobStorageSettings);
-               await this.blobStorageBroker.DeleteFileAsync(fileName, blobStorageSettings);
+               ValidateDeleteArguments(fileName, container);
+               await this.blobStorageBroker.DeleteFileAsync(fileName, container);
            });
 
-        public ValueTask<string> GetDownloadLinkAsync(string fileName, BlobStorageSettings blobStorageSettings) =>
+        public ValueTask<string> GetDownloadLinkAsync(string fileName, string container) =>
            TryCatch(async () =>
            {
-               ValidateGetDownloadLinkArguments(fileName, blobStorageSettings);
-               var expireOn = this.dateTimeBroker.GetCurrentDateTimeOffset().AddMinutes(5);
+               ValidateGetDownloadLinkArguments(fileName, container);
+               var currentDateTimeOffset = await this.dateTimeBroker.GetCurrentDateTimeOffsetAsync();
+               var expireOn = currentDateTimeOffset.AddMinutes(5);
 
-               return await this.blobStorageBroker.GetDownloadLinkAsync(fileName, blobStorageSettings, expireOn);
+               return await this.blobStorageBroker.GetDownloadLinkAsync(fileName, container, expireOn);
            });
     }
 }

@@ -88,7 +88,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             }
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(someException))),
+                broker.LogErrorAsync(It.Is(SameExceptionAs(someException))),
                     Times.Exactly(randomFolderList.Count));
 
             tppOrchestrationServiceMock.Verify(service =>

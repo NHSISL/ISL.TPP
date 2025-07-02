@@ -56,6 +56,16 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
+        public ValueTask ReadFromFileAsync(Stream output, string path) =>
+            TryCatch(async () =>
+            {
+                await WithRetry(async () =>
+                {
+                    ValidateReadFromFileArguments(path);
+                    await this.fileBroker.ReadFromFileAsync(output, path);
+                });
+            });
+
         public ValueTask<bool> DeleteFileAsync(string path) =>
             TryCatch(async () =>
             {
@@ -242,6 +252,12 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                         return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
                     }
                 });
+            });
+
+        public ValueTask<string> GetTempFileNameAsync() =>
+            TryCatch(async () =>
+            {
+                return await this.fileBroker.GetTempFileNameAsync();
             });
     }
 }

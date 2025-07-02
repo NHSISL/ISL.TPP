@@ -24,6 +24,12 @@ namespace ISL.TPP.Core.Brokers.Files
         public async ValueTask<byte[]> ReadFileAsync(string path) =>
             await File.ReadAllBytesAsync(path);
 
+        public async ValueTask ReadFromFileAsync(Stream output, string path)
+        {
+            await using var fileStream = File.OpenRead(path);
+            await fileStream.CopyToAsync(output);
+        }
+
         public async ValueTask<bool> DeleteFileAsync(string path)
         {
             File.Delete(path);
@@ -80,5 +86,8 @@ namespace ISL.TPP.Core.Brokers.Files
 
             return fileInfo.DirectoryName;
         }
+
+        public async ValueTask<string> GetTempFileNameAsync() =>
+            Path.GetTempFileName();
     }
 }

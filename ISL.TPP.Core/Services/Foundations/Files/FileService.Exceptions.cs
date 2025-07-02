@@ -18,6 +18,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         private delegate ValueTask<byte[]> ReturningByteArrayFunction();
         private delegate ValueTask<string> ReturningStringFunction();
         private delegate ValueTask<List<string>> ReturningStringListFunction();
+        private delegate ValueTask<Stream> ReturningStreamFunction();
         private delegate ValueTask ReturningNothingFunction();
 
         private async ValueTask<bool> TryCatch(ReturningBooleanFunction returningBooleanFunction)

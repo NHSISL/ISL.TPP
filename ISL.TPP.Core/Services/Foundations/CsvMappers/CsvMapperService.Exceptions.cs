@@ -23,7 +23,7 @@ namespace ISL.TPP.Core.Services.Foundations.CsvMappers
             }
             catch (InvalidCsvMapperArgumentsException invalidCsvMapperArgumentsException)
             {
-                throw CreateAndLogValidationException(invalidCsvMapperArgumentsException);
+                throw await CreateAndLogValidationException(invalidCsvMapperArgumentsException);
             }
             catch (Exception exception)
             {
@@ -32,7 +32,7 @@ namespace ISL.TPP.Core.Services.Foundations.CsvMappers
                         message: "Failed CSV mapper service error occurred, contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedCsvMapperServiceException);
+                throw await CreateAndLogServiceException(failedCsvMapperServiceException);
             }
         }
 
@@ -44,7 +44,7 @@ namespace ISL.TPP.Core.Services.Foundations.CsvMappers
             }
             catch (InvalidCsvMapperArgumentsException invalidCsvMapperArgumentsException)
             {
-                throw CreateAndLogValidationException(invalidCsvMapperArgumentsException);
+                throw await CreateAndLogValidationException(invalidCsvMapperArgumentsException);
             }
             catch (Exception exception)
             {
@@ -53,28 +53,28 @@ namespace ISL.TPP.Core.Services.Foundations.CsvMappers
                         message: "Failed CSV mapper service error occurred, contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedCsvMapperServiceException);
+                throw await CreateAndLogServiceException(failedCsvMapperServiceException);
             }
         }
 
-        private CsvMapperValidationException CreateAndLogValidationException(Xeption exception)
+        private async ValueTask<CsvMapperValidationException> CreateAndLogValidationException(Xeption exception)
         {
             var csvMapperValidationException = new CsvMapperValidationException(
                 message: "CSV mapper validation errors occurred, fix the errors and try again.",
                 innerException: exception);
 
-            this.loggingBroker.LogError(csvMapperValidationException);
+            await this.loggingBroker.LogErrorAsync(csvMapperValidationException);
 
             return csvMapperValidationException;
         }
 
-        private CsvMapperServiceException CreateAndLogServiceException(Xeption exception)
+        private async ValueTask<CsvMapperServiceException> CreateAndLogServiceException(Xeption exception)
         {
             var csvMapperServiceException = new CsvMapperServiceException(
                 message: "CSV mapper service error occurred, contact support.",
                 innerException: exception);
 
-            this.loggingBroker.LogError(csvMapperServiceException);
+            await this.loggingBroker.LogErrorAsync(csvMapperServiceException);
 
             return csvMapperServiceException;
         }

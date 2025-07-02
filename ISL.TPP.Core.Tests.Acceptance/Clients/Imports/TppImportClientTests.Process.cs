@@ -11,7 +11,6 @@ using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -37,8 +36,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
 
             dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+                broker.GetCurrentDateTimeOffsetAsync())
+                    .ReturnsAsync(randomDateTimeOffset);
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
@@ -198,7 +197,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     Times.AtLeastOnce);
 
             blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<BlobStorageSettings>()),
+                broker.InsertFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(allFiles.Count));
 
             fileBrokerMock.VerifyNoOtherCalls();
@@ -219,8 +218,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
 
             dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+                broker.GetCurrentDateTimeOffsetAsync())
+                    .ReturnsAsync(randomDateTimeOffset);
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {

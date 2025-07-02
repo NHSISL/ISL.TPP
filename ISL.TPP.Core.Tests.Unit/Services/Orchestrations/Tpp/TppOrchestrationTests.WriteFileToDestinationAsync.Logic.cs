@@ -4,13 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
-using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
 using ISL.TPP.Core.Services.Orchestrations.Tpp;
 using Moq;
@@ -31,12 +31,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             string randomDestination = GetRandomString();
             byte[] randomFileBytes = Encoding.UTF8.GetBytes(GetRandomString());
             bool expectedResult = true;
-
-            Document destinationDocument = new Document
-            {
-                FileName = randomDestination,
-                DocumentData = randomFileBytes
-            };
+            MemoryStream randomStream = new MemoryStream(randomFileBytes);
 
             List<BlobStorageSettings> activeDestinations =
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
@@ -52,8 +47,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (BlobStorageSettings storageSettings in activeDestinations)
             {
                 this.documentServiceMock.Setup(service =>
-                    service.AddDocumentAsync(It.Is(SameDocumentAs(destinationDocument)), storageSettings))
-                        .Returns(ValueTask.CompletedTask);
+                    service.AddDocumentAsync(
+                        It.Is(SameStreamAs(randomStream)),
+                        randomDestination,
+                        storageSettings.AzureBlobContainer))
+                            .Returns(ValueTask.CompletedTask);
             }
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -85,8 +83,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             foreach (BlobStorageSettings blobStorageSettings in activeDestinations)
             {
                 this.documentServiceMock.Verify(service =>
-                    service.AddDocumentAsync(It.Is(SameDocumentAs(destinationDocument)), blobStorageSettings),
-                        Times.Once);
+                    service.AddDocumentAsync(
+                        It.Is(SameStreamAs(randomStream)),
+                        randomDestination,
+                        blobStorageSettings.AzureBlobContainer),
+                            Times.Once);
             }
 
             tppOrchestrationServiceMock.Verify(service =>
@@ -104,31 +105,39 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         public async Task ShouldReturnFalseIfUnableToWriteFileToActiveDestinationsAsync()
         {
             // given
+            string tempFilePath = GetRandomString();
             string randomSource = GetRandomString();
             string randomDestination = GetRandomString();
             byte[] randomFileBytes = Encoding.UTF8.GetBytes(GetRandomString());
             bool expectedResult = false;
             Exception someException = new Exception("Unable to add document");
-
-            Document destinationDocument = new Document
-            {
-                FileName = randomDestination,
-                DocumentData = randomFileBytes
-            };
+            MemoryStream randomStream = new MemoryStream(randomFileBytes);
 
             List<BlobStorageSettings> activeDestinations =
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
+
+            this.fileServiceMock.Setup(service =>
+                service.GetTempFileNameAsync())
+                    .ReturnsAsync(tempFilePath);
+
+            this.fileServiceMock.Setup(service =>
+                service.DeleteFileAsync(tempFilePath))
+                    .ReturnsAsync(true);
+
+            this.fileServiceMock.Setup(service =>
+                service.CheckIfFileExistsAsync(tempFilePath))
+                    .ReturnsAsync(true);
 
             this.fileServiceMock.Setup(service =>
                 service.CheckIfFileExistsAsync(randomSource))
                     .ReturnsAsync(true);
 
             this.fileServiceMock.Setup(service =>
-                service.ReadFromFileAsync(randomSource))
-                    .ReturnsAsync(randomFileBytes);
+                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource))
+                    .Returns(ValueTask.CompletedTask);
 
             this.documentServiceMock.Setup(service =>
-                service.AddDocumentAsync(It.IsAny<Document>(), It.IsAny<BlobStorageSettings>()))
+                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
                     .ThrowsAsync(someException);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -150,11 +159,23 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualResult.Should().Be(expectedResult);
 
             this.fileServiceMock.Verify(service =>
+                service.GetTempFileNameAsync(),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
                 service.CheckIfFileExistsAsync(randomSource),
                     Times.Once);
 
             this.fileServiceMock.Verify(service =>
-                service.ReadFromFileAsync(randomSource),
+                service.CheckIfFileExistsAsync(tempFilePath),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
+                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource),
+                    Times.Once);
+
+            this.fileServiceMock.Verify(service =>
+                service.DeleteFileAsync(tempFilePath),
                     Times.Once);
 
             foreach (BlobStorageSettings blobStorageSettings in activeDestinations)
@@ -169,13 +190,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                         innerException: someException as Xeption);
 
                 this.loggingBrokerMock.Verify(broker =>
-                    broker.LogError(It.Is(SameExceptionAs(
+                    broker.LogErrorAsync(It.Is(SameExceptionAs(
                         failedDocumentTppOrchestrationServiceException))),
                             Times.Once);
             }
 
             this.documentServiceMock.Verify(service =>
-                service.AddDocumentAsync(It.IsAny<Document>(), It.IsAny<BlobStorageSettings>()),
+                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()),
                     Times.Exactly(activeDestinations.Count));
 
             tppOrchestrationServiceMock.Verify(service =>

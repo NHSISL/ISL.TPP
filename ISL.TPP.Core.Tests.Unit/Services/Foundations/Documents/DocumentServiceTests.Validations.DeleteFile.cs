@@ -2,11 +2,12 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using ISL.TPP.Core.Services.Foundations.Documents;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnDeleteFileIfInputsIsInvalid(string invalidInput)
         {
             // Given
-            BlobStorageSettings invalidBlobStorageSettings = null;
+            string invalidContainer = invalidInput;
             string invalidFileName = invalidInput;
             string containerName = invalidInput;
 
@@ -34,13 +35,22 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "BlobStorageSettings",
-                values: "BlobStorageSettings is required");
+                key: "Container",
+                values: "Text is required");
 
             var expectedDocumentValidationException
                 = new DocumentValidationException(
                     message: "Document validation errors occured, please try again",
                     innerException: invalidDocumentException);
+
+            var appSettingsStub = new Dictionary<string, string> {
+                {"blobContainerName", invalidInput},
+                {"blobUriValidMinutes", "1"}
+            };
+
+            var inMemoryConfiguration = new ConfigurationBuilder()
+                .AddInMemoryCollection(appSettingsStub)
+                .Build();
 
             var documentService = new DocumentService(
                     blobStorageBroker: this.blobStorageBrokerMock.Object,
@@ -49,7 +59,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // When
             ValueTask deleteFileTask = documentService
-                .RemoveDocumentByFileNameAsync(fileName: invalidFileName, invalidBlobStorageSettings);
+                .RemoveDocumentByFileNameAsync(fileName: invalidFileName, invalidContainer);
 
             DocumentValidationException actualDocumentValidationException =
                 await Assert.ThrowsAsync<DocumentValidationException>(deleteFileTask.AsTask);
@@ -58,12 +68,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedDocumentValidationException))),
                         Times.Once);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
+                broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()),
                     Times.Never);
 
             this.loggingBrokerMock.VerifyNoOtherCalls();

@@ -108,6 +108,37 @@ namespace ISL.TPP.Core.Services.Foundations.Files
             }
         }
 
+        private async ValueTask WithRetry(ReturningNothingFunction returningNothingFunction)
+        {
+            var attempts = 0;
+
+            while (true)
+            {
+                try
+                {
+                    attempts++;
+                    await returningNothingFunction();
+                }
+                catch (Exception ex)
+                {
+                    if (retryExceptionTypes.Any(exception => exception == ex.GetType()))
+                    {
+                        if (attempts == this.retryConfig.MaxRetryAttempts)
+                        {
+                            throw;
+                        }
+
+                        Task.Delay(this.retryConfig.PauseBetweenFailures).Wait();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+
         private async ValueTask<List<string>> WithRetry(ReturningStringListFunction returningStringListFunction)
         {
             var attempts = 0;

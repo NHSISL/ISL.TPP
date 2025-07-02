@@ -3,76 +3,66 @@
 // ---------------------------------------------------------------
 
 using System;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Foundations.Documents;
+using System.IO;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
     internal partial class DocumentService
     {
-        private static void ValidateDocumentOnAdd(Document document, BlobStorageSettings blobStorageSettings)
+        private static void ValidateDocumentOnAdd(Stream input, string fileName, string container)
         {
-            ValidateDocumentIsNotNull(document);
-
             Validate(
-                (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
-                (Rule: IsInvalid(document.DocumentData), Parameter: nameof(Document.DocumentData)),
-                (Rule: IsInvalid(document.FileName), Parameter: nameof(Document.FileName)));
+                (Rule: IsInvalidInputStream(input), Parameter: "Input"),
+                (Rule: IsInvalid(fileName), Parameter: "FileName"),
+                (Rule: IsInvalid(container), Parameter: "Container"));
         }
 
-        private static void ValidateDocumentOnRetrieve(string fileName, BlobStorageSettings blobStorageSettings)
+        private static void ValidateArgumentsOnRetrieve(Stream output, string fileName, string container)
         {
             Validate(
-                (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
+                (Rule: IsInvalidOutputStream(output), Parameter: "Output"),
+                (Rule: IsInvalid(container), Parameter: "Container"),
                 (Rule: IsInvalid(fileName), Parameter: "FileName"));
         }
 
-        private void ValidateDeleteArguments(string fileName, BlobStorageSettings blobStorageSettings)
+        private void ValidateDeleteArguments(string fileName, string container)
         {
             Validate(
-               (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
+               (Rule: IsInvalid(container), Parameter: "Container"),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
         }
 
-        private void ValidateGetDownloadLinkArguments(string fileName, BlobStorageSettings blobStorageSettings)
+        private void ValidateGetDownloadLinkArguments(string fileName, string container)
         {
             Validate(
-               (Rule: IsInvalid(blobStorageSettings), Parameter: "BlobStorageSettings"),
+               (Rule: IsInvalid(container), Parameter: "Container"),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
-        }
-
-        private static void ValidateDocumentIsNotNull(Document document)
-        {
-            if (document is null)
-            {
-                throw new NullDocumentException(message: "Document is Null");
-            }
         }
 
         private static void ValidateStorageDocument(
-            byte[] maybeRetrievedDocument,
+            Stream data,
             string fileName)
         {
-            if (maybeRetrievedDocument is null)
+            if (data is null || data.Length == 0)
             {
                 throw new NotFoundDocumentException(message: $"Couldn't find documents with fileName: {fileName}.");
             }
         }
 
-        private static dynamic IsInvalid(BlobStorageSettings blobStorageSettings) => new
+        private static dynamic IsInvalidInputStream(Stream? stream) => new
         {
-            Condition = blobStorageSettings == null,
-            Message = "BlobStorageSettings is required"
+            Condition = stream is null || stream.Length == 0,
+            Message = "Stream is required"
         };
 
-        private static dynamic IsInvalid(byte[] data) => new
+        private static dynamic IsInvalidOutputStream(Stream? stream) => new
         {
-            Condition = (data == null || data.Length == 0),
-            Message = "Data is required"
+            Condition = stream is null || stream.Length > 0,
+            Message = "Stream is required"
         };
 
-        private static dynamic IsInvalid(string text) => new
+        private static dynamic IsInvalid(string? text) => new
         {
             Condition = String.IsNullOrWhiteSpace(text),
             Message = "Text is required"

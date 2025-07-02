@@ -13,6 +13,7 @@ namespace ISL.TPP.Core.Brokers.Files
         ValueTask<bool> CheckIfFileExistsAsync(string path);
         ValueTask<bool> WriteToFileAsync(string path, string content);
         ValueTask<byte[]> ReadFileAsync(string path);
+        ValueTask ReadFromFileAsync(Stream output, string path);
         ValueTask<bool> DeleteFileAsync(string path);
         ValueTask<bool> CopyFileAsync(string sourcePath, string destinationPath);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);
@@ -31,5 +32,6 @@ namespace ISL.TPP.Core.Brokers.Files
         ValueTask<bool> CreateDirectoryAsync(string path);
         ValueTask<bool> DeleteDirectoryAsync(string path, bool recursive = false);
         ValueTask<string> GetDirectoryAsync(string path);
+        ValueTask<string> GetTempFileNameAsync();
     }
 }
