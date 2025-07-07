@@ -69,7 +69,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowValidationExceptionOnDeleteFileIfSettingsIsInvalid()
         {
             // Given
-            BlobStorageSettings invalidBlobStorageSettings = null;
+            BlobStorageSettings invalidBlobStorageSettings = new BlobStorageSettings();
             string inputFileName = GetRandomString();
             Stream inputStream = new MemoryStream();
 
