@@ -1,11 +1,12 @@
-﻿// ---------------------------------------------------------
+﻿// ---------------------------------------------------------------
 // Copyright (c) North East London ICB. All rights reserved.
-// ---------------------------------------------------------
+// ---------------------------------------------------------------
 
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using Moq;
 using Xunit;
 
@@ -19,15 +20,16 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         {
             // Given
             string inputFileName = GetRandomString();
-            string inputContainer = GetRandomString();
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
+            BlobStorageSettings inputBlobStorageSettings = randomBlobStorageSettings;
             string randomData = GetRandomString();
             string expectedData = randomData;
             Stream dataStream = new MemoryStream();
             Stream outputStream = new MemoryStream(Encoding.UTF8.GetBytes(randomData));
 
             this.blobStorageBrokerMock
-                .Setup(broker => broker.SelectByFileNameAsync(dataStream, inputFileName, inputContainer))
-                .Callback<Stream, string, string>((output, fileName, container) =>
+                .Setup(broker => broker.SelectByFileNameAsync(dataStream, inputFileName, inputBlobStorageSettings))
+                .Callback<Stream, string, BlobStorageSettings>((output, fileName, container) =>
                     {
                         output.Position = 0;
                         outputStream.CopyTo(output);
@@ -38,14 +40,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             await this.documentService.RetrieveDocumentByFileNameAsync(
                 output: dataStream,
                 fileName: inputFileName,
-                container: inputContainer);
+                blobStorageSettings: inputBlobStorageSettings);
 
             // Then
             string actualData = Encoding.UTF8.GetString(ReadAllBytesFromStream(dataStream));
             actualData.Should().BeEquivalentTo(expectedData);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.SelectByFileNameAsync(It.IsAny<Stream>(), inputFileName, inputContainer),
+                broker.SelectByFileNameAsync(It.IsAny<Stream>(), inputFileName, inputBlobStorageSettings),
                     Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();

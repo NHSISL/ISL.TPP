@@ -323,7 +323,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             await this.documentService.AddDocumentAsync(
                                 tempReadStream,
                                 destinationFilePath,
-                                blobStorageSettings.AzureBlobContainer);
+                                blobStorageSettings);
                         }
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +

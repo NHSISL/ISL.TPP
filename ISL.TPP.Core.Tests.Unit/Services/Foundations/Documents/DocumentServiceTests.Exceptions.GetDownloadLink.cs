@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
 using Xunit;
@@ -18,7 +19,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnGetDownloadLinkAndLogItAsync()
         {
             // given
-            string encryptedFileContainer = "emislanding";
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var requestFailedException = new RequestFailedException(randomString);
 
@@ -37,7 +38,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // when
             ValueTask<string> downloadLinkTask = this.documentService
-                .GetDownloadLinkAsync(fileName: randomString, container: encryptedFileContainer);
+                .GetDownloadLinkAsync(fileName: randomString, blobStorageSettings: randomBlobStorageSettings);
 
             var actualDependencyException =
                  await Assert.ThrowsAsync<DocumentDependencyException>(downloadLinkTask.AsTask);
@@ -62,7 +63,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnGetDownloadLinkIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            string encryptedFileContainer = "emislanding";
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var serviceException = new Exception(randomString);
 
@@ -81,7 +82,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
 
             // when
             ValueTask<string> downloadLinkTask = this.documentService
-                .GetDownloadLinkAsync(fileName: randomString, container: encryptedFileContainer);
+                .GetDownloadLinkAsync(fileName: randomString, blobStorageSettings: randomBlobStorageSettings);
 
             var actualServiceException =
                  await Assert.ThrowsAsync<DocumentServiceException>(downloadLinkTask.AsTask);

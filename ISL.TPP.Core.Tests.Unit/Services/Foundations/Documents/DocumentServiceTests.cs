@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using KellermanSoftware.CompareNetObjects;
 using Microsoft.Extensions.Configuration;
@@ -88,6 +89,20 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 stream.CopyTo(memoryStream);
                 return memoryStream.ToArray();
             }
+        }
+
+        private BlobStorageSettings GetRandomBlobStorageSettings()
+        {
+            return new BlobStorageSettings
+            {
+                Name = GetRandomString(),
+                AzureBlobServiceUri = GetRandomString(),
+                AzureBlobContainer = GetRandomString(),
+                AzureTenantId = GetRandomString(),
+                AzureClientId = GetRandomString(),
+                AzureClientSecret = GetRandomString(),
+                Enabled = true
+            };
         }
     }
 }

@@ -4,40 +4,87 @@
 
 using System;
 using System.IO;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
     internal partial class DocumentService
     {
-        private static void ValidateDocumentOnAdd(Stream input, string fileName, string container)
+        private static void ValidateDocumentOnAdd(
+            Stream input,
+            string fileName,
+            BlobStorageSettings blobStorageSettings)
         {
             Validate(
                 (Rule: IsInvalidInputStream(input), Parameter: "Input"),
                 (Rule: IsInvalid(fileName), Parameter: "FileName"),
-                (Rule: IsInvalid(container), Parameter: "Container"));
+                (Rule: IsInvalid(blobStorageSettings), Parameter: nameof(BlobStorageSettings)));
+
+            Validate(
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobServiceUri),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobServiceUri)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureTenantId),
+                    Parameter: nameof(BlobStorageSettings.AzureTenantId)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobContainer),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobContainer)));
         }
 
-        private static void ValidateArgumentsOnRetrieve(Stream output, string fileName, string container)
+        private static void ValidateArgumentsOnRetrieve(
+            Stream output,
+            string fileName,
+            BlobStorageSettings blobStorageSettings)
         {
             Validate(
                 (Rule: IsInvalidOutputStream(output), Parameter: "Output"),
-                (Rule: IsInvalid(container), Parameter: "Container"),
+                (Rule: IsInvalid(blobStorageSettings), Parameter: nameof(BlobStorageSettings)),
                 (Rule: IsInvalid(fileName), Parameter: "FileName"));
+
+            Validate(
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobServiceUri),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobServiceUri)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureTenantId),
+                    Parameter: nameof(BlobStorageSettings.AzureTenantId)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobContainer),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobContainer)));
         }
 
-        private void ValidateDeleteArguments(string fileName, string container)
+        private void ValidateDeleteArguments(string fileName, BlobStorageSettings blobStorageSettings)
         {
             Validate(
-               (Rule: IsInvalid(container), Parameter: "Container"),
+               (Rule: IsInvalid(blobStorageSettings), Parameter: nameof(BlobStorageSettings)),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
+
+            Validate(
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobServiceUri),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobServiceUri)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureTenantId),
+                    Parameter: nameof(BlobStorageSettings.AzureTenantId)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobContainer),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobContainer)));
         }
 
-        private void ValidateGetDownloadLinkArguments(string fileName, string container)
+        private void ValidateGetDownloadLinkArguments(string fileName, BlobStorageSettings blobStorageSettings)
         {
             Validate(
-               (Rule: IsInvalid(container), Parameter: "Container"),
+               (Rule: IsInvalid(blobStorageSettings), Parameter: nameof(BlobStorageSettings)),
                (Rule: IsInvalid(fileName), Parameter: "FileName"));
+
+            Validate(
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobServiceUri),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobServiceUri)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureTenantId),
+                    Parameter: nameof(BlobStorageSettings.AzureTenantId)),
+
+                (Rule: IsInvalid(blobStorageSettings.AzureBlobContainer),
+                    Parameter: nameof(BlobStorageSettings.AzureBlobContainer)));
         }
 
         private static void ValidateStorageDocument(
@@ -66,6 +113,12 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
         {
             Condition = String.IsNullOrWhiteSpace(text),
             Message = "Text is required"
+        };
+
+        private static dynamic IsInvalid(BlobStorageSettings blobStorageSettings) => new
+        {
+            Condition = blobStorageSettings is null,
+            Message = "Settings is required"
         };
 
         private static void Validate(params (dynamic Rule, string Parameter)[] validations)

@@ -5,12 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -84,17 +86,34 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             foreach (string file in allFiles)
             {
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(file));
+
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
                     fileBrokerMock.Setup(broker =>
-                        broker.ReadFileAsync(file))
-                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                        broker.ReadFromFileAsync(manifestStream, file))
+                            .Returns(ValueTask.CompletedTask);
+
+                    blobStorageBrokerMock.Setup(broker =>
+                        broker.InsertFileAsync(
+                            manifestStream,
+                            file,
+                            tppConfiguration.BlobStoragesSettings.First()))
+                                .Returns(ValueTask.CompletedTask);
                 }
                 else
                 {
                     fileBrokerMock.Setup(broker =>
-                        broker.ReadFileAsync(file))
-                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
+                        broker.ReadFromFileAsync(fileStream, file))
+                            .Returns(ValueTask.CompletedTask);
+
+                    blobStorageBrokerMock.Setup(broker =>
+                        broker.InsertFileAsync(
+                            manifestStream,
+                            file,
+                            tppConfiguration.BlobStoragesSettings.First()))
+                                .Returns(ValueTask.CompletedTask);
                 }
             }
 
@@ -154,17 +173,34 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
             foreach (string file in allFiles)
             {
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(file));
+
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
                     fileBrokerMock.Verify(broker =>
-                        broker.ReadFileAsync(file),
-                            Times.Exactly(2));
+                        broker.ReadFromFileAsync(manifestStream, file),
+                            Times.Once);
+
+                    blobStorageBrokerMock.Verify(broker =>
+                        broker.InsertFileAsync(
+                            manifestStream,
+                            file,
+                            tppConfiguration.BlobStoragesSettings.First()),
+                                Times.Once);
                 }
                 else
                 {
                     fileBrokerMock.Verify(broker =>
-                        broker.ReadFileAsync(file),
+                        broker.ReadFromFileAsync(fileStream, file),
                             Times.Once);
+
+                    blobStorageBrokerMock.Verify(broker =>
+                        broker.InsertFileAsync(
+                            fileStream,
+                            file,
+                            tppConfiguration.BlobStoragesSettings.First()),
+                                Times.Once);
                 }
             }
 
@@ -197,7 +233,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     Times.AtLeastOnce);
 
             blobStorageBrokerMock.Verify(broker =>
-                broker.InsertFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()),
+                broker.InsertFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Exactly(allFiles.Count));
 
             fileBrokerMock.VerifyNoOtherCalls();

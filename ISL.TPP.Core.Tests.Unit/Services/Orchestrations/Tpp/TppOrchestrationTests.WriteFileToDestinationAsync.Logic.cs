@@ -62,7 +62,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.AddDocumentAsync(
                         It.Is(SameStreamAs(randomStream)),
                         randomDestination,
-                        storageSettings.AzureBlobContainer))
+                        storageSettings))
                             .Returns(ValueTask.CompletedTask);
             }
 
@@ -110,7 +110,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.AddDocumentAsync(
                         It.IsAny<Stream>(),
                         randomDestination,
-                        blobStorageSettings.AzureBlobContainer),
+                        blobStorageSettings),
                             Times.Once);
             }
 
@@ -161,7 +161,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     .Returns(ValueTask.CompletedTask);
 
             this.documentServiceMock.Setup(service =>
-                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
+                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
                     .ThrowsAsync(someException);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -220,7 +220,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             }
 
             this.documentServiceMock.Verify(service =>
-                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()),
+                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Exactly(activeDestinations.Count));
 
             tppOrchestrationServiceMock.Verify(service =>

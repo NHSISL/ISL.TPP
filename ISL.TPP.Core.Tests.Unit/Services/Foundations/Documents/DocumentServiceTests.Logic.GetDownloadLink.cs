@@ -1,10 +1,11 @@
-﻿// ---------------------------------------------------------
+﻿// ---------------------------------------------------------------
 // Copyright (c) North East London ICB. All rights reserved.
-// ---------------------------------------------------------
+// ---------------------------------------------------------------
 
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldRetrieveDownloadlinkAsync()
         {
             // Given
-            string encryptedFileContainer = "emislanding";
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
+            BlobStorageSettings inputBlobStorageSettings = randomBlobStorageSettings;
             string randomFileName = GetRandomString();
             string inputFileName = randomFileName;
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
@@ -31,13 +33,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     .ReturnsAsync(randomDateTimeOffset);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.GetDownloadLinkAsync(inputFileName, encryptedFileContainer, inputExpireTime))
+                broker.GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings, inputExpireTime))
                     .ReturnsAsync(outputSasUrl);
 
             // When
             string actualSasUrl =
                 await this.documentService
-                    .GetDownloadLinkAsync(inputFileName, encryptedFileContainer);
+                    .GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings);
 
             // Then
             actualSasUrl.Should().Be(expectedSasUrl);
@@ -47,7 +49,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                     Times.Once());
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.GetDownloadLinkAsync(inputFileName, encryptedFileContainer, inputExpireTime),
+                broker.GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings, inputExpireTime),
                     Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();
