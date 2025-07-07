@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
@@ -72,7 +73,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             // Given
             BlobStorageSettings invalidBlobStorageSettings = new BlobStorageSettings();
             var inputFileName = GetRandomString();
-            Stream inputStream = new MemoryStream();
+            Stream inputStream = new MemoryStream(Encoding.UTF8.GetBytes(GetRandomString()));
 
             var invalidDocumentException = new InvalidDocumentException(
                 message: "Invalid document. Please correct the errors and try again.");
