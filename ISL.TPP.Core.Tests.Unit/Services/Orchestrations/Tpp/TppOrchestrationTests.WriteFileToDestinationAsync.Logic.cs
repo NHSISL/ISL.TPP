@@ -37,27 +37,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
 
             this.fileServiceMock.Setup(service =>
-                service.GetTempFileNameAsync())
-                    .ReturnsAsync(tempFilePath);
-
-            this.fileServiceMock.Setup(service =>
-                service.DeleteFileAsync(tempFilePath))
-                    .ReturnsAsync(true);
-
-            this.fileServiceMock.Setup(service =>
-                service.CheckIfFileExistsAsync(tempFilePath))
-                    .ReturnsAsync(true);
-
-            this.fileServiceMock.Setup(service =>
                 service.CheckIfFileExistsAsync(randomSource))
                     .ReturnsAsync(true);
 
-            this.fileServiceMock.Setup(service =>
-                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource))
-                    .Returns(ValueTask.CompletedTask);
-
             foreach (BlobStorageSettings storageSettings in activeDestinations)
             {
+                this.fileServiceMock.Setup(service =>
+                    service.OpenReadStreamAsync(randomSource))
+                        .ReturnsAsync(randomStream);
+
                 this.documentServiceMock.Setup(service =>
                     service.AddDocumentAsync(
                         It.Is(SameStreamAs(randomStream)),
@@ -85,27 +73,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualResult.Should().Be(expectedResult);
 
             this.fileServiceMock.Verify(service =>
-                service.GetTempFileNameAsync(),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.DeleteFileAsync(tempFilePath),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.CheckIfFileExistsAsync(tempFilePath),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
                 service.CheckIfFileExistsAsync(randomSource),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource),
                     Times.Once);
 
             foreach (BlobStorageSettings blobStorageSettings in activeDestinations)
             {
+                this.fileServiceMock.Verify(service =>
+                    service.OpenReadStreamAsync(randomSource),
+                        Times.Once);
+
                 this.documentServiceMock.Verify(service =>
                     service.AddDocumentAsync(
                         It.IsAny<Stream>(),
