@@ -22,7 +22,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnUploadFileAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = new BlobStorageSettings();
+            BlobStorageSettings blobStorageSettings = GetRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var randomBytes = Encoding.UTF8.GetBytes(GetRandomString());
             Stream someStream = new MemoryStream(randomBytes);
@@ -79,7 +79,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnUploadFileIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = new BlobStorageSettings();
+            BlobStorageSettings blobStorageSettings = GetRandomBlobStorageSettings();
             var randomString = GetRandomString();
             var randomBytes = Encoding.UTF8.GetBytes(GetRandomString());
             Stream someStream = new MemoryStream(randomBytes);
