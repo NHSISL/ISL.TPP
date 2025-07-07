@@ -30,6 +30,19 @@ namespace ISL.TPP.Core.Brokers.Files
             await fileStream.CopyToAsync(output);
         }
 
+        public async ValueTask<Stream> OpenReadStreamAsync(string path)
+        {
+            Stream stream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 81920,
+                useAsync: true);
+
+            return stream;
+        }
+
         public async ValueTask<bool> DeleteFileAsync(string path)
         {
             File.Delete(path);

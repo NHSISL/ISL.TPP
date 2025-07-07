@@ -88,12 +88,23 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             {
                 Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
                 Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(file));
+                Stream outputStream = new MemoryStream();
+
 
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
                     fileBrokerMock.Setup(broker =>
-                        broker.ReadFromFileAsync(manifestStream, file))
-                            .Returns(ValueTask.CompletedTask);
+                        broker.ReadFileAsync(file))
+                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+
+                    fileBrokerMock
+                        .Setup(broker => broker.ReadFromFileAsync(outputStream, file))
+                        .Callback<Stream, string>((output, fileName) =>
+                        {
+                            manifestStream.Position = 0;
+                            manifestStream.CopyTo(outputStream);
+                        })
+                        .Returns(ValueTask.CompletedTask);
 
                     blobStorageBrokerMock.Setup(broker =>
                         broker.InsertFileAsync(
@@ -118,6 +129,11 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             }
 
             string someFolder = GetRandomString();
+            string tempFileName = Path.GetTempFileName();
+
+            fileBrokerMock.Setup(broker =>
+                broker.GetTempFileNameAsync())
+                    .ReturnsAsync(tempFileName);
 
             fileBrokerMock.Setup(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()))
@@ -178,6 +194,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
 
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
+                    fileBrokerMock.Verify(broker =>
+                        broker.ReadFileAsync(file),
+                            Times.Once);
+
                     fileBrokerMock.Verify(broker =>
                         broker.ReadFromFileAsync(manifestStream, file),
                             Times.Once);

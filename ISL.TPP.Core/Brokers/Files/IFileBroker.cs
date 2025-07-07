@@ -14,6 +14,7 @@ namespace ISL.TPP.Core.Brokers.Files
         ValueTask<bool> WriteToFileAsync(string path, string content);
         ValueTask<byte[]> ReadFileAsync(string path);
         ValueTask ReadFromFileAsync(Stream output, string path);
+        ValueTask<Stream> OpenReadStreamAsync(string path);
         ValueTask<bool> DeleteFileAsync(string path);
         ValueTask<bool> CopyFileAsync(string sourcePath, string destinationPath);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);

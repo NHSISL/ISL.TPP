@@ -14,6 +14,7 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         ValueTask<bool> WriteToFileAsync(string path, string content);
         ValueTask<byte[]> ReadFromFileAsync(string path);
         ValueTask ReadFromFileAsync(Stream output, string path);
+        ValueTask WriteToFileAsync(Stream input, string path, bool overwrite = true);
         ValueTask<bool> DeleteFileAsync(string path);
         ValueTask<bool> CopyFileAsync(string sourcePath, string destinationPath);
         ValueTask<bool> MoveFileAsync(string sourcePath, string destinationPath);
@@ -35,5 +36,6 @@ namespace ISL.TPP.Core.Services.Foundations.Files
         ValueTask<bool> MoveDirectoryAsync(string sourceDirectory, string destinationDirectory);
         ValueTask<string> ComputeSHA256Hash(string filePath);
         ValueTask<string> GetTempFileNameAsync();
+        ValueTask<Stream> OpenReadStreamAsync(string path);
     }
 }

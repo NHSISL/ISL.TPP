@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.IO;
 using ISL.TPP.Core.Models.Foundations.Files.Exceptions;
 using Xeptions;
 
@@ -23,6 +24,14 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 message: "Invalid file argument(s), please correct the errors and try again.",
                 (Rule: IsInvalid(path), Parameter: nameof(path)),
                 (Rule: IsInvalid(content), Parameter: nameof(content)));
+        }
+
+        private void ValidateWriteToFileAsyncArguments(Stream input, string path)
+        {
+            Validate<InvalidArgumentFileException>(
+                message: "Invalid file argument(s), please correct the errors and try again.",
+                (Rule: IsInvalid(path), Parameter: nameof(path)),
+                (Rule: IsInvalidInputStream(input), Parameter: nameof(input)));
         }
 
         private void ValidateReadFromFileArguments(string path)
@@ -82,6 +91,18 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 message: "Invalid file argument(s), please correct the errors and try again.",
                 (Rule: IsInvalid(path), Parameter: nameof(path)));
         }
+
+        private static dynamic IsInvalidInputStream(Stream? stream) => new
+        {
+            Condition = stream is null || stream.Length == 0,
+            Message = "Stream is required"
+        };
+
+        private static dynamic IsInvalidOutputStream(Stream? stream) => new
+        {
+            Condition = stream is null || stream.Length > 0,
+            Message = "Stream is required"
+        };
 
         private static dynamic IsInvalid(string text) => new
         {

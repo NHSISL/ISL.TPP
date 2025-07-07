@@ -140,28 +140,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             List<BlobStorageSettings> activeDestinations =
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
 
-            this.fileServiceMock.Setup(service =>
-                service.GetTempFileNameAsync())
-                    .ReturnsAsync(tempFilePath);
-
-            this.fileServiceMock.Setup(service =>
-                service.DeleteFileAsync(tempFilePath))
-                    .ReturnsAsync(true);
-
-            this.fileServiceMock.Setup(service =>
-                service.CheckIfFileExistsAsync(tempFilePath))
-                    .ReturnsAsync(true);
 
             this.fileServiceMock.Setup(service =>
                 service.CheckIfFileExistsAsync(randomSource))
                     .ReturnsAsync(true);
 
             this.fileServiceMock.Setup(service =>
-                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource))
-                    .Returns(ValueTask.CompletedTask);
-
-            this.documentServiceMock.Setup(service =>
-                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
+                service.OpenReadStreamAsync(It.IsAny<string>()))
                     .ThrowsAsync(someException);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
@@ -183,24 +168,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualResult.Should().Be(expectedResult);
 
             this.fileServiceMock.Verify(service =>
-                service.GetTempFileNameAsync(),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
                 service.CheckIfFileExistsAsync(randomSource),
                     Times.Once);
 
             this.fileServiceMock.Verify(service =>
-                service.CheckIfFileExistsAsync(tempFilePath),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.ReadFromFileAsync(It.IsAny<Stream>(), randomSource),
-                    Times.Once);
-
-            this.fileServiceMock.Verify(service =>
-                service.DeleteFileAsync(tempFilePath),
-                    Times.Once);
+                service.OpenReadStreamAsync(randomSource),
+                    Times.Exactly(activeDestinations.Count));
 
             foreach (BlobStorageSettings blobStorageSettings in activeDestinations)
             {
@@ -219,9 +192,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                             Times.Once);
             }
 
-            this.documentServiceMock.Verify(service =>
-                service.AddDocumentAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
-                    Times.Exactly(activeDestinations.Count));
+
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.WriteFileToDestinationAsync(randomSource, randomDestination),

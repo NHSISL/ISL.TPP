@@ -48,6 +48,36 @@ namespace ISL.TPP.Core.Services.Foundations.Files
             }
         }
 
+        private async ValueTask<Stream> WithRetry(ReturningStreamFunction returningStreamFunction)
+        {
+            var attempts = 0;
+
+            while (true)
+            {
+                try
+                {
+                    attempts++;
+                    return await returningStreamFunction();
+                }
+                catch (Exception ex)
+                {
+                    if (retryExceptionTypes.Any(exception => exception == ex.GetType()))
+                    {
+                        if (attempts == this.retryConfig.MaxRetryAttempts)
+                        {
+                            throw;
+                        }
+
+                        Task.Delay(this.retryConfig.PauseBetweenFailures).Wait();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
         private async ValueTask<string> WithRetry(ReturningStringFunction returningStringFunction)
         {
             var attempts = 0;

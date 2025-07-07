@@ -280,8 +280,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             string sourceFilePath,
             string destinationFilePath)
         {
-            string tempFilePath = await fileService.GetTempFileNameAsync();
-
             try
             {
                 bool fileExists =
@@ -294,16 +292,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                 bool allSuccessfull = true;
 
-                await using (FileStream tempWriteStream = new FileStream(
-                    tempFilePath,
-                    FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    bufferSize: 81920,
-                    useAsync: true))
-                {
-                    await this.fileService.ReadFromFileAsync(tempWriteStream, sourceFilePath);
-                }
 
                 List<BlobStorageSettings> activeDestination =
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
@@ -312,16 +300,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 {
                     try
                     {
-                        await using (FileStream tempReadStream = new FileStream(
-                            tempFilePath,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.Read,
-                            bufferSize: 81920,
-                            useAsync: true))
+                        await using (Stream stream = await this.fileService.OpenReadStreamAsync(sourceFilePath))
                         {
                             await this.documentService.AddDocumentAsync(
-                                tempReadStream,
+                                stream,
                                 destinationFilePath,
                                 blobStorageSettings);
                         }
@@ -360,13 +342,6 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     $"{exception.InnerException?.InnerException?.Message}");
 
                 return false;
-            }
-            finally
-            {
-                if (await fileService.CheckIfFileExistsAsync(tempFilePath) == true)
-                {
-                    await this.fileService.DeleteFileAsync(tempFilePath);
-                }
             }
         }
 
