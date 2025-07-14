@@ -2,10 +2,8 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
-using System.Text;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
 
@@ -16,23 +14,17 @@ public partial class DocumentServiceTests
     public async Task ShouldDeleteFileAsync()
     {
         // Given
-        BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
+        BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
         string randomFileName = GetRandomString();
-
-        Document randomDocument = new Document
-        {
-            FileName = randomFileName,
-            DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
-        };
 
         // When
         await this.documentService.RemoveDocumentByFileNameAsync(
-            filename: randomDocument.FileName,
-            blobStorageSettings);
+            fileName: randomFileName,
+            blobStorageSettings: randomBlobStorageSettings);
 
         // Then
         this.blobStorageBrokerMock.Verify(broker =>
-            broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings),
+            broker.DeleteFileAsync(randomFileName, randomBlobStorageSettings),
                 Times.Once);
 
         this.blobStorageBrokerMock.VerifyNoOtherCalls();

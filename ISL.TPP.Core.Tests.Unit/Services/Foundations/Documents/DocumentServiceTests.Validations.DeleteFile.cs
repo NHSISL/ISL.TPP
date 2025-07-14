@@ -2,11 +2,11 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
-using ISL.TPP.Core.Services.Foundations.Documents;
 using Moq;
 using Xunit;
 
@@ -34,18 +34,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
                 values: "Text is required");
 
             invalidDocumentException.AddData(
-                key: "BlobStorageSettings",
-                values: "BlobStorageSettings is required");
+                key: nameof(BlobStorageSettings),
+                values: "Settings is required");
 
             var expectedDocumentValidationException
                 = new DocumentValidationException(
                     message: "Document validation errors occured, please try again",
                     innerException: invalidDocumentException);
-
-            var documentService = new DocumentService(
-                    blobStorageBroker: this.blobStorageBrokerMock.Object,
-                    dateTimeBroker: this.dateTimeBrokerMock.Object,
-                    loggingBroker: this.loggingBrokerMock.Object);
 
             // When
             ValueTask deleteFileTask = documentService
@@ -58,7 +53,58 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedDocumentValidationException))),
+                        Times.Once);
+
+            this.blobStorageBrokerMock.Verify(broker =>
+                broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
+                    Times.Never);
+
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+            this.blobStorageBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowValidationExceptionOnDeleteFileIfSettingsIsInvalid()
+        {
+            // Given
+            BlobStorageSettings invalidBlobStorageSettings = new BlobStorageSettings();
+            string inputFileName = GetRandomString();
+            Stream inputStream = new MemoryStream();
+
+            var invalidDocumentException =
+                new InvalidDocumentException(
+                    message: "Invalid document. Please correct the errors and try again.");
+
+            invalidDocumentException.AddData(
+                key: nameof(BlobStorageSettings.AzureBlobServiceUri),
+                values: "Text is required");
+
+            invalidDocumentException.AddData(
+                key: nameof(BlobStorageSettings.AzureTenantId),
+                values: "Text is required");
+
+            invalidDocumentException.AddData(
+                key: nameof(BlobStorageSettings.AzureBlobContainer),
+                values: "Text is required");
+            var expectedDocumentValidationException
+                = new DocumentValidationException(
+                    message: "Document validation errors occured, please try again",
+                    innerException: invalidDocumentException);
+
+            // When
+            ValueTask deleteFileTask = documentService
+                .RemoveDocumentByFileNameAsync(fileName: inputFileName, invalidBlobStorageSettings);
+
+            DocumentValidationException actualDocumentValidationException =
+                await Assert.ThrowsAsync<DocumentValidationException>(deleteFileTask.AsTask);
+
+            // Then
+            actualDocumentValidationException.Should().BeEquivalentTo(expectedDocumentValidationException);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedDocumentValidationException))),
                         Times.Once);
 

@@ -26,39 +26,39 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             }
             catch (InvalidArgumentTppOrchestrationException invalidArgumentTppOrchestrationException)
             {
-                throw CreateAndLogValidationException(invalidArgumentTppOrchestrationException);
+                throw await CreateAndLogValidationException(invalidArgumentTppOrchestrationException);
             }
             catch (DocumentValidationException documentValidationException)
             {
-                throw CreateAndLogDependencyValidationException(documentValidationException);
+                throw await CreateAndLogDependencyValidationException(documentValidationException);
             }
             catch (DocumentDependencyValidationException documentDependencyValidationException)
             {
-                throw CreateAndLogDependencyValidationException(documentDependencyValidationException);
+                throw await CreateAndLogDependencyValidationException(documentDependencyValidationException);
             }
             catch (FileValidationException fileValidationException)
             {
-                throw CreateAndLogDependencyValidationException(fileValidationException);
+                throw await CreateAndLogDependencyValidationException(fileValidationException);
             }
             catch (FileDependencyValidationException fileDependencyValidationException)
             {
-                throw CreateAndLogDependencyValidationException(fileDependencyValidationException);
+                throw await CreateAndLogDependencyValidationException(fileDependencyValidationException);
             }
             catch (DocumentDependencyException documentDependencyException)
             {
-                throw CreateAndLogDependencyException(documentDependencyException);
+                throw await CreateAndLogDependencyException(documentDependencyException);
             }
             catch (DocumentServiceException documentServiceException)
             {
-                throw CreateAndLogDependencyException(documentServiceException);
+                throw await CreateAndLogDependencyException(documentServiceException);
             }
             catch (FileDependencyException fileDependencyException)
             {
-                throw CreateAndLogDependencyException(fileDependencyException);
+                throw await CreateAndLogDependencyException(fileDependencyException);
             }
             catch (FileServiceException fileServiceException)
             {
-                throw CreateAndLogDependencyException(fileServiceException);
+                throw await CreateAndLogDependencyException(fileServiceException);
             }
             catch (AggregateException aggregateException)
             {
@@ -67,7 +67,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         message: "Failed TPP orchestration service occurred, please contact support",
                         innerException: aggregateException);
 
-                throw CreateAndLogServiceException(failedTppServiceException);
+                throw await CreateAndLogServiceException(failedTppServiceException);
             }
             catch (Exception exception)
             {
@@ -76,7 +76,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         message: "Failed TPP orchestration service occurred, please contact support",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedTppServiceException);
+                throw await CreateAndLogServiceException(failedTppServiceException);
             }
         }
 
@@ -88,39 +88,39 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             }
             catch (InvalidArgumentTppOrchestrationException invalidArgumentTppOrchestrationException)
             {
-                throw CreateAndLogValidationException(invalidArgumentTppOrchestrationException);
+                throw await CreateAndLogValidationException(invalidArgumentTppOrchestrationException);
             }
             catch (DocumentValidationException documentValidationException)
             {
-                throw CreateAndLogDependencyValidationException(documentValidationException);
+                throw await CreateAndLogDependencyValidationException(documentValidationException);
             }
             catch (DocumentDependencyValidationException documentDependencyValidationException)
             {
-                throw CreateAndLogDependencyValidationException(documentDependencyValidationException);
+                throw await CreateAndLogDependencyValidationException(documentDependencyValidationException);
             }
             catch (FileValidationException fileValidationException)
             {
-                throw CreateAndLogDependencyValidationException(fileValidationException);
+                throw await CreateAndLogDependencyValidationException(fileValidationException);
             }
             catch (FileDependencyValidationException fileDependencyValidationException)
             {
-                throw CreateAndLogDependencyValidationException(fileDependencyValidationException);
+                throw await CreateAndLogDependencyValidationException(fileDependencyValidationException);
             }
             catch (DocumentDependencyException documentDependencyException)
             {
-                throw CreateAndLogDependencyException(documentDependencyException);
+                throw await CreateAndLogDependencyException(documentDependencyException);
             }
             catch (DocumentServiceException documentServiceException)
             {
-                throw CreateAndLogDependencyException(documentServiceException);
+                throw await CreateAndLogDependencyException(documentServiceException);
             }
             catch (FileDependencyException fileDependencyException)
             {
-                throw CreateAndLogDependencyException(fileDependencyException);
+                throw await CreateAndLogDependencyException(fileDependencyException);
             }
             catch (FileServiceException fileServiceException)
             {
-                throw CreateAndLogDependencyException(fileServiceException);
+                throw await CreateAndLogDependencyException(fileServiceException);
             }
             catch (Exception exception)
             {
@@ -129,23 +129,23 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         message: "Failed TPP orchestration service occurred, please contact support",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedTppServiceException);
+                throw await CreateAndLogServiceException(failedTppServiceException);
             }
         }
 
-        private TppOrchestrationValidationException CreateAndLogValidationException(Xeption exception)
+        private async ValueTask<TppOrchestrationValidationException> CreateAndLogValidationException(Xeption exception)
         {
             var downloadOrchestrationValidationException =
                 new TppOrchestrationValidationException(
                     message: "TPP orchestration validation errors occurred, please try again.",
                     exception);
 
-            this.loggingBroker.LogError(downloadOrchestrationValidationException);
+            await this.loggingBroker.LogErrorAsync(downloadOrchestrationValidationException);
 
             return downloadOrchestrationValidationException;
         }
 
-        private TppOrchestrationDependencyValidationException
+        private async ValueTask<TppOrchestrationDependencyValidationException>
             CreateAndLogDependencyValidationException(Xeption exception)
         {
             var tppOrchestrationDependencyValidationException =
@@ -154,12 +154,12 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         "fix the errors and try again.",
                     innerException: exception.InnerException as Xeption);
 
-            this.loggingBroker.LogError(tppOrchestrationDependencyValidationException);
+            await this.loggingBroker.LogErrorAsync(tppOrchestrationDependencyValidationException);
 
             return tppOrchestrationDependencyValidationException;
         }
 
-        private TppOrchestrationDependencyException
+        private async ValueTask<TppOrchestrationDependencyException>
             CreateAndLogDependencyException(Xeption exception)
         {
             var tppOrchestrationDependencyException =
@@ -167,19 +167,19 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     message: "TPP orchestration dependency error occurred, fix the errors and try again.",
                     innerException: exception.InnerException as Xeption);
 
-            this.loggingBroker.LogError(tppOrchestrationDependencyException);
+            await this.loggingBroker.LogErrorAsync(tppOrchestrationDependencyException);
 
             return tppOrchestrationDependencyException;
         }
 
-        private TppOrchestrationServiceException CreateAndLogServiceException(Xeption exception)
+        private async ValueTask<TppOrchestrationServiceException> CreateAndLogServiceException(Xeption exception)
         {
             var tppServiceException =
                 new TppOrchestrationServiceException(
                     message: "TPP orchestration service error occurred, contact support.",
                     innerException: exception);
 
-            this.loggingBroker.LogError(tppServiceException);
+            await this.loggingBroker.LogErrorAsync(tppServiceException);
 
             return tppServiceException;
         }

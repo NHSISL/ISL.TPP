@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Brokers.DateTimes;
@@ -25,20 +26,22 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
         {
             // given
             List<string> files = new List<string>();
+            List<string> insertFiles = new List<string>();
             List<string> reprocessFiles = new List<string>();
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
             string manifestToDate = randomDateTimeOffset.ToString("yyyyMMdd_HHmm");
             StringBuilder csvManifest = new StringBuilder();
             csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
             csvManifest.AppendLine($"SRSystmOnline,Y,N,20231209_2245,{manifestToDate}");
+            string fileContent = GetRandomString();
 
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
 
             dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+                broker.GetCurrentDateTimeOffsetAsync())
+                    .ReturnsAsync(randomDateTimeOffset);
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {
@@ -67,6 +70,10 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 reprocessFiles.Add($@"{reprocessSubFolderPath}\{tppConfiguration.TppManifestFile}");
                 reprocessFiles.Add($@"{reprocessSubFolderPath}\file1.csv");
                 reprocessFiles.Add($@"{reprocessSubFolderPath}\file2.csv");
+                insertFiles.Add($@"{reportingGroup}\{manifestToDate}\{tppConfiguration.TppManifestFile}");
+                insertFiles.Add($@"{reportingGroup}\{manifestToDate}\file1.cs");
+                insertFiles.Add($@"{reportingGroup}\{manifestToDate}\file2.cs");
+
 
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     filePath, It.IsAny<string>(), It.IsAny<SearchOption>()))
@@ -79,27 +86,71 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 fileBrokerMock.Setup(broker => broker.GetListOfFilesAsync(
                     reprocessSubFolderPath, It.IsAny<string>(), It.IsAny<SearchOption>()))
                         .ReturnsAsync(reprocessFiles);
+
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(fileContent));
+
+                blobStorageBrokerMock.Setup(broker =>
+                    broker.InsertFileAsync(
+                        manifestStream,
+                        $"{reportingGroup}\\{manifestToDate}\\manifest.csv",
+                        tppConfiguration.BlobStoragesSettings.First()))
+                            .Returns(ValueTask.CompletedTask);
+
+                blobStorageBrokerMock.Setup(broker =>
+                    broker.InsertFileAsync(
+                        fileStream,
+                        $"{reportingGroup}\\{manifestToDate}\\file1.csv",
+                        tppConfiguration.BlobStoragesSettings.First()))
+                            .Returns(ValueTask.CompletedTask);
+
+                blobStorageBrokerMock.Setup(broker =>
+                    broker.InsertFileAsync(
+                        fileStream,
+                        $"{reportingGroup}\\{manifestToDate}\\file2.csv",
+                        tppConfiguration.BlobStoragesSettings.First()))
+                            .Returns(ValueTask.CompletedTask);
+
             }
 
             List<string> allFiles = [.. files, .. reprocessFiles];
 
             foreach (string file in allFiles)
             {
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(fileContent));
+
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
                     fileBrokerMock.Setup(broker =>
                         broker.ReadFileAsync(file))
                             .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+
+                    fileBrokerMock
+                        .Setup(broker => broker.OpenReadStreamAsync(file))
+                        .ReturnsAsync(manifestStream);
+
+                    blobStorageBrokerMock.Setup(broker =>
+                        broker.InsertFileAsync(
+                            manifestStream,
+                            file.Substring($"{tppConfiguration.TppPickupFolder}\\".Length),
+                            tppConfiguration.BlobStoragesSettings.First()))
+                                .Returns(ValueTask.CompletedTask);
                 }
                 else
                 {
-                    fileBrokerMock.Setup(broker =>
-                        broker.ReadFileAsync(file))
-                            .ReturnsAsync(ASCIIEncoding.UTF8.GetBytes(file));
+                    fileBrokerMock
+                        .Setup(broker => broker.OpenReadStreamAsync(file))
+                        .ReturnsAsync(fileStream);
                 }
             }
 
             string someFolder = GetRandomString();
+            string tempFileName = Path.GetTempFileName();
+
+            fileBrokerMock.Setup(broker =>
+                broker.GetTempFileNameAsync())
+                    .ReturnsAsync(tempFileName);
 
             fileBrokerMock.Setup(broker =>
                 broker.GetDirectoryAsync(It.IsAny<string>()))
@@ -151,20 +202,51 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     manifestToDate);
 
                 List<string> reprocessFolders = new List<string> { reprocessSubFolderPath };
+
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(fileContent));
+
+                blobStorageBrokerMock.Verify(broker =>
+                    broker.InsertFileAsync(
+                        It.IsAny<Stream>(),
+                        $"{reportingGroup}\\{manifestToDate}\\manifest.csv",
+                        tppConfiguration.BlobStoragesSettings.First()),
+                            Times.Exactly(2));
+
+                blobStorageBrokerMock.Verify(broker =>
+                    broker.InsertFileAsync(
+                        It.IsAny<Stream>(),
+                        $"{reportingGroup}\\{manifestToDate}\\file1.csv",
+                        tppConfiguration.BlobStoragesSettings.First()),
+                            Times.Exactly(2));
+
+                blobStorageBrokerMock.Verify(broker =>
+                    broker.InsertFileAsync(
+                        It.IsAny<Stream>(),
+                        $"{reportingGroup}\\{manifestToDate}\\file2.csv",
+                        tppConfiguration.BlobStoragesSettings.First()),
+                            Times.Exactly(2));
             }
 
             foreach (string file in allFiles)
             {
+                Stream manifestStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(csvManifest.ToString()));
+                Stream fileStream = new MemoryStream(ASCIIEncoding.UTF8.GetBytes(file));
+
                 if (file.EndsWith(tppConfiguration.TppManifestFile))
                 {
                     fileBrokerMock.Verify(broker =>
                         broker.ReadFileAsync(file),
-                            Times.Exactly(2));
+                            Times.Once);
+
+                    fileBrokerMock.Verify(broker =>
+                        broker.OpenReadStreamAsync(file),
+                            Times.Once);
                 }
                 else
                 {
                     fileBrokerMock.Verify(broker =>
-                        broker.ReadFileAsync(file),
+                        broker.OpenReadStreamAsync(file),
                             Times.Once);
                 }
             }
@@ -198,7 +280,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     Times.AtLeastOnce);
 
             blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<BlobStorageSettings>()),
+                broker.InsertFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Exactly(allFiles.Count));
 
             fileBrokerMock.VerifyNoOtherCalls();
@@ -219,8 +301,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
 
             dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+                broker.GetCurrentDateTimeOffsetAsync())
+                    .ReturnsAsync(randomDateTimeOffset);
 
             foreach (string reportingGroup in tppConfiguration.ReportingGroups)
             {

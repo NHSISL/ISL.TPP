@@ -2,10 +2,10 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Foundations.Documents;
 using Moq;
 using Xunit;
 
@@ -18,23 +18,20 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldAddFileAsync()
         {
             // Given
-            BlobStorageSettings randomBlobStorageSettings = CreateRandomBlobStorageSettings();
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
             string randomFileName = GetRandomString();
-
-            Document randomDocument = new Document
-            {
-                FileName = randomFileName,
-                DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
-            };
+            Stream randomStream = new MemoryStream(Encoding.UTF8.GetBytes(GetRandomString()));
 
             // When
-            await this.documentService
-                .AddDocumentAsync(document: randomDocument, blobStorageSettings: randomBlobStorageSettings);
+            await this.documentService.AddDocumentAsync(
+                input: randomStream,
+                fileName: randomFileName,
+                blobStorageSettings: randomBlobStorageSettings);
 
             // Then
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.UploadFileAsync(randomDocument.FileName, randomDocument.DocumentData, randomBlobStorageSettings),
-                Times.Once);
+                broker.InsertFileAsync(randomStream, randomFileName, randomBlobStorageSettings),
+                    Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();

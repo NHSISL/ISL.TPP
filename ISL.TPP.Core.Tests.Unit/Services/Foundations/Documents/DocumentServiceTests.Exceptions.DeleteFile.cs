@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -21,35 +22,35 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnDeleteFileAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
+            BlobStorageSettings someBlobStorageSettings = GetRandomBlobStorageSettings();
             string randomFileName = GetRandomString();
             var randomMessage = GetRandomString();
 
             Document randomDocument = new Document
             {
                 FileName = randomFileName,
-                DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
+                DocumentData = new MemoryStream(Encoding.UTF8.GetBytes(GetRandomString()))
             };
 
             var requestFailedException = new RequestFailedException(randomMessage);
 
             var failedDocumentRequestException =
                 new FailedDocumentRequestException(
-                    message: "Failed document request occurred, please contact support",
+                    message: "Failed document request occurred, please contact support.",
                     innerException: requestFailedException);
 
             var expectedDependencyException =
                  new DocumentDependencyException(
-                     message: "Document dependency error occurred, contact support.",
+                     message: "Document dependency error occurred, please contact support.",
                      innerException: failedDocumentRequestException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings))
-                    .Throws(requestFailedException);
+                 broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
+                    .ThrowsAsync(requestFailedException);
 
             // when
             ValueTask getDocumentTask = this.documentService
-                .RemoveDocumentByFileNameAsync(randomFileName, blobStorageSettings);
+                .RemoveDocumentByFileNameAsync(randomFileName, someBlobStorageSettings);
 
             var actualDependencyException =
                  await Assert.ThrowsAsync<DocumentDependencyException>(getDocumentTask.AsTask);
@@ -58,11 +59,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings),
+                 broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                 broker.LogError(It.Is(SameExceptionAs(
+                 broker.LogErrorAsync(It.Is(SameExceptionAs(
                      expectedDependencyException))),
                          Times.Once);
 
@@ -74,34 +75,34 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnDeleteFileIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
+            BlobStorageSettings someBlobStorageSettings = GetRandomBlobStorageSettings();
             string randomFileName = GetRandomString();
             var randomMessage = GetRandomString();
 
             Document randomDocument = new Document
             {
                 FileName = randomFileName,
-                DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
+                DocumentData = new MemoryStream(Encoding.UTF8.GetBytes(GetRandomString()))
             };
 
             var serviceException = new Exception(randomMessage);
 
             var failedDocumentServiceException = new FailedDocumentServiceException(
-                message: "Failed document service error occurred, contact support.",
+                message: "Failed document service error occurred, please contact support.",
                 innerException: serviceException);
 
             var expectedDocumentServiceException =
                 new DocumentServiceException(
-                    message: "Document service error occurred, contact support.",
+                    message: "Document service error occurred, please contact support.",
                     innerException: failedDocumentServiceException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings))
-                     .Throws(serviceException);
+                 broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
+                     .ThrowsAsync(serviceException);
 
             // when
             ValueTask getDocumentTask =
-                this.documentService.RemoveDocumentByFileNameAsync(randomDocument.FileName, blobStorageSettings);
+                this.documentService.RemoveDocumentByFileNameAsync(randomDocument.FileName, someBlobStorageSettings);
 
             var actualServiceException =
                  await Assert.ThrowsAsync<DocumentServiceException>(getDocumentTask.AsTask);
@@ -110,11 +111,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.DeleteFileAsync(randomDocument.FileName, blobStorageSettings),
+                 broker.DeleteFileAsync(It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                 broker.LogError(It.Is(SameExceptionAs(
+                 broker.LogErrorAsync(It.Is(SameExceptionAs(
                      expectedDocumentServiceException))),
                          Times.Once);
 

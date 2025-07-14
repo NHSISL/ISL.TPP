@@ -14,7 +14,6 @@ using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Models;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
-using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
 using ISL.TPP.Core.Services.Foundations.CsvMappers;
 using ISL.TPP.Core.Services.Foundations.Documents;
@@ -119,7 +118,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Error processing folder '{folder}'");
 
-                    this.loggingBroker.LogError(ex);
+                    await this.loggingBroker.LogErrorAsync(ex);
                     exceptions.Add(ex);
                 }
             }
@@ -223,7 +222,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                             $"Error processing file '{filePath}'" + Environment.NewLine +
                             $"Error: {ex.Message} {ex?.InnerException?.Message} ");
 
-                        this.loggingBroker.LogError(ex);
+                        await this.loggingBroker.LogErrorAsync(ex);
                         exceptions.Add(ex);
                     }
                 }
@@ -251,13 +250,13 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     {
                         foreach (var innerException in ((AggregateException)exception).InnerExceptions)
                         {
-                            this.loggingBroker.LogCritical(innerException);
+                            await this.loggingBroker.LogCriticalAsync(innerException);
                             exceptions.Add(innerException);
                         }
                     }
                     else
                     {
-                        this.loggingBroker.LogCritical(exception);
+                        await this.loggingBroker.LogCriticalAsync(exception);
                         exceptions.Add(exception);
                     }
                 }
@@ -291,27 +290,23 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     throw new FileNotFoundException($"Unable to read file: {sourceFilePath}");
                 }
 
-                var file = await this.fileService.ReadFromFileAsync(sourceFilePath);
-                ValidateFile(file);
+                bool allSuccessfull = true;
 
-                var document = new Document
-                {
-                    FileName = destinationFilePath,
-                    DocumentData = file
-                };
 
                 List<BlobStorageSettings> activeDestination =
                     this.tppConfiguration.BlobStoragesSettings.Where(config => config.Enabled).ToList();
-
-                bool allSuccessfull = true;
 
                 foreach (BlobStorageSettings blobStorageSettings in activeDestination)
                 {
                     try
                     {
-                        await this.documentService.AddDocumentAsync(
-                            document,
-                            blobStorageSettings);
+                        await using (Stream stream = await this.fileService.OpenReadStreamAsync(sourceFilePath))
+                        {
+                            await this.documentService.AddDocumentAsync(
+                                stream,
+                                destinationFilePath,
+                                blobStorageSettings);
+                        }
 
                         Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                             $"Port file to blobstore.  Copy from '{sourceFilePath}' " +
@@ -331,7 +326,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 message,
                                 innerException: exception as Xeption);
 
-                        this.loggingBroker.LogError(failedDocumentTppOrchestrationServiceException);
+                        await this.loggingBroker.LogErrorAsync(failedDocumentTppOrchestrationServiceException);
                         allSuccessfull = false;
                     }
                 }
@@ -414,7 +409,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                     Console.WriteLine(message);
 
-                    this.loggingBroker.LogCritical(ex);
+                    await this.loggingBroker.LogCriticalAsync(ex);
                     exceptions.Add(ex);
                 }
             }

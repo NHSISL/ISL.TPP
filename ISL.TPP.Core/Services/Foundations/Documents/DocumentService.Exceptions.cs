@@ -25,28 +25,35 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             }
             catch (NullDocumentException nullDocumentException)
             {
-                throw CreateAndLogValidationException(nullDocumentException);
+                throw await CreateAndLogValidationExceptionAsync(nullDocumentException);
+            }
+            catch (NotFoundDocumentException notFoundDocumentException)
+            {
+                throw await CreateAndLogValidationExceptionAsync(notFoundDocumentException);
             }
             catch (InvalidDocumentException invalidDocumentException)
             {
-                throw CreateAndLogValidationException(invalidDocumentException);
+                throw await CreateAndLogValidationExceptionAsync(invalidDocumentException);
             }
             catch (RequestFailedException requestFailedException)
             {
-                var failedRequestException = new FailedDocumentRequestException(
-                    message: "Failed document request occurred, please contact support",
-                    innerException: requestFailedException);
+                if (requestFailedException.Status != 404)
+                {
+                    var failedRequestException = new FailedDocumentRequestException(
+                        message: "Failed document request occurred, please contact support.",
+                        innerException: requestFailedException);
 
-                throw CreateAndLogDependencyException(failedRequestException);
+                    throw await CreateAndLogDependencyExceptionAsync(failedRequestException);
+                }
             }
             catch (Exception exception)
             {
                 var failedDocumentServiceException =
                     new FailedDocumentServiceException(
-                        message: "Failed document service error occurred, contact support.",
+                        message: "Failed document service error occurred, please contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedDocumentServiceException);
+                throw await CreateAndLogServiceExceptionAsync(failedDocumentServiceException);
             }
         }
 
@@ -58,28 +65,28 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             }
             catch (InvalidDocumentException invalidDocumentException)
             {
-                throw CreateAndLogValidationException(invalidDocumentException);
+                throw await CreateAndLogValidationExceptionAsync(invalidDocumentException);
             }
             catch (NotFoundDocumentException notFoundDocumentException)
             {
-                throw CreateAndLogValidationException(notFoundDocumentException);
+                throw await CreateAndLogValidationExceptionAsync(notFoundDocumentException);
             }
             catch (RequestFailedException requestFailedException)
             {
                 var failedRequestException = new FailedDocumentRequestException(
-                    message: "Failed document request occurred, please contact support",
+                    message: "Failed document request occurred, please contact support.",
                     innerException: requestFailedException);
 
-                throw CreateAndLogDependencyException(failedRequestException);
+                throw await CreateAndLogDependencyExceptionAsync(failedRequestException);
             }
             catch (Exception exception)
             {
                 var failedDocumentBlobServiceException =
                     new FailedDocumentServiceException(
-                        message: "Failed document service error occurred, contact support.",
+                        message: "Failed document service error occurred, please contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedDocumentBlobServiceException);
+                throw await CreateAndLogServiceExceptionAsync(failedDocumentBlobServiceException);
             }
         }
 
@@ -91,69 +98,69 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
             }
             catch (InvalidDocumentException invalidDocumentException)
             {
-                throw CreateAndLogValidationException(invalidDocumentException);
+                throw await CreateAndLogValidationExceptionAsync(invalidDocumentException);
             }
             catch (RequestFailedException requestFailedException)
             {
                 var failedRequestException = new FailedDocumentRequestException(
-                    message: "Failed document request occurred, please contact support",
+                    message: "Failed document request occurred, please contact support.",
                     innerException: requestFailedException);
 
-                throw CreateAndLogDependencyException(failedRequestException);
+                throw await CreateAndLogDependencyExceptionAsync(failedRequestException);
             }
             catch (Exception exception)
             {
                 var failedDocumentBlobServiceException =
                     new FailedDocumentServiceException(
-                        message: "Failed document service error occurred, contact support.",
+                        message: "Failed document service error occurred, please contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedDocumentBlobServiceException);
+                throw await CreateAndLogServiceExceptionAsync(failedDocumentBlobServiceException);
             }
         }
 
-        private DocumentValidationException CreateAndLogValidationException(Xeption exception)
+        private async ValueTask<DocumentValidationException> CreateAndLogValidationExceptionAsync(Xeption exception)
         {
-            var documentValidationExceptionn =
+            var documentValidationException =
                 new DocumentValidationException(
                     message: "Document validation errors occured, please try again",
                     innerException: exception);
 
-            this.loggingBroker.LogError(documentValidationExceptionn);
+            await this.loggingBroker.LogErrorAsync(documentValidationException);
 
-            return documentValidationExceptionn;
+            return documentValidationException;
         }
 
-        private DocumentDependencyException CreateAndLogDependencyException(Xeption exception)
+        private async ValueTask<DocumentDependencyException> CreateAndLogDependencyExceptionAsync(Xeption exception)
         {
             var documentDependencyException = new DocumentDependencyException(
-                message: "Document dependency error occurred, contact support.",
+                message: "Document dependency error occurred, please contact support.",
                 innerException: exception);
 
-            this.loggingBroker.LogError(documentDependencyException);
+            await this.loggingBroker.LogErrorAsync(documentDependencyException);
 
             return documentDependencyException;
         }
 
-        private DocumentDependencyValidationException CreateAndLogDependencyValidationException(Xeption exception)
+        private async ValueTask<DocumentDependencyValidationException> CreateAndLogDependencyValidationExceptionAsync(Xeption exception)
         {
             var documentDependencyValidationException =
                 new DocumentDependencyValidationException(
                     message: "Document dependency validation occurred, please try again.",
                     innerException: exception);
 
-            this.loggingBroker.LogError(documentDependencyValidationException);
+            await this.loggingBroker.LogErrorAsync(documentDependencyValidationException);
 
             return documentDependencyValidationException;
         }
 
-        private DocumentServiceException CreateAndLogServiceException(Xeption exception)
+        private async ValueTask<DocumentServiceException> CreateAndLogServiceExceptionAsync(Xeption exception)
         {
             var documentServiceException = new DocumentServiceException(
-                message: "Document service error occurred, contact support.",
+                message: "Document service error occurred, please contact support.",
                 innerException: exception);
 
-            this.loggingBroker.LogError(documentServiceException);
+            await this.loggingBroker.LogErrorAsync(documentServiceException);
 
             return documentServiceException;
         }

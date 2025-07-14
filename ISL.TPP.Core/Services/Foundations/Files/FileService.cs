@@ -56,6 +56,50 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                 });
             });
 
+        public ValueTask ReadFromFileAsync(Stream output, string path) =>
+            TryCatch(async () =>
+            {
+                await WithRetry(async () =>
+                {
+                    ValidateReadFromFileArguments(path);
+                    await this.fileBroker.ReadFromFileAsync(output, path);
+                });
+            });
+
+        public ValueTask<Stream> OpenReadStreamAsync(string path) =>
+        TryCatch(async () =>
+        {
+            return await WithRetry(async () =>
+            {
+                ValidateReadFromFileArguments(path);
+                Stream stream = await this.fileBroker.OpenReadStreamAsync(path);
+
+                return stream;
+            });
+        });
+
+        public ValueTask WriteToFileAsync(Stream input, string path, bool overwrite = true) =>
+            TryCatch(async () =>
+            {
+                await WithRetry(async () =>
+                {
+                    ValidateWriteToFileAsyncArguments(input, path);
+
+                    FileMode mode = overwrite ? FileMode.Create : FileMode.CreateNew;
+
+                    await using FileStream outputStream = new FileStream(
+                        path,
+                        mode,
+                        FileAccess.Write,
+                        FileShare.None,
+                        bufferSize: 81920,
+                        useAsync: true);
+
+                    await input.CopyToAsync(outputStream);
+                    await outputStream.FlushAsync();
+                });
+            });
+
         public ValueTask<bool> DeleteFileAsync(string path) =>
             TryCatch(async () =>
             {
@@ -242,6 +286,12 @@ namespace ISL.TPP.Core.Services.Foundations.Files
                         return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
                     }
                 });
+            });
+
+        public ValueTask<string> GetTempFileNameAsync() =>
+            TryCatch(async () =>
+            {
+                return await this.fileBroker.GetTempFileNameAsync();
             });
     }
 }

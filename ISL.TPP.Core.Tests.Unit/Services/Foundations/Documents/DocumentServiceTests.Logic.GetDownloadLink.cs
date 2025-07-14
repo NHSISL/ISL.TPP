@@ -18,7 +18,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldRetrieveDownloadlinkAsync()
         {
             // Given
-            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
+            BlobStorageSettings inputBlobStorageSettings = randomBlobStorageSettings;
             string randomFileName = GetRandomString();
             string inputFileName = randomFileName;
             DateTimeOffset randomDateTimeOffset = GetRandomDateTimeOffset();
@@ -28,27 +29,27 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             string expectedSasUrl = randomSasUrl;
 
             this.dateTimeBrokerMock.Setup(broker =>
-                broker.GetCurrentDateTimeOffset())
-                    .Returns(randomDateTimeOffset);
+                broker.GetCurrentDateTimeOffsetAsync())
+                    .ReturnsAsync(randomDateTimeOffset);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.GetDownloadLinkAsync(inputFileName, blobStorageSettings, inputExpireTime))
+                broker.GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings, inputExpireTime))
                     .ReturnsAsync(outputSasUrl);
 
             // When
             string actualSasUrl =
                 await this.documentService
-                    .GetDownloadLinkAsync(inputFileName, blobStorageSettings);
+                    .GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings);
 
             // Then
             actualSasUrl.Should().Be(expectedSasUrl);
 
             this.dateTimeBrokerMock.Verify(broker =>
-                broker.GetCurrentDateTimeOffset(),
+                broker.GetCurrentDateTimeOffsetAsync(),
                     Times.Once());
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.GetDownloadLinkAsync(inputFileName, blobStorageSettings, inputExpireTime),
+                broker.GetDownloadLinkAsync(inputFileName, inputBlobStorageSettings, inputExpireTime),
                     Times.Once);
 
             this.blobStorageBrokerMock.VerifyNoOtherCalls();

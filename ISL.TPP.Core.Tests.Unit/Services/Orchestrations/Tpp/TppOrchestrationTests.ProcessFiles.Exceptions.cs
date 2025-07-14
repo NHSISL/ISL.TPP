@@ -82,7 +82,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedTppOrchestrationServiceException))),
                         Times.Once);
 
@@ -156,7 +156,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedTppOrchestrationServiceException))),
                         Times.Once);
 
@@ -231,7 +231,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
-                broker.LogError(It.Is(SameExceptionAs(
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedTppOrchestrationServiceException))),
                         Times.Once);
 

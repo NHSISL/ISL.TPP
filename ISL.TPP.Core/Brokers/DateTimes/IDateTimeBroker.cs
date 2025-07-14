@@ -3,11 +3,12 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Threading.Tasks;
 
 namespace ISL.TPP.Core.Brokers.DateTimes
 {
     internal interface IDateTimeBroker
     {
-        DateTimeOffset GetCurrentDateTimeOffset();
+        ValueTask<DateTimeOffset> GetCurrentDateTimeOffsetAsync();
     }
 }

@@ -3,12 +3,11 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Models.Foundations.Documents;
 using ISL.TPP.Core.Models.Foundations.Documents.Exceptions;
 using Moq;
 using Xunit;
@@ -21,35 +20,33 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowDependencyExceptionOnSelectFileAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
-            var randomFileName = GetRandomString();
-
-            Document randomDocument = new Document
-            {
-                FileName = randomFileName,
-                DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
-            };
-
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
+            string randomFileName = GetRandomString();
+            var outputStream = new MemoryStream();
+            string fileName = GetRandomString();
             var randomMessage = GetRandomString();
             var requestFailedException = new RequestFailedException(randomMessage);
 
             var failedDocumentRequestException =
                 new FailedDocumentRequestException(
-                    message: "Failed document request occurred, please contact support",
+                    message: "Failed document request occurred, please contact support.",
                     innerException: requestFailedException);
 
             var expectedDependencyException =
                  new DocumentDependencyException(
-                     message: "Document dependency error occurred, contact support.",
+                     message: "Document dependency error occurred, please contact support.",
                      innerException: failedDocumentRequestException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                 broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings))
-                    .Throws(requestFailedException);
+                 broker.SelectByFileNameAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
+                    .ThrowsAsync(requestFailedException);
 
             // when
-            ValueTask<Document> getDownloadFileTask =
-                this.documentService.RetrieveDocumentByFileNameAsync(randomDocument.FileName, blobStorageSettings);
+            ValueTask getDownloadFileTask =
+                this.documentService.RetrieveDocumentByFileNameAsync(
+                    output: outputStream,
+                    fileName: fileName,
+                    blobStorageSettings: randomBlobStorageSettings);
 
             var actualDependencyException =
                  await Assert.ThrowsAsync<DocumentDependencyException>(getDownloadFileTask.AsTask);
@@ -58,11 +55,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualDependencyException.Should().BeEquivalentTo(expectedDependencyException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                 broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings),
+                 broker.SelectByFileNameAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                      Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                 broker.LogError(It.Is(SameExceptionAs(
+                 broker.LogErrorAsync(It.Is(SameExceptionAs(
                      expectedDependencyException))),
                          Times.Once);
 
@@ -74,35 +71,34 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
         public async Task ShouldThrowServiceExceptionOnRetrieveFileIfServiceErrorOccursAndLogItAsync()
         {
             // given
-            BlobStorageSettings blobStorageSettings = CreateRandomBlobStorageSettings();
+            BlobStorageSettings randomBlobStorageSettings = GetRandomBlobStorageSettings();
             var randomFileName = GetRandomString();
-
-            Document randomDocument = new Document
-            {
-                FileName = randomFileName,
-                DocumentData = Encoding.ASCII.GetBytes(GetRandomString())
-            };
+            var outputStream = new MemoryStream();
+            string fileName = GetRandomString();
 
             var randomMessage = GetRandomString();
 
             var serviceException = new Exception(randomMessage);
 
             var failedDocumentServiceException = new FailedDocumentServiceException(
-                message: "Failed document service error occurred, contact support.",
+                message: "Failed document service error occurred, please contact support.",
                 innerException: serviceException);
 
             var expectedDocumentServiceException =
                 new DocumentServiceException(
-                    message: "Document service error occurred, contact support.",
+                    message: "Document service error occurred, please contact support.",
                     innerException: failedDocumentServiceException);
 
             this.blobStorageBrokerMock.Setup(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings))
-                   .Throws(serviceException);
+                broker.SelectByFileNameAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()))
+                   .ThrowsAsync(serviceException);
 
             // when
-            ValueTask<Document> getDownloadFileTask =
-                this.documentService.RetrieveDocumentByFileNameAsync(randomFileName, blobStorageSettings);
+            ValueTask getDownloadFileTask =
+                this.documentService.RetrieveDocumentByFileNameAsync(
+                    output: outputStream,
+                    fileName: fileName,
+                    blobStorageSettings: randomBlobStorageSettings);
 
             var actualServiceException =
                  await Assert.ThrowsAsync<DocumentServiceException>(getDownloadFileTask.AsTask);
@@ -111,11 +107,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.Documents
             actualServiceException.Should().BeEquivalentTo(expectedDocumentServiceException);
 
             this.blobStorageBrokerMock.Verify(broker =>
-                broker.DownloadByFileNameAsync(randomDocument.FileName, blobStorageSettings),
+                broker.SelectByFileNameAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<BlobStorageSettings>()),
                     Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
-                 broker.LogError(It.Is(SameExceptionAs(
+                 broker.LogErrorAsync(It.Is(SameExceptionAs(
                      expectedDocumentServiceException))),
                          Times.Once);
 
