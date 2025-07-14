@@ -11,6 +11,7 @@ namespace ISL.TPP.Core.Models.Configurations
     public class TppConfiguration
     {
         public string TppPickupFolder { get; set; } = string.Empty;
+        public string TppSubmissionFolder { get; set; } = string.Empty;
         public string TppManifestFile { get; set; } = string.Empty;
         public int TimerIntervalInMinutes { get; set; } = 1;
         public List<BlobStorageSettings> BlobStoragesSettings { get; set; } = new List<BlobStorageSettings>();

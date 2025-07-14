@@ -24,8 +24,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             bool isSuccess)
         {
             // given
-            string randomReportingGroup = GetRandomString();
-            string randomReportingGroupFolder = $"{GetRandomString()}\\{randomReportingGroup}";
+            string randomReportingGroup = $"ReportingGroup-{GetRandomString()}";
+            string randomReportingGroupFolder = $"{tppConfiguration.TppSubmissionFolder}\\{randomReportingGroup}";
             string manifestFile = tppConfiguration.TppManifestFile;
             int count = 1; //GetRandomNumber();
             List<string> randomFiles = GetRandomStringList(count);
@@ -57,10 +57,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.CheckIfFileExistsAsync(filePath))
                         .ReturnsAsync(true);
 
-                var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
+                var moveDestinationFolder =
+                    $"{tppConfiguration.TppSubmissionFolder}" +
                     $"\\{(isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed
                         : tppConfiguration.TppWorkingFolders.Errored)}" +
+                    $"\\{randomReportingGroup}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 
@@ -102,10 +104,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.CheckIfFileExistsAsync(filePath),
                         Times.Once);
 
-                var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
+                var moveDestinationFolder =
+                    $"{tppConfiguration.TppSubmissionFolder}" +
                     $"\\{(isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed
                         : tppConfiguration.TppWorkingFolders.Errored)}" +
+                    $"\\{randomReportingGroup}" +
                     $"\\{manifestDateTime}" +
                     $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
 

@@ -376,11 +376,11 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
 
                     var cleanupDestinationFolder =
                         Path.Combine(
-                            tppConfiguration.TppPickupFolder,
-                            reportingGroup,
+                            tppConfiguration.TppSubmissionFolder,
                             allSuccessFull
                                 ? this.tppConfiguration.TppWorkingFolders.Processed
                                 : this.tppConfiguration.TppWorkingFolders.Errored,
+                            reportingGroup,
                             manifestDateTime,
                             filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
 

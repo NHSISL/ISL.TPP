@@ -163,15 +163,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         private static TppConfiguration CreateRandomTppConfiguration(int count) =>
             CreateRandomTppConfigurationFiller(count).Create();
 
-        private static TppConfiguration CreateRandomTppConfiguration() =>
-            CreateRandomTppConfigurationFiller(GetRandomNumber()).Create();
-
         private static Filler<TppConfiguration> CreateRandomTppConfigurationFiller(int count)
         {
             var filler = new Filler<TppConfiguration>();
             filler.Setup()
                 .OnProperty(config => config.BlobStoragesSettings).Use(() => GetRandomBlobStorages(count))
-                .OnProperty(config => config.TppPickupFolder).Use(() => $"c:\\{GetRandomString()}")
+                .OnProperty(config => config.TppPickupFolder).Use(() => $"c:\\Pickup-{GetRandomString()}")
+                .OnProperty(config => config.TppSubmissionFolder).Use(() => $"c:\\Submission-{GetRandomString()}")
+                .OnProperty(config => config.TppWorkingFolders).Use(() => new TppWorkingFolders())
                 .OnProperty(config => config.TppManifestFile).Use(() => $"{GetRandomString()}Manifest.csv")
                 .OnProperty(config => config.ReportingGroups).Use(() => GetRandomStringList(count));
 
