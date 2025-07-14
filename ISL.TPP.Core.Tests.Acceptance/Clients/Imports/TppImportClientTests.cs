@@ -24,6 +24,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             {
                 TppManifestFile = "manifest.csv",
                 TppPickupFolder = @"c:\tpp\pickup",
+                TppSubmissionFolder = @"c:\tpp\submission",
                 BlobStoragesSettings = new List<BlobStorageSettings>()
                 {
                     new BlobStorageSettings
@@ -38,7 +39,8 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     }
                 },
                 ReportingGroups = new List<string> { "ReportingGroup1" },
-                RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
+                RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100),
+                TppWorkingFolders = new TppWorkingFolders()
             };
 
         }

@@ -14,13 +14,15 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
             List<string> fileList,
             string reportingGroup,
             string reportingGroupFolder,
-            string manifestDateTime)
+            string manifestDateTime,
+            string tppSubmissionFolder)
         {
             Validate(
                 (Rule: IsInvalid(fileList), Parameter: "fileList"),
                 (Rule: IsInvalid(reportingGroup), Parameter: "reportingGroup"),
                 (Rule: IsInvalid(reportingGroupFolder), Parameter: "reportingGroupFolder"),
-                (Rule: IsInvalid(manifestDateTime), Parameter: "manifestDateTime"));
+                (Rule: IsInvalid(manifestDateTime), Parameter: "manifestDateTime"),
+                (Rule: IsInvalid(tppSubmissionFolder), Parameter: "tppSubmissionFolder"));
         }
 
         private void ValidateFolderExistOnCleanupFiles(bool folderExists, string reportingGroupFolder)

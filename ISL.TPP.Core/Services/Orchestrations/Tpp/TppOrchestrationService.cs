@@ -356,7 +356,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 fileList: fileList,
                 reportingGroup: reportingGroup,
                 reportingGroupFolder: reportingGroupFolder,
-                manifestDateTime: manifestDateTime);
+                manifestDateTime: manifestDateTime,
+                tppSubmissionFolder: tppConfiguration.TppSubmissionFolder);
 
             bool folderExists =
                 await this.fileService.CheckIfDirectoryExistsAsync(reportingGroupFolder);
