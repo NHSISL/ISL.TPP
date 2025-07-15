@@ -25,7 +25,10 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         {
             // given
             string randomReportingGroup = $"ReportingGroup-{GetRandomString()}";
-            string randomReportingGroupFolder = $"{tppConfiguration.TppSubmissionFolder}\\{randomReportingGroup}";
+
+            string randomReportingGroupFolder =
+                Path.Combine(tppConfiguration.TppSubmissionFolder, randomReportingGroup);
+
             string manifestFile = tppConfiguration.TppManifestFile;
             int count = 1; //GetRandomNumber();
             List<string> randomFiles = GetRandomStringList(count);
@@ -57,16 +60,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.CheckIfFileExistsAsync(filePath))
                         .ReturnsAsync(true);
 
-                var moveDestinationFolder =
-                    $"{tppConfiguration.TppSubmissionFolder}" +
-                    $"\\{(isSuccess
+                var moveDestinationFolder = Path.Combine(
+                    tppConfiguration.TppSubmissionFolder,
+                    isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed
-                        : tppConfiguration.TppWorkingFolders.Errored)}" +
-                    $"\\{randomReportingGroup}" +
-                    $"\\{manifestDateTime}" +
-                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
-
-                moveDestinationFolder = moveDestinationFolder.Replace("\\\\", "\\");
+                        : tppConfiguration.TppWorkingFolders.Errored,
+                    randomReportingGroup,
+                    manifestDateTime,
+                    filePath.Replace(randomReportingGroupFolder, "")
+                        .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 
                 this.fileServiceMock.Setup(service =>
                     service.CopyFileAsync(filePath, moveDestinationFolder))

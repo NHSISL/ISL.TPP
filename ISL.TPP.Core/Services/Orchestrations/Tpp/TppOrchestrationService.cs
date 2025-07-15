@@ -385,7 +385,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                                 : this.tppConfiguration.TppWorkingFolders.Errored,
                             reportingGroup,
                             manifestDateTime,
-                            filePath.Replace(reportingGroupFolder, "").TrimStart('\\'));
+                            filePath.Replace(reportingGroupFolder, "")
+                                .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")} - " +
                         $"Copy file from '{filePath}' to '{cleanupDestinationFolder}'");
