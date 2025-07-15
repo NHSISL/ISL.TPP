@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Orchestrations.TPP.Exceptions;
@@ -108,6 +109,8 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     invalidArgumentTppOrchestrationException.UpsertDataList(
                         key: parameter,
                         value: rule.Message);
+
+                    Console.WriteLine($"Invalid argument: {parameter} - {rule.Message}");
                 }
             }
 

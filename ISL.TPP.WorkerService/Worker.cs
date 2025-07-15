@@ -15,7 +15,7 @@ namespace ISL.TPP.WorkerService
         private readonly IConfiguration configuration;
         private readonly TppClient tppClient;
         private readonly ILogger<Worker> logger;
-        private readonly int timerIntervalInMinutes;
+        private readonly int timerIntervalInMinutes = 1;
 
         public Worker(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
@@ -35,6 +35,7 @@ namespace ISL.TPP.WorkerService
 
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
+            var tppSubmissionFolder = configuration.GetValue<string>("tppSubmissionFolder");
 
             var blobStoragesSettings = configuration.GetSection("blobStorages").Get<List<BlobStorageSettings>>()
                 ?? new List<BlobStorageSettings>();
@@ -49,6 +50,7 @@ namespace ISL.TPP.WorkerService
             {
                 TppManifestFile = tppManifestFile,
                 TppPickupFolder = tppPickupFolder,
+                TppSubmissionFolder = tppSubmissionFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStoragesSettings = blobStoragesSettings,
                 TppWorkingFolders = tppWorkingFolders,

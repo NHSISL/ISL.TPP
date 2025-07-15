@@ -186,7 +186,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                         data: manifestDataString,
                         hasHeaderRecord: true);
 
-                var manifestDateTime = manifest.First().DateExtractTo;
+                var manifestDateTime = manifest.First(item =>
+                    !string.IsNullOrWhiteSpace(item.DateExtractTo)).DateExtractTo;
+
                 bool allSuccessFull = true;
 
                 foreach (string filePath in manifestFileLastList)
