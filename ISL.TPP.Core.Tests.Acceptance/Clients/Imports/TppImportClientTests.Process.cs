@@ -311,9 +311,9 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     reportingGroup);
 
                 string reprocessFolderPath = Path.Combine(
-                    tppConfiguration.TppPickupFolder,
-                    reportingGroup,
-                    tppConfiguration.TppWorkingFolders.ReProcess);
+                    tppConfiguration.TppSubmissionFolder,
+                    tppConfiguration.TppWorkingFolders.ReProcess,
+                    reportingGroup);
 
                 string reprocessSubFolderPath = Path.Combine(
                     reprocessFolderPath,
@@ -360,9 +360,9 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                     reportingGroup);
 
                 string reprocessFolderPath = Path.Combine(
-                    tppConfiguration.TppPickupFolder,
-                    reportingGroup,
-                    tppConfiguration.TppWorkingFolders.ReProcess);
+                    tppConfiguration.TppSubmissionFolder,
+                    tppConfiguration.TppWorkingFolders.ReProcess,
+                    reportingGroup);
 
                 string reprocessSubFolderPath = Path.Combine(
                     reprocessFolderPath,
