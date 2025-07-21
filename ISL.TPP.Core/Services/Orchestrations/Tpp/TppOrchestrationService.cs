@@ -71,9 +71,9 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                     try
                     {
                         var reportingGroupFolder = Path.Combine(
-                            this.tppConfiguration.TppPickupFolder,
-                            reportingGroup,
-                            tppConfiguration.TppWorkingFolders.ReProcess);
+                            this.tppConfiguration.TppSubmissionFolder,
+                            tppConfiguration.TppWorkingFolders.ReProcess,
+                            reportingGroup);
 
                         await ProcessReportingGroupReprocessFolderFilesAsync(reportingGroupFolder, reportingGroup);
                     }

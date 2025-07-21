@@ -36,9 +36,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
                 string reprocessfolder = Path.Combine(
-                    tppConfiguration.TppPickupFolder,
-                    reportingGroup,
-                    tppConfiguration.TppWorkingFolders.ReProcess);
+                    tppConfiguration.TppSubmissionFolder,
+                    tppConfiguration.TppWorkingFolders.ReProcess,
+                    reportingGroup);
 
                 tppOrchestrationServiceMock.Setup(service =>
                     service.ProcessReportingGroupFilesAsync(folder, reportingGroup))
@@ -58,9 +58,9 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
                 string reprocessfolder = Path.Combine(
-                    tppConfiguration.TppPickupFolder,
-                    reportingGroup,
-                    tppConfiguration.TppWorkingFolders.ReProcess);
+                    tppConfiguration.TppSubmissionFolder,
+                    tppConfiguration.TppWorkingFolders.ReProcess,
+                    reportingGroup);
 
                 tppOrchestrationServiceMock.Verify(service =>
                     service.ProcessReportingGroupFilesAsync(folder, reportingGroup),
