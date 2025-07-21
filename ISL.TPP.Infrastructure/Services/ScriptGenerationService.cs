@@ -126,6 +126,12 @@ namespace ISL.TPP.Infrastructure.Services
                         new LabelJobV2(runsOn: BuildMachines.UbuntuLatest)
                         {
                             Name = "Add Label(s)",
+                            Permissions = new Dictionary<string, string>
+                            {
+                                { "contents", "read" },
+                                { "pull-requests", "write" },
+                                { "issues", "write" }
+                            }
                         }
                     },
                     {
