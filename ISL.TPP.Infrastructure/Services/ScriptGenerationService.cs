@@ -1,6 +1,6 @@
-﻿// ---------------------------------------------------------------
+﻿// ---------------------------------------------------------
 // Copyright (c) North East London ICB. All rights reserved.
-// ---------------------------------------------------------------
+// ---------------------------------------------------------
 
 using ADotNet.Clients;
 using ADotNet.Models.Pipelines.GithubPipelines.DotNets;
@@ -44,6 +44,12 @@ namespace ISL.TPP.Infrastructure.Services
 
                             Steps = new List<GithubTask>
                             {
+                                new GithubTask
+                                {
+                                    Name = "Enable long paths for Git",
+                                    Run = "git config --system core.longpaths true"
+                                },
+
                                 new CheckoutTaskV3
                                 {
                                     Name = "Check out"

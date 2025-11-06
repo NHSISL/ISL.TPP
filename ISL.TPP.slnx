@@ -1,0 +1,27 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Acceptance" />
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <BuildType Name="Test" />
+  </Configurations>
+  <Folder Name="/Core/">
+    <Project Path="ISL.TPP.Core.Tests.Acceptance/ISL.TPP.Core.Tests.Acceptance.csproj" />
+    <Project Path="ISL.TPP.Core.Tests.Integration/ISL.TPP.Core.Tests.Integrations.csproj" />
+    <Project Path="ISL.TPP.Core.Tests.Unit/ISL.TPP.Core.Tests.Unit.csproj" />
+    <Project Path="ISL.TPP.Core/ISL.TPP.Core.csproj">
+      <BuildType Solution="Acceptance|*" Project="Release" />
+      <BuildType Solution="Test|*" Project="Release" />
+    </Project>
+    <Project Path="ISL.TPP.Infrastructure/ISL.TPP.Infrastructure.csproj">
+      <BuildType Solution="Acceptance|*" Project="Debug" />
+      <BuildType Solution="Test|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Folder Name="/Windows Services/">
+    <Project Path="ISL.TPP.WorkerService/ISL.TPP.WorkerService.csproj">
+      <BuildType Solution="Acceptance|*" Project="Debug" />
+      <BuildType Solution="Test|*" Project="Debug" />
+    </Project>
+  </Folder>
+</Solution>
