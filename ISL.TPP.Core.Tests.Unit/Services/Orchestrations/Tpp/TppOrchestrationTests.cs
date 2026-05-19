@@ -31,6 +31,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
     {
         private readonly Mock<IFileService> fileServiceMock;
         private readonly Mock<IDocumentService> documentServiceMock;
+        private readonly Mock<ISubscriberAgreementService> subscriberAgreementServiceMock;
         private readonly Mock<ICsvMapperService> csvMapperServiceMock;
         private readonly TppConfiguration tppConfiguration;
         private readonly Mock<ILoggingBroker> loggingBrokerMock;
@@ -42,6 +43,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
         {
             this.fileServiceMock = new Mock<IFileService>();
             this.documentServiceMock = new Mock<IDocumentService>();
+            this.subscriberAgreementServiceMock = new Mock<ISubscriberAgreementService>();
             this.csvMapperServiceMock = new Mock<ICsvMapperService>();
             this.tppConfiguration = CreateRandomTppConfiguration(count: 1);
             this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
@@ -51,6 +53,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             this.tppOrchestrationService = new TppOrchestrationService(
                 fileService: this.fileServiceMock.Object,
                 documentService: this.documentServiceMock.Object,
+                subscriberAgreementService: this.subscriberAgreementServiceMock.Object,
                 csvMapperService: this.csvMapperServiceMock.Object,
                 tppConfiguration: this.tppConfiguration,
                 dateTimeBroker: this.dateTimeBrokerMock.Object,

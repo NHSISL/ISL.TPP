@@ -26,6 +26,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
     {
         private readonly IFileService fileService;
         private readonly IDocumentService documentService;
+        private readonly ISubscriberAgreementService subscriberAgreementService;
         private readonly ICsvMapperService csvMapperService;
         private readonly TppConfiguration tppConfiguration;
         private readonly IDateTimeBroker dateTimeBroker;
@@ -34,6 +35,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         public TppOrchestrationService(
             IFileService fileService,
             IDocumentService documentService,
+            ISubscriberAgreementService subscriberAgreementService,
             ICsvMapperService csvMapperService,
             TppConfiguration tppConfiguration,
             IDateTimeBroker dateTimeBroker,

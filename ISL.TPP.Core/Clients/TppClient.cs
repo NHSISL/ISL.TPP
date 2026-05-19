@@ -100,6 +100,7 @@ namespace ISL.TPP.Core.Clients
                 .AddTransient<ICsvMapperBroker, CsvMapperBroker>()
                 .AddTransient<IFileService, FileService>()
                 .AddTransient<IDocumentService, DocumentService>()
+                .AddTransient<ISubscriberAgreementService, SubscriberAgreementService>()
                 .AddTransient<IImportClient, ImportClient>()
                 .AddTransient<ICsvMapperService, CsvMapperService>()
                 .AddTransient<ITppOrchestrationService, TppOrchestrationService>();
