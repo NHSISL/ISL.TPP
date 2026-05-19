@@ -13,6 +13,7 @@ using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Services.Foundations.Documents;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -38,10 +39,15 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+            Mock<ISubscriberAgreementService> subscriberAgreementServiceMock = new Mock<ISubscriberAgreementService>();
 
             dateTimeBrokerMock.Setup(broker =>
                 broker.GetCurrentDateTimeOffsetAsync())
                     .ReturnsAsync(randomDateTimeOffset);
+
+            subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(this.reportingGroups);
 
             foreach (string reportingGroup in this.reportingGroups)
             {
@@ -180,6 +186,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
             serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
+            serviceCollection.AddTransient(_ => subscriberAgreementServiceMock.Object);
             TppClient client = new TppClient(tppConfiguration, serviceCollection);
 
             // when
@@ -299,10 +306,15 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             Mock<IFileBroker> fileBrokerMock = new Mock<IFileBroker>();
             Mock<IBlobStorageBroker> blobStorageBrokerMock = new Mock<IBlobStorageBroker>();
             Mock<IDateTimeBroker> dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+            Mock<ISubscriberAgreementService> subscriberAgreementServiceMock = new Mock<ISubscriberAgreementService>();
 
             dateTimeBrokerMock.Setup(broker =>
                 broker.GetCurrentDateTimeOffsetAsync())
                     .ReturnsAsync(randomDateTimeOffset);
+
+            subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(this.reportingGroups);
 
             foreach (string reportingGroup in this.reportingGroups)
             {
@@ -347,6 +359,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             serviceCollection.AddTransient(_ => fileBrokerMock.Object);
             serviceCollection.AddTransient(_ => blobStorageBrokerMock.Object);
             serviceCollection.AddTransient(_ => dateTimeBrokerMock.Object);
+            serviceCollection.AddTransient(_ => subscriberAgreementServiceMock.Object);
             TppClient client = new TppClient(tppConfiguration, serviceCollection);
 
             // when

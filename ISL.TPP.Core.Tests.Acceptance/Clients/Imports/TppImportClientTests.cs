@@ -9,7 +9,9 @@ using System.Linq.Expressions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
+using ISL.TPP.Core.Services.Foundations.Documents;
 using KellermanSoftware.CompareNetObjects;
+using Moq;
 using Tynamix.ObjectFiller;
 
 namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports

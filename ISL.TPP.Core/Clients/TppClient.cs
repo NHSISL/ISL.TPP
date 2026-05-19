@@ -79,7 +79,8 @@ namespace ISL.TPP.Core.Clients
                     .AddSingleton(_ => blobStoragesSettings)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                     .AddTransient<IFileBroker, FileBroker>()
-                    .AddTransient<IDateTimeBroker, DateTimeBroker>();
+                    .AddTransient<IDateTimeBroker, DateTimeBroker>()
+                    .AddTransient<ISubscriberAgreementService, SubscriberAgreementService>();
             }
 
             serviceCollection
@@ -100,7 +101,6 @@ namespace ISL.TPP.Core.Clients
                 .AddTransient<ICsvMapperBroker, CsvMapperBroker>()
                 .AddTransient<IFileService, FileService>()
                 .AddTransient<IDocumentService, DocumentService>()
-                .AddTransient<ISubscriberAgreementService, SubscriberAgreementService>()
                 .AddTransient<IImportClient, ImportClient>()
                 .AddTransient<ICsvMapperService, CsvMapperService>()
                 .AddTransient<ITppOrchestrationService, TppOrchestrationService>();
