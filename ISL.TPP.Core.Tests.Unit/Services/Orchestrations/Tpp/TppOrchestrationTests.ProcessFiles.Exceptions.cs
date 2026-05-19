@@ -28,6 +28,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -36,7 +37,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
+
+            this.subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(resourceGroups);
+
+            foreach (string reportingGroup in resourceGroups)
             {
                 exceptions.Add(dependancyValidationException);
                 exceptions.Add(dependancyValidationException);
@@ -73,13 +80,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             actualTppOrchestrationServiceException.Should()
                 .BeEquivalentTo(expectedTppOrchestrationServiceException);
 
+            this.subscriberAgreementServiceMock.Verify(service =>
+                service.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogErrorAsync(It.Is(SameExceptionAs(
@@ -88,6 +99,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
+            this.subscriberAgreementServiceMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
 
@@ -103,6 +115,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -111,7 +124,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
+
+            this.subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(resourceGroups);
+
+            foreach (string reportingGroup in resourceGroups)
             {
                 exceptions.Add(dependancyException);
                 exceptions.Add(dependancyException);
@@ -147,13 +166,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
+            this.subscriberAgreementServiceMock.Verify(service =>
+                service.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogErrorAsync(It.Is(SameExceptionAs(
@@ -162,6 +185,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
+            this.subscriberAgreementServiceMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
 
@@ -176,6 +200,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -184,9 +209,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
+            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
 
+            this.subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(resourceGroups);
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in resourceGroups)
             {
                 exceptions.Add(serviceException);
                 exceptions.Add(serviceException);
@@ -222,13 +251,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // then
             actualException.Should().BeEquivalentTo(expectedTppOrchestrationServiceException);
 
+            this.subscriberAgreementServiceMock.Verify(service =>
+                service.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             tppOrchestrationServiceMock.Verify(service =>
                 service.ProcessReportingGroupReprocessFolderFilesAsync(It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Exactly(this.tppConfiguration.ReportingGroups.Count));
+                    Times.Exactly(resourceGroups.Count));
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogErrorAsync(It.Is(SameExceptionAs(
@@ -237,6 +270,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
+            this.subscriberAgreementServiceMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
