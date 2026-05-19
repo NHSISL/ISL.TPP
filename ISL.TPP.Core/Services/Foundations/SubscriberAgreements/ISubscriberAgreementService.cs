@@ -10,6 +10,5 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
     internal interface ISubscriberAgreementService
     {
         ValueTask<List<string>> GetActiveSubscriberAgreementsAsync();
-
     }
 }
