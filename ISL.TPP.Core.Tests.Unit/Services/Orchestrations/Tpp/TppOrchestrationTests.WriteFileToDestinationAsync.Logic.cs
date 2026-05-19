@@ -57,6 +57,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 this.tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -128,6 +129,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 this.tppConfiguration,
                 this.dateTimeBrokerMock.Object,

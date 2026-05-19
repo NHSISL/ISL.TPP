@@ -17,9 +17,12 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
     public partial class TppImportClientTests
     {
         private readonly TppConfiguration tppConfiguration;
+        private readonly List<string> reportingGroups;
 
         public TppImportClientTests()
         {
+            this.reportingGroups = new List<string> { "ReportingGroup1" };
+
             tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = "manifest.csv",
@@ -37,7 +40,6 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                         AzureBlobContainer = "tpp"
                     }
                 },
-                ReportingGroups = new List<string> { "ReportingGroup1" },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 

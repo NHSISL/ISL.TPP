@@ -175,8 +175,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             filler.Setup()
                 .OnProperty(config => config.BlobStoragesSettings).Use(() => GetRandomBlobStorages(count))
                 .OnProperty(config => config.TppPickupFolder).Use(() => $"c:\\{GetRandomString()}")
-                .OnProperty(config => config.TppManifestFile).Use(() => $"{GetRandomString()}Manifest.csv")
-                .OnProperty(config => config.ReportingGroups).Use(() => GetRandomStringList(count));
+                .OnProperty(config => config.TppManifestFile).Use(() => $"{GetRandomString()}Manifest.csv");
 
             return filler;
         }

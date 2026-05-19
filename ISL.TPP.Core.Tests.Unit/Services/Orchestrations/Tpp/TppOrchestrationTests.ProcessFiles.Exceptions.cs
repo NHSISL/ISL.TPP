@@ -24,6 +24,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // given
             string randomFileName = GetRandomString();
             List<Exception> exceptions = new List<Exception>();
+            List<string> resourceGroups = GetRandomStringList(GetRandomNumber());
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -36,8 +37,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             {
                 CallBase = true
             };
-
-            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
 
             this.subscriberAgreementServiceMock
                 .Setup(service => service.GetActiveSubscriberAgreementsAsync())
@@ -111,6 +110,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // given
             string randomFileName = GetRandomString();
             List<Exception> exceptions = new List<Exception>();
+            List<string> resourceGroups = GetRandomStringList(GetRandomNumber());
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -123,8 +123,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             {
                 CallBase = true
             };
-
-            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
 
             this.subscriberAgreementServiceMock
                 .Setup(service => service.GetActiveSubscriberAgreementsAsync())
@@ -196,6 +194,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             string randomFileName = GetRandomString();
             var serviceException = new Exception();
             List<Exception> exceptions = new List<Exception>();
+            List<string> resourceGroups = GetRandomStringList(GetRandomNumber());
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -208,8 +207,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             {
                 CallBase = true
             };
-
-            List<string> resourceGroups = this.tppConfiguration.ReportingGroups;
 
             this.subscriberAgreementServiceMock
                 .Setup(service => service.GetActiveSubscriberAgreementsAsync())

@@ -20,6 +20,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // given
             int count = 1; //GetRandomNumber();
             TppConfiguration tppConfiguration = CreateRandomTppConfiguration(count);
+            List<string> resourceGroups = GetRandomStringList(count);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
@@ -32,8 +33,6 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             {
                 CallBase = true
             };
-
-            List<string> resourceGroups = tppConfiguration.ReportingGroups;
 
             this.subscriberAgreementServiceMock
                 .Setup(service => service.GetActiveSubscriberAgreementsAsync())

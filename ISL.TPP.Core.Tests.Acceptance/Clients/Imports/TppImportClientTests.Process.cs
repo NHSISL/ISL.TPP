@@ -43,7 +43,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 broker.GetCurrentDateTimeOffsetAsync())
                     .ReturnsAsync(randomDateTimeOffset);
 
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string filePath = Path.Combine(
                     tppConfiguration.TppPickupFolder,
@@ -186,7 +186,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             await client.Imports.ProcessFilesAsync();
 
             // then
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string filePath = Path.Combine(
                     tppConfiguration.TppPickupFolder,
@@ -304,7 +304,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                 broker.GetCurrentDateTimeOffsetAsync())
                     .ReturnsAsync(randomDateTimeOffset);
 
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string filePath = Path.Combine(
                     tppConfiguration.TppPickupFolder,
@@ -353,7 +353,7 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
             await client.Imports.ProcessFilesAsync();
 
             // then
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string filePath = Path.Combine(
                     tppConfiguration.TppPickupFolder,
