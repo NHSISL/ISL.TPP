@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CompareNETObjects" Version="4.83.0" />
+		<PackageReference Include="CompareNETObjects" Version="4.84.0" />
 		<PackageReference Include="DeepCloner" Version="0.10.4" />
 		<PackageReference Include="FluentAssertions" Version="7.2.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
