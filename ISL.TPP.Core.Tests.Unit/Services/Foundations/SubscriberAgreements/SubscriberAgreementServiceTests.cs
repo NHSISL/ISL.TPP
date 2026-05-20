@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Brokers.SubscriberAgreements;
+using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
 using ISL.TPP.Core.Services.Foundations.Documents;
 using Moq;
 using Tynamix.ObjectFiller;
@@ -17,20 +17,17 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
 {
     public partial class SubscriberAgreementServiceTests
     {
-        private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
+        private readonly Mock<ISubscriberAgreementHttpBroker> subscriberAgreementHttpBrokerMock;
         private readonly Mock<ILoggingBroker> loggingBrokerMock;
         private readonly ISubscriberAgreementService subscriberAgreementService;
-        private readonly List<BlobStorageSettings> blobStoragesSettings;
 
         public SubscriberAgreementServiceTests()
         {
-            this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+            this.subscriberAgreementHttpBrokerMock = new Mock<ISubscriberAgreementHttpBroker>();
             this.loggingBrokerMock = new Mock<ILoggingBroker>();
-            this.blobStoragesSettings = new List<BlobStorageSettings>();
 
             this.subscriberAgreementService = new SubscriberAgreementService(
-                blobStoragesSettings: this.blobStoragesSettings,
-                dateTimeBroker: this.dateTimeBrokerMock.Object,
+                subscriberAgreementHttpBroker: this.subscriberAgreementHttpBrokerMock.Object,
                 loggingBroker: this.loggingBrokerMock.Object);
         }
 
@@ -40,30 +37,22 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
         private static string GetRandomString() =>
             new MnemonicString().GetValue();
 
-        private BlobStorageSettings CreateBlobStorageSettings(bool enabled) =>
-            new BlobStorageSettings
-            {
-                Name = GetRandomString(),
-                AzureBlobServiceUri = GetRandomString(),
-                AzureBlobContainer = GetRandomString(),
-                AzureTenantId = GetRandomString(),
-                AzureClientId = GetRandomString(),
-                AzureClientSecret = GetRandomString(),
-                Enabled = enabled
-            };
+        private static int GetRandomNumber() =>
+            new IntRange(min: 2, max: 5).GetValue();
 
-        private ISubscriberAgreementService CreateServiceWithFaultingSettings(Exception exception)
+        private static List<SubscriberAgreement> CreateRandomSubscriberAgreements()
         {
-            var faultingEnumerableMock = new Mock<IEnumerable<BlobStorageSettings>>();
+            var agreements = new List<SubscriberAgreement>();
 
-            faultingEnumerableMock
-                .Setup(e => e.GetEnumerator())
-                .Throws(exception);
+            for (int i = 0; i < GetRandomNumber(); i++)
+            {
+                agreements.Add(new SubscriberAgreement
+                {
+                    SupplierSharingAgreementShortName = GetRandomString()
+                });
+            }
 
-            return new SubscriberAgreementService(
-                blobStoragesSettings: faultingEnumerableMock.Object,
-                dateTimeBroker: this.dateTimeBrokerMock.Object,
-                loggingBroker: this.loggingBrokerMock.Object);
+            return agreements;
         }
     }
 }

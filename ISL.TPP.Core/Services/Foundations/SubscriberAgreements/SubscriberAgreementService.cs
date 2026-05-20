@@ -5,37 +5,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Brokers.SubscriberAgreements;
+using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
 
 namespace ISL.TPP.Core.Services.Foundations.Documents
 {
     internal partial class SubscriberAgreementService : ISubscriberAgreementService
     {
-        private readonly IEnumerable<BlobStorageSettings> blobStoragesSettings;
-        private readonly IDateTimeBroker dateTimeBroker;
+        private readonly ISubscriberAgreementHttpBroker subscriberAgreementHttpBroker;
         private readonly ILoggingBroker loggingBroker;
 
         public SubscriberAgreementService(
-            IEnumerable<BlobStorageSettings> blobStoragesSettings,
-            IDateTimeBroker dateTimeBroker,
+            ISubscriberAgreementHttpBroker subscriberAgreementHttpBroker,
             ILoggingBroker loggingBroker)
         {
-            this.blobStoragesSettings = blobStoragesSettings;
-            this.dateTimeBroker = dateTimeBroker;
+            this.subscriberAgreementHttpBroker = subscriberAgreementHttpBroker;
             this.loggingBroker = loggingBroker;
         }
 
         public ValueTask<List<string>> GetActiveSubscriberAgreementsAsync() =>
             TryCatch(async () =>
             {
-                List<string> activeSubscriberAgreements = this.blobStoragesSettings
-                    .Where(c => c.Enabled)
-                    .Select(c => c.Name)
-                    .ToList();
+                List<SubscriberAgreement> agreements =
+                    await this.subscriberAgreementHttpBroker
+                        .GetActiveSubscriberAgreementsAsync();
 
-                return activeSubscriberAgreements;
+                return agreements
+                    .Select(agreement => agreement.SupplierSharingAgreementShortName)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList();
             });
     }
 }

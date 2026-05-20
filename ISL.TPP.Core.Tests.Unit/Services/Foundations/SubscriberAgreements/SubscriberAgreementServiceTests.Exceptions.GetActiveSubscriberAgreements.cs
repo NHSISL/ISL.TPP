@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ISL.TPP.Core.Models.Foundations.SubscriberAgreements.Exceptions;
-using ISL.TPP.Core.Services.Foundations.Documents;
+using Moq;
 using Xunit;
 
 namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
@@ -30,12 +30,13 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
                     message: "Subscriber agreement service error occurred, contact support.",
                     innerException: failedSubscriberAgreementServiceException);
 
-            ISubscriberAgreementService faultingService =
-                CreateServiceWithFaultingSettings(serviceException);
+            this.subscriberAgreementHttpBrokerMock
+                .Setup(broker => broker.GetActiveSubscriberAgreementsAsync())
+                .ThrowsAsync(serviceException);
 
             // When
             ValueTask<List<string>> getActiveSubscriberAgreementsTask =
-                faultingService.GetActiveSubscriberAgreementsAsync();
+                this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
 
             SubscriberAgreementServiceException actualException =
                 await Assert.ThrowsAsync<SubscriberAgreementServiceException>(
@@ -43,9 +44,15 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
 
             // Then
             actualException.Should().BeEquivalentTo(expectedSubscriberAgreementServiceException);
-            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+
+            this.subscriberAgreementHttpBrokerMock.Verify(broker =>
+                broker.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
+            this.subscriberAgreementHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
+
 

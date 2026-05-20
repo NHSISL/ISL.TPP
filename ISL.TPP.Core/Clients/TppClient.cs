@@ -8,6 +8,7 @@ using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Brokers.SubscriberAgreements;
 using ISL.TPP.Core.Clients.Imports;
 using ISL.TPP.Core.Models.Brokers.CsvMappers;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
@@ -80,6 +81,7 @@ namespace ISL.TPP.Core.Clients
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                     .AddTransient<IFileBroker, FileBroker>()
                     .AddTransient<IDateTimeBroker, DateTimeBroker>()
+                    .AddTransient<ISubscriberAgreementHttpBroker, SubscriberAgreementHttpBroker>()
                     .AddTransient<ISubscriberAgreementService, SubscriberAgreementService>();
             }
 

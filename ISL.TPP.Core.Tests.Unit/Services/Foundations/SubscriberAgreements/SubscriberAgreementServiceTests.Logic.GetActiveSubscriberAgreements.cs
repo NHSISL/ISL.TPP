@@ -3,9 +3,11 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
+using Moq;
 using Xunit;
 
 namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
@@ -13,75 +15,92 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
     public partial class SubscriberAgreementServiceTests
     {
         [Fact]
-        public async Task ShouldReturnOnlyEnabledSubscriberAgreementsAsync()
+        public async Task ShouldReturnActiveSubscriberAgreementNamesAsync()
         {
             // Given
-            BlobStorageSettings enabledSettings1 = CreateBlobStorageSettings(enabled: true);
-            BlobStorageSettings enabledSettings2 = CreateBlobStorageSettings(enabled: true);
-            BlobStorageSettings disabledSettings = CreateBlobStorageSettings(enabled: false);
+            List<SubscriberAgreement> randomAgreements = CreateRandomSubscriberAgreements();
 
-            this.blobStoragesSettings.AddRange(new[]
-            {
-                enabledSettings1,
-                disabledSettings,
-                enabledSettings2
-            });
+            List<string> expectedNames = randomAgreements
+                .Select(a => a.SupplierSharingAgreementShortName)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .ToList();
 
-            List<string> expectedSubscriberAgreements = new List<string>
+            this.subscriberAgreementHttpBrokerMock
+                .Setup(broker => broker.GetActiveSubscriberAgreementsAsync())
+                .ReturnsAsync(randomAgreements);
+
+            // When
+            List<string> actualNames =
+                await this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
+
+            // Then
+            actualNames.Should().BeEquivalentTo(expectedNames);
+
+            this.subscriberAgreementHttpBrokerMock.Verify(broker =>
+                broker.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
+            this.subscriberAgreementHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldExcludeAgreementsWithNullOrEmptyNamesAsync()
+        {
+            // Given
+            var agreements = new List<SubscriberAgreement>
             {
-                enabledSettings1.Name,
-                enabledSettings2.Name
+                new SubscriberAgreement { SupplierSharingAgreementShortName = GetRandomString() },
+                new SubscriberAgreement { SupplierSharingAgreementShortName = string.Empty },
+                new SubscriberAgreement { SupplierSharingAgreementShortName = null }
             };
 
+            List<string> expectedNames = new List<string> { agreements[0].SupplierSharingAgreementShortName };
+
+            this.subscriberAgreementHttpBrokerMock
+                .Setup(broker => broker.GetActiveSubscriberAgreementsAsync())
+                .ReturnsAsync(agreements);
+
             // When
-            List<string> actualSubscriberAgreements =
+            List<string> actualNames =
                 await this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
 
             // Then
-            actualSubscriberAgreements.Should().BeEquivalentTo(expectedSubscriberAgreements);
-            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            actualNames.Should().BeEquivalentTo(expectedNames);
+
+            this.subscriberAgreementHttpBrokerMock.Verify(broker =>
+                broker.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
+            this.subscriberAgreementHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
 
         [Fact]
-        public async Task ShouldReturnEmptyListWhenNoEnabledSubscriberAgreementsAsync()
+        public async Task ShouldReturnEmptyListWhenNoActiveAgreementsAsync()
         {
             // Given
-            BlobStorageSettings disabledSettings1 = CreateBlobStorageSettings(enabled: false);
-            BlobStorageSettings disabledSettings2 = CreateBlobStorageSettings(enabled: false);
+            var emptyAgreements = new List<SubscriberAgreement>();
+            var expectedNames = new List<string>();
 
-            this.blobStoragesSettings.AddRange(new[]
-            {
-                disabledSettings1,
-                disabledSettings2
-            });
-
-            List<string> expectedSubscriberAgreements = new List<string>();
+            this.subscriberAgreementHttpBrokerMock
+                .Setup(broker => broker.GetActiveSubscriberAgreementsAsync())
+                .ReturnsAsync(emptyAgreements);
 
             // When
-            List<string> actualSubscriberAgreements =
+            List<string> actualNames =
                 await this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
 
             // Then
-            actualSubscriberAgreements.Should().BeEquivalentTo(expectedSubscriberAgreements);
-            this.dateTimeBrokerMock.VerifyNoOtherCalls();
-            this.loggingBrokerMock.VerifyNoOtherCalls();
-        }
+            actualNames.Should().BeEquivalentTo(expectedNames);
 
-        [Fact]
-        public async Task ShouldReturnEmptyListWhenNoBlobStorageSettingsAsync()
-        {
-            // Given
-            List<string> expectedSubscriberAgreements = new List<string>();
+            this.subscriberAgreementHttpBrokerMock.Verify(broker =>
+                broker.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
 
-            // When
-            List<string> actualSubscriberAgreements =
-                await this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
-
-            // Then
-            actualSubscriberAgreements.Should().BeEquivalentTo(expectedSubscriberAgreements);
-            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            this.subscriberAgreementHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
+
