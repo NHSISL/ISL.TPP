@@ -15,7 +15,6 @@ namespace ISL.TPP.Core.Models.Configurations
         public int TimerIntervalInMinutes { get; set; } = 1;
         public List<BlobStorageSettings> BlobStoragesSettings { get; set; } = new List<BlobStorageSettings>();
         public TppWorkingFolders TppWorkingFolders { get; set; } = new TppWorkingFolders();
-        public List<string> ReportingGroups { get; set; } = new List<string>();
         public RetryConfig RetryConfig { get; set; } = new RetryConfig();
     }
 }
