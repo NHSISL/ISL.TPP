@@ -16,6 +16,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
     {
         private readonly ITestOutputHelper output;
         private readonly TppConfiguration tppConfiguration;
+        private readonly List<string> reportingGroups;
 
         public TppImportClientTests()
         {
@@ -33,7 +34,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             var tppManifestFile = configuration.GetValue<string>("tppManifestFile");
             var tppPickupFolder = configuration.GetValue<string>("tppPickupFolder");
             var blobStoragesSettings = configuration.GetSection("blobStorages").Get<List<BlobStorageSettings>>() ?? [];
-            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>() ?? [];
+            this.reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>() ?? [];
 
             this.tppConfiguration = new TppConfiguration
             {
@@ -41,7 +42,6 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
                 TppPickupFolder = tppPickupFolder,
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStoragesSettings = blobStoragesSettings,
-                ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
         }
