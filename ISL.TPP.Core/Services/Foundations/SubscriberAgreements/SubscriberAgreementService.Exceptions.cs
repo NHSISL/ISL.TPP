@@ -25,7 +25,8 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
                 var failedSubscriberAgreementServiceException =
                     new FailedSubscriberAgreementServiceException(
                         message: "Failed subscriber agreement service error occurred, contact support.",
-                        innerException: exception);
+                        innerException: exception,
+                        data: exception.Data);
 
                 throw CreateAndLogServiceException(failedSubscriberAgreementServiceException);
             }
