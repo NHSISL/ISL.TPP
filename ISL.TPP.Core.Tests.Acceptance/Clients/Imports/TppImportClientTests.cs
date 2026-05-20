@@ -9,7 +9,9 @@ using System.Linq.Expressions;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
+using ISL.TPP.Core.Services.Foundations.Documents;
 using KellermanSoftware.CompareNetObjects;
+using Moq;
 using Tynamix.ObjectFiller;
 
 namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
@@ -17,9 +19,12 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
     public partial class TppImportClientTests
     {
         private readonly TppConfiguration tppConfiguration;
+        private readonly List<string> reportingGroups;
 
         public TppImportClientTests()
         {
+            this.reportingGroups = new List<string> { "ReportingGroup1" };
+
             tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = "manifest.csv",
@@ -32,15 +37,13 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                         Enabled = true,
                         AzureBlobServiceUri = "https://localhost:10000/devclientaccount",
                         AzureClientId = "devclientaccount",
-                        AzureClientSecret = "Eby8vdM02xSZFPTOtr/KBHBeksoGMGw==",
+                        AzureClientSecret = "fake-secret-for-testing-only",
                         AzureTenantId = "devtenantid",
                         AzureBlobContainer = "tpp"
                     }
                 },
-                ReportingGroups = new List<string> { "ReportingGroup1" },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
-
         }
 
         private Expression<Func<Stream, bool>> SameStreamAs(Stream expectedStream)

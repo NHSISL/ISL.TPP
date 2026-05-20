@@ -42,9 +42,6 @@ namespace ISL.TPP.WorkerService
             var tppWorkingFolders = configuration.GetSection("tppWorkingFolders").Get<TppWorkingFolders>()
                 ?? new TppWorkingFolders();
 
-            var reportingGroups = configuration.GetSection("reportingGroups").Get<List<string>>()
-                ?? new List<string>();
-
             var tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = tppManifestFile,
@@ -52,7 +49,6 @@ namespace ISL.TPP.WorkerService
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStoragesSettings = blobStoragesSettings,
                 TppWorkingFolders = tppWorkingFolders,
-                ReportingGroups = reportingGroups,
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
 
