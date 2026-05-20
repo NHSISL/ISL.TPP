@@ -23,7 +23,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
             csvManifest.AppendLine($"{randomFileName},Y,N,20231209_2245,{manifestToDate}");
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string reportingGroupFolder = Path.Combine(this.tppConfiguration.TppPickupFolder, reportingGroup);
                 string manifestFile = Path.Combine(reportingGroupFolder, this.tppConfiguration.TppManifestFile);
@@ -62,7 +62,7 @@ namespace ISL.TPP.Core.Tests.Integration.Clients.Imports
             csvManifest.AppendLine("FileName,IsDelta,IsReference,DateExtractFrom,DateExtractTo");
             csvManifest.AppendLine($"{randomFileName},Y,N,20231209_2245,{manifestToDate}");
 
-            foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+            foreach (string reportingGroup in this.reportingGroups)
             {
                 string reportingGroupFolder = Path.Combine(
                     this.tppConfiguration.TppPickupFolder,

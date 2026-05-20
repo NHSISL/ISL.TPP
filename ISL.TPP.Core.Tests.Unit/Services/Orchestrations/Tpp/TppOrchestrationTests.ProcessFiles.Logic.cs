@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using ISL.TPP.Core.Models.Configurations;
@@ -19,10 +20,12 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             // given
             int count = 1; //GetRandomNumber();
             TppConfiguration tppConfiguration = CreateRandomTppConfiguration(count);
+            List<string> resourceGroups = GetRandomStringList(count);
 
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -31,7 +34,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                 CallBase = true
             };
 
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            this.subscriberAgreementServiceMock
+                .Setup(service => service.GetActiveSubscriberAgreementsAsync())
+                    .ReturnsAsync(resourceGroups);
+
+            foreach (string reportingGroup in resourceGroups)
             {
                 string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
@@ -53,7 +60,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             await tppOrchestrationServiceMock.Object.ProcessFilesAsync();
 
             // then
-            foreach (string reportingGroup in tppConfiguration.ReportingGroups)
+            this.subscriberAgreementServiceMock.Verify(service =>
+                service.GetActiveSubscriberAgreementsAsync(),
+                    Times.Once);
+
+            foreach (string reportingGroup in resourceGroups)
             {
                 string folder = Path.Combine(tppConfiguration.TppPickupFolder, reportingGroup);
 
@@ -73,6 +84,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
 
             this.fileServiceMock.VerifyNoOtherCalls();
             this.documentServiceMock.VerifyNoOtherCalls();
+            this.subscriberAgreementServiceMock.VerifyNoOtherCalls();
             this.dateTimeBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
