@@ -37,14 +37,13 @@ namespace ISL.TPP.Core.Tests.Acceptance.Clients.Imports
                         Enabled = true,
                         AzureBlobServiceUri = "https://localhost:10000/devclientaccount",
                         AzureClientId = "devclientaccount",
-                        AzureClientSecret = "Eby8vdM02xSZFPTOtr/KBHBeksoGMGw==",
+                        AzureClientSecret = "fake-secret-for-testing-only",
                         AzureTenantId = "devtenantid",
                         AzureBlobContainer = "tpp"
                     }
                 },
                 RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
             };
-
         }
 
         private Expression<Func<Stream, bool>> SameStreamAs(Stream expectedStream)
