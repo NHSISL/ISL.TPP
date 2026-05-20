@@ -39,6 +39,7 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
             var tppOrchestrationServiceMock = new Mock<TppOrchestrationService>(
                 this.fileServiceMock.Object,
                 this.documentServiceMock.Object,
+                this.subscriberAgreementServiceMock.Object,
                 this.csvMapperServiceMock.Object,
                 this.tppConfiguration,
                 this.dateTimeBrokerMock.Object,
@@ -102,14 +103,14 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Orchestrations.Tpp
                     service.CheckIfFileExistsAsync(filePath),
                         Times.Once);
 
-                var moveDestinationFolder = $"{tppConfiguration.TppPickupFolder}\\{randomReportingGroup}" +
-                    $"\\{(isSuccess
+                var moveDestinationFolder = Path.Combine(
+                    tppConfiguration.TppPickupFolder,
+                    randomReportingGroup,
+                    isSuccess
                         ? tppConfiguration.TppWorkingFolders.Processed
-                        : tppConfiguration.TppWorkingFolders.Errored)}" +
-                    $"\\{manifestDateTime}" +
-                    $"\\{filePath.Replace(randomReportingGroupFolder, "")}";
-
-                moveDestinationFolder = moveDestinationFolder.Replace("\\\\", "\\");
+                        : tppConfiguration.TppWorkingFolders.Errored,
+                    manifestDateTime,
+                    filePath.Replace(randomReportingGroupFolder, "").TrimStart('\\', '/'));
 
                 this.fileServiceMock.Verify(service =>
                     service.CopyFileAsync(filePath, moveDestinationFolder),

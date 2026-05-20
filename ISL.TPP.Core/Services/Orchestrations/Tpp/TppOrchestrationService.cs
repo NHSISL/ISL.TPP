@@ -26,6 +26,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
     {
         private readonly IFileService fileService;
         private readonly IDocumentService documentService;
+        private readonly ISubscriberAgreementService subscriberAgreementService;
         private readonly ICsvMapperService csvMapperService;
         private readonly TppConfiguration tppConfiguration;
         private readonly IDateTimeBroker dateTimeBroker;
@@ -34,6 +35,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         public TppOrchestrationService(
             IFileService fileService,
             IDocumentService documentService,
+            ISubscriberAgreementService subscriberAgreementService,
             ICsvMapperService csvMapperService,
             TppConfiguration tppConfiguration,
             IDateTimeBroker dateTimeBroker,
@@ -41,6 +43,7 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
         {
             this.fileService = fileService;
             this.documentService = documentService;
+            this.subscriberAgreementService = subscriberAgreementService;
             this.csvMapperService = csvMapperService;
             this.tppConfiguration = tppConfiguration;
             this.dateTimeBroker = dateTimeBroker;
@@ -53,7 +56,10 @@ namespace ISL.TPP.Core.Services.Orchestrations.Tpp
                 ValidateConfigurationSettings();
                 var exceptions = new List<Exception>();
 
-                foreach (string reportingGroup in this.tppConfiguration.ReportingGroups)
+                List<string> resourceGroups =
+                    await this.subscriberAgreementService.GetActiveSubscriberAgreementsAsync();
+
+                foreach (string reportingGroup in resourceGroups)
                 {
                     try
                     {
