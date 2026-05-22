@@ -27,15 +27,18 @@ namespace ISL.TPP.Core.Services.Foundations.Documents
                         message: "Failed subscriber agreement service error occurred, contact support.",
                         innerException: exception);
 
-                throw CreateAndLogServiceException(failedSubscriberAgreementServiceException);
+                throw await CreateAndLogServiceExceptionAsync(failedSubscriberAgreementServiceException);
             }
         }
 
-        private SubscriberAgreementServiceException CreateAndLogServiceException(Xeption exception)
+        private async ValueTask<SubscriberAgreementServiceException> CreateAndLogServiceExceptionAsync(
+            Xeption exception)
         {
             var subscriberAgreementServiceException = new SubscriberAgreementServiceException(
                 message: "Subscriber agreement service error occurred, contact support.",
                 innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(subscriberAgreementServiceException);
 
             return subscriberAgreementServiceException;
         }

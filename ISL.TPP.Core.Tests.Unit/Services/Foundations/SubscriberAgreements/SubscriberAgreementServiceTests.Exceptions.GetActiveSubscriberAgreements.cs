@@ -49,6 +49,11 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
                 broker.GetActiveSubscriberAgreementsAsync(),
                     Times.Once);
 
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is<SubscriberAgreementServiceException>(actual =>
+                    actual.Message == expectedSubscriberAgreementServiceException.Message)),
+                        Times.Once);
+
             this.subscriberAgreementHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
