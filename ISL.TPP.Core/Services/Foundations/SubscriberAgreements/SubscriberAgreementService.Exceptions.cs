@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ISL.TPP.Core.Models.Foundations.SubscriberAgreements.Exceptions;
 using Xeptions;
 
-namespace ISL.TPP.Core.Services.Foundations.Documents
+namespace ISL.TPP.Core.Services.Foundations.SubscriberAgreements
 {
     internal partial class SubscriberAgreementService
     {

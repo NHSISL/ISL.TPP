@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ISL.TPP.Core.Services.Foundations.Documents
+namespace ISL.TPP.Core.Services.Foundations. SubscriberAgreements
 {
     internal interface ISubscriberAgreementService
     {
