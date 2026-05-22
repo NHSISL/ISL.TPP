@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.SubscriberAgreements;
 using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
-using ISL.TPP.Core.Services.Foundations.Documents;
+using ISL.TPP.Core.Services.Foundations.SubscriberAgreements;
 using Moq;
 using Tynamix.ObjectFiller;
 using Xeptions;
