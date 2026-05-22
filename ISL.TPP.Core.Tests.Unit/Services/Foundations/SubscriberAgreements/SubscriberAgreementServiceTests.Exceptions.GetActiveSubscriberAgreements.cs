@@ -23,7 +23,8 @@ namespace ISL.TPP.Core.Tests.Unit.Services.Foundations.SubscriberAgreements
             var failedSubscriberAgreementServiceException =
                 new FailedSubscriberAgreementServiceException(
                     message: "Failed subscriber agreement service error occurred, contact support.",
-                    innerException: serviceException);
+                    innerException: serviceException,
+                    data: serviceException.Data);
 
             var expectedSubscriberAgreementServiceException =
                 new SubscriberAgreementServiceException(
