@@ -9,7 +9,7 @@ using ISL.TPP.Core.Brokers.Loggings;
 using ISL.TPP.Core.Brokers.SubscriberAgreements;
 using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
 
-namespace ISL.TPP.Core.Services.Foundations.Documents
+namespace ISL.TPP.Core.Services.Foundations.SubscriberAgreements
 {
     internal partial class SubscriberAgreementService : ISubscriberAgreementService
     {
