@@ -13,7 +13,7 @@ using ISL.TPP.Core.Brokers.Files;
 using ISL.TPP.Core.Brokers.Storages.Blobs;
 using ISL.TPP.Core.Clients;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
-using ISL.TPP.Core.Services.Foundations.Documents;
+using ISL.TPP.Core.Services.Foundations.SubscriberAgreements;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

@@ -79,6 +79,7 @@ namespace ISL.TPP.Core.Clients
 
                 serviceCollection
                     .AddSingleton(_ => blobStoragesSettings)
+                    .AddSingleton(_ => tppConfiguration.SubscriberAgreementConfiguration)
                     .AddTransient<IBlobStorageBroker, BlobStorageBroker>()
                     .AddTransient<IFileBroker, FileBroker>()
                     .AddTransient<IDateTimeBroker, DateTimeBroker>()

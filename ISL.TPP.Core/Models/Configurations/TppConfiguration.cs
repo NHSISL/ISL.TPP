@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.SubscriberAgreements;
 using ISL.TPP.Core.Models.Configurations.Retries;
 
 namespace ISL.TPP.Core.Models.Configurations
@@ -16,5 +17,8 @@ namespace ISL.TPP.Core.Models.Configurations
         public List<BlobStorageSettings> BlobStoragesSettings { get; set; } = new List<BlobStorageSettings>();
         public TppWorkingFolders TppWorkingFolders { get; set; } = new TppWorkingFolders();
         public RetryConfig RetryConfig { get; set; } = new RetryConfig();
+
+        public SubscriberAgreementConfiguration SubscriberAgreementConfiguration { get; set; }
+            = new SubscriberAgreementConfiguration();
     }
 }
