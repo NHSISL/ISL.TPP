@@ -10,7 +10,7 @@ namespace ISL.TPP.Core.Models.Foundations.SubscriberAgreements
     {
         public Guid Id { get; set; }
         public Guid SupplierId { get; set; }
-        public string SupplierSharingAgreementShortName { get; set; }
+        public string SupplierSharingAgreementShortName { get; set; } = string.Empty;
         public Guid? SupplierSharingAgreementGuid { get; set; }
         public string? FtpUserName { get; set; }
         public string? FtpPublicKey { get; set; }
