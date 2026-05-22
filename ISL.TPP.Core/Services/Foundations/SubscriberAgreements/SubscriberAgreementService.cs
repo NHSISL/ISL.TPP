@@ -3,26 +3,38 @@
 // ---------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using ISL.TPP.Core.Brokers.DateTimes;
 using ISL.TPP.Core.Brokers.Loggings;
+using ISL.TPP.Core.Brokers.SubscriberAgreements;
+using ISL.TPP.Core.Models.Foundations.SubscriberAgreements;
 
-namespace ISL.TPP.Core.Services.Foundations.Documents
+namespace ISL.TPP.Core.Services.Foundations.SubscriberAgreements
 {
     internal partial class SubscriberAgreementService : ISubscriberAgreementService
     {
-        private readonly IDateTimeBroker dateTimeBroker;
+        private readonly ISubscriberAgreementHttpBroker subscriberAgreementHttpBroker;
         private readonly ILoggingBroker loggingBroker;
 
         public SubscriberAgreementService(
-            IDateTimeBroker dateTimeBroker,
+            ISubscriberAgreementHttpBroker subscriberAgreementHttpBroker,
             ILoggingBroker loggingBroker)
         {
-            this.dateTimeBroker = dateTimeBroker;
+            this.subscriberAgreementHttpBroker = subscriberAgreementHttpBroker;
             this.loggingBroker = loggingBroker;
         }
 
-        public async ValueTask<List<string>> GetActiveSubscriberAgreementsAsync() =>
-            throw new System.NotImplementedException();
+        public ValueTask<List<string>> GetActiveSubscriberAgreementsAsync() =>
+            TryCatch(async () =>
+            {
+                List<SubscriberAgreement> agreements =
+                    await this.subscriberAgreementHttpBroker
+                        .GetActiveSubscriberAgreementsAsync();
+
+                return agreements
+                    .Select(agreement => agreement.SupplierSharingAgreementShortName)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList();
+            });
     }
 }

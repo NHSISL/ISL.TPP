@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using ISL.TPP.Core.Clients;
 using ISL.TPP.Core.Models.Brokers.Storages.Blobs;
+using ISL.TPP.Core.Models.Brokers.SubscriberAgreements;
 using ISL.TPP.Core.Models.Configurations;
 using ISL.TPP.Core.Models.Configurations.Retries;
 
@@ -42,6 +43,9 @@ namespace ISL.TPP.WorkerService
             var tppWorkingFolders = configuration.GetSection("tppWorkingFolders").Get<TppWorkingFolders>()
                 ?? new TppWorkingFolders();
 
+            var subscriberAgreementConfiguration = configuration.GetSection("subscriberAgreementConfiguration")
+                .Get<SubscriberAgreementConfiguration>() ?? new SubscriberAgreementConfiguration();
+
             var tppConfiguration = new TppConfiguration
             {
                 TppManifestFile = tppManifestFile,
@@ -49,7 +53,8 @@ namespace ISL.TPP.WorkerService
                 TimerIntervalInMinutes = timerIntervalInMinutes,
                 BlobStoragesSettings = blobStoragesSettings,
                 TppWorkingFolders = tppWorkingFolders,
-                RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100)
+                RetryConfig = new RetryConfig(maxRetryAttempts: 3, pauseBetweenFailuresInMilliseconds: 100),
+                SubscriberAgreementConfiguration = subscriberAgreementConfiguration
             };
 
             tppClient = new TppClient(tppConfiguration, loggerFactory);
