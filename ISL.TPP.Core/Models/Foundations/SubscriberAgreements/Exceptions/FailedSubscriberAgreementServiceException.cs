@@ -9,8 +9,8 @@ namespace ISL.TPP.Core.Models.Foundations.SubscriberAgreements.Exceptions
 {
     public class FailedSubscriberAgreementServiceException : Xeption
     {
-        public FailedSubscriberAgreementServiceException(string message, Exception innerException)
-            : base(message, innerException)
+        public FailedSubscriberAgreementServiceException(string message, Exception innerException, IDictionary data)
+            : base(message, innerException, data)
         { }
     }
 }
