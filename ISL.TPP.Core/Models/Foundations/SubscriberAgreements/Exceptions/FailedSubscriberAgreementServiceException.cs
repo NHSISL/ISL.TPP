@@ -2,7 +2,12 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------------
 
+// ---------------------------------------------------------------
+// Copyright (c) North East London ICB. All rights reserved.
+// ---------------------------------------------------------------
+
 using System;
+using System.Collections;
 using Xeptions;
 
 namespace ISL.TPP.Core.Models.Foundations.SubscriberAgreements.Exceptions
@@ -11,6 +16,13 @@ namespace ISL.TPP.Core.Models.Foundations.SubscriberAgreements.Exceptions
     {
         public FailedSubscriberAgreementServiceException(string message, Exception innerException)
             : base(message, innerException)
+        { }
+
+        public FailedSubscriberAgreementServiceException(
+            string message,
+            Exception innerException,
+            IDictionary data)
+            : base(message, innerException, data)
         { }
     }
 }
